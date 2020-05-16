@@ -1,0 +1,72 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import datetime
+import parameters as gl
+import libpg as libpg
+
+
+def intervention(data_dict):
+    sql = '''INSERT into assistencias (proc_date,
+    proc_updated, proc_unit_id, proc_tecnico, proc_report_internal,
+                  proc_quem,proc_contacto,
+                  proc_meio,proc_duracao,proc_unit_name,
+                  proc_reported, proc_montante, proc_jusante, proc_status, proc_nivel,proc_facturar,proc_pendente, proc_data_fim, proc_type, proc_user)
+                values (%s,%s,%s,%s,%s,%s,'',%s,%s,%s,%s,0,-1,'Aguarda n/ Intervenção', 'Normal', False,True, %s,%s,%s)'''
+    data = (datetime.datetime.now(),
+            datetime.datetime.now(),
+            gl.unit_dict['un_id'],
+            data_dict['tech'],
+            data_dict['problem'],
+            data_dict['client_name'],
+            'Escritorio',
+            datetime.timedelta(hours=0, minutes=0, seconds=59),
+            gl.unit_dict['un_nome'],
+            'Erro nas comunicações',
+            datetime.datetime.now() + datetime.timedelta(minutes=4), data_dict['proc_type'],gl.user_dict['user_name']
+            )
+    libpg.execute_query(sql, data)
+    process_number = libpg.query_one('select max(proc_id) as max_id from assistencias', (True,))[0]
+    
+    return process_number
+
+
+def ticket(data_dict):
+    sql = '''INSERT into assistencias (proc_date,proc_updated,proc_unit_id,proc_tecnico,proc_report_internal,
+                  proc_serial_number,proc_report_invoice,proc_quem,proc_model,proc_contacto, proc_meio,proc_duracao,proc_unit_name,
+                  proc_reported, proc_montante, proc_jusante,proc_asterisk, proc_status, proc_nivel,proc_facturar,proc_pendente,proc_facturado, proc_data_fim)
+                values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, %s,%s,%s,%s)'''
+    data = (data_dict['proc_date'],
+            data_dict['proc_updated'],
+            data_dict['proc_unit_id'],
+            data_dict['proc_tecnico'],
+            data_dict['proc_report_internal'],
+            data_dict['proc_serial_number'],
+            data_dict['proc_report_invoice'],
+            data_dict['proc_quem'],
+            data_dict['proc_model'],
+            data_dict['proc_contacto'],
+            data_dict['proc_meio'],
+            data_dict['proc_duracao'],
+            data_dict['proc_unit_name'],
+            data_dict['proc_reported'],
+            data_dict['proc_montante'],
+            data_dict['proc_jusante'],
+            data_dict['proc_asterisk'],
+            data_dict['proc_status'],
+            data_dict['proc_nivel'],
+            data_dict['proc_facturar'],
+            data_dict['proc_pendente'],
+            data_dict['proc_facturado'],
+            data_dict['proc_data_fim'])
+    libpg.execute_query(sql, data)
+    num_pedido = libpg.query_one('select max(proc_id) as max_id from assistencias', (True,))[0]
+    # fecha o proc a montante se houver
+    if data_dict['proc_montante'] > 0:
+        libpg.execute_query('''UPDATE assistencias set proc_pendente = False, proc_jusante = %s
+                     where proc_id = %s''', (num_pedido,data_dict['proc_montante']))
+
+    return num_pedido
+
+
+if __name__ == '__main__':
+    pass

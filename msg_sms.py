@@ -1,0 +1,192 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import sys
+import uuid
+
+from PyQt5.QtWidgets import QDialog, QApplication, \
+    QTableWidget, QVBoxLayout, QLineEdit, QTextEdit, QPushButton, QComboBox, QHBoxLayout, QLabel, \
+    QTableWidgetItem, QWidget, QCheckBox, QMessageBox
+
+import data_sets
+import libpg
+import msg_sender
+import parameters as gl
+import qlib as qc
+import smtpmail
+from msg_sender import send_sms
+
+
+class MsgSendSMS(QDialog):
+    def __init__(self, data_dict, parent=None):
+        super(MsgSendSMS, self).__init__(parent)
+        self.resize(800, 600)
+        self.data_dict = data_dict
+        self.setWindowTitle('SMS')
+        self.data_dict['type'] = 1
+        self.gridContacts = QTableWidget()
+        # self.gridContacts.setMaximumWidth(400)
+        self.gridContacts.verticalHeader().setDefaultSectionSize(20)
+        self.gridContacts.setAlternatingRowColors(True)
+        self.gridContacts.setStyleSheet("alternate-background-color: #fff9e6;")
+        self.gridContacts.verticalHeader().setVisible(False)
+        self.gridContacts.horizontalHeader().setVisible(False)
+        
+        masterLayout = QVBoxLayout(self)
+        masterLayout.addWidget(self.gridContacts)
+        self.toEdt = QLineEdit()
+        
+        self.cannedCbx = QComboBox()
+        self.cannedCbx.addItems(gl.canned_msg_sms)
+        self.cannedCbx.setCurrentIndex(-1)
+        self.cannedCbx.editTextChanged.connect(self.canned_msg_change)
+        self.cannedCbx.currentIndexChanged.connect(self.canned_msg_change)
+        
+        masterLayout.addWidget(self.cannedCbx)
+        self.textMsgTEdt = QTextEdit()
+        self.subjectLbl = QLabel('')
+        masterLayout.addWidget(self.subjectLbl)
+        self.textMsgTEdt.textChanged.connect(self.count_size)
+        
+        masterLayout.addLayout(qc.addVLayout(['Mensagem', self.textMsgTEdt]))
+        self.sendBtn = QPushButton('Envia')
+        self.sendBtn.clicked.connect(self.send_click)
+        
+        btnLayout = QHBoxLayout()
+        btnLayout.addWidget(self.sendBtn)
+        cancelBtn = QPushButton('Sair')
+        cancelBtn.clicked.connect(self.cancel_click)
+        btnLayout.addWidget(cancelBtn)
+        masterLayout.addLayout(btnLayout)
+        self.refresh_grid()
+    
+    def refresh_grid(self):
+        hl = libpg.query_many('''select contact_types.ctt_name, contacts.ct_value1, contacts.ct_value2
+                from unidades
+                inner join contacts on ct_unit = un_id
+                inner join contact_types on ctt_id = ct_ctt_id
+                where un_id = %s  and ctt_way=%s''', (self.data_dict['un_id'], self.data_dict['type']))
+        self.gridContacts.setColumnCount(4)
+        # self.gridContacts.setHorizontalHeaderLabels(headers)
+        self.gridContacts.setRowCount(len(hl))
+        line = 0
+        for n in hl:
+            self.gridContacts.setCellWidget(line, 0, checkBoxGrid())
+            item = QTableWidgetItem()
+            item.setText(n[0])
+            self.gridContacts.setItem(line, 1, item)
+            item = QTableWidgetItem()
+            item.setText(n[1])
+            self.gridContacts.setItem(line, 2, item)
+            item = QTableWidgetItem()
+            item.setText(n[2])
+            self.gridContacts.setItem(line, 3, item)
+            line += 1
+        self.gridContacts.setColumnWidth(0, 10)
+        self.gridContacts.setColumnWidth(1, 180)
+        self.gridContacts.setColumnWidth(2, 180)
+    
+    def refresh_label(self):
+        xl = libpg.query_one('SELECT * FROM msg_canned WHERE LOWER(canned_name) = %s and canned_type = %s ',
+                             (self.cannedCbx.currentText().lower(), self.data_dict['type']))
+        self.textMsgTEdt.clear()
+        if xl[6] == 1:
+            self.textMsgTEdt.setText(xl[4])
+        else:
+            # vai buscar outra info')
+            if xl[0] in (5, 7):  # conta corrente
+                dum = xl[4]
+                dum = dum.replace('$', "{:.2f}".format(self.data_dict['cl_cc']))
+                self.textMsgTEdt.setText(dum)
+            elif xl[0] == 9:  # envia DDNS ok internamente
+                dum = xl[4]
+                dum = dum.replace('$', self.data_dict['ddns'])
+                self.textMsgTEdt.setText(dum)
+            elif xl[0] == 10:  # envia BO a funcionar para o cliente.
+                dum = xl[4]
+                dum = dum.replace('$', self.data_dict['un_nome'])
+                self.textMsgTEdt.setText(dum)
+    
+    def count_size(self):
+        self.subjectLbl.setText(str(len(self.textMsgTEdt.toPlainText())))
+    
+    def canned_msg_change(self):
+        self.refresh_label()
+    
+    def send_click(self):
+        send_to = []
+        msg_uuid = str(uuid.uuid4())
+        msg_cnt = 0
+        for n in range(0, self.gridContacts.rowCount()):
+            if self.gridContacts.cellWidget(n, 0).layout().itemAt(1).widget().isChecked():
+                send_to.append((self.gridContacts.item(n, 3).text(), self.gridContacts.item(n, 2).text()))
+        for n in send_to:
+            send_to_mobile = msg_sender.send_sms(self.textMsgTEdt.toPlainText(), n[0])
+            if send_to_mobile['status'] != 0:
+                sms_error = 'Estado: ' + str(send_to_mobile['status']) + ' Erro: ' + send_to_mobile['return_msg']
+                void = QMessageBox.critical(self, "Erro", 'Mensagem não enviada\n' + sms_error,
+                                            QMessageBox.StandardButtons(QMessageBox.Ok))
+                msg_cnt = -1
+                break
+            else:
+                msg_cnt += 1
+                self.log_message({'msg_uuid': msg_uuid, 'type': 1, 'msg_to': str(n[0]), 'msg_to_name': n[1], 'msg_subject': 'SMS','msg_body': self.textMsgTEdt.toPlainText(), 'msg_files': ''})
+                sub = '[SMS] ' + gl.unit_dict['un_nome'] + ' :' + self.textMsgTEdt.toPlainText()
+                body = 'Mensagem para ' + gl.unit_dict['un_nome'] + ' - ' + str(n[0]) + '<br> Nome: ' + n[1] + '<br>Conteudo: ' + self.textMsgTEdt.toPlainText()
+                smtpmail.send_sms_mail({'sub': sub, 'body': body})
+
+        if msg_cnt > 0:
+            sms_error = 'Saldo: ' + send_to_mobile['saldo']
+            void = QMessageBox.information(self, "Info", 'Mensagen(s) enviada(s) ' + str(msg_cnt) + '\n' + sms_error,
+                                           QMessageBox.StandardButtons(QMessageBox.Ok))
+            self.sendBtn.setText('Enviada! Re-enviar')
+        else:
+            smtpmail.send_sms_mail({'sub': 'Erro ao enviar SMS', 'body': 'Erro ao enviar SMS <br> ' + sms_error})
+    
+    def validate(self):
+        flag = True
+        self.canned_data = data_sets.canned_msg_to_dict(self.cannedCbx.currentText())
+        if self.cannedCbx.currentIndex() == -1:
+            QMessageBox.critical(None, "Erro", "É necessario escolher uma mensagem enlatada..")
+            flag = False
+        return flag
+    
+    def cancel_click(self):
+        self.close()
+    
+    def log_message(self, msg_dict):
+        # print( msg_uuid,data_dict['type'], data_dict['msg_to'], data_dict['msg_subject'], data_dict['msg_body'], data_dict['msg_files'], 'test')
+        libpg.execute_query(
+            'insert into msg_log (msg_unit_id, msg_uuid, msg_type, msg_to, msg_to_name,  msg_subject, msg_body, msg_files, msg_who) '
+            'values (%s,%s,%s,%s,%s,%s,%s,%s,%s)',
+            (self.data_dict['un_id'], msg_dict['msg_uuid'],
+             msg_dict['type'],
+             msg_dict['msg_to'],
+             msg_dict['msg_to_name'],
+             msg_dict['msg_subject'],
+             msg_dict['msg_body'],
+             msg_dict['msg_files'], gl.user_dict['user_name']))
+
+
+def checkBoxGrid(label=''):
+    w = QWidget()
+    l = QHBoxLayout(w)
+    l.setContentsMargins(0, 0, 0, 0)
+    l.addStretch()
+    c = QCheckBox(label)
+    l.addWidget(c)
+    l.addStretch()
+    return w
+
+
+def main():
+    gl.unit_dict = data_sets.unit_to_dic(0)
+    data_sets.get_canned_messages(1)
+    app = QApplication(sys.argv)
+    form = MsgSendSMS({'type': 1, 'unit_id': 0})
+    form.show()
+    app.exec_()
+
+
+if __name__ == '__main__':
+    main()
+    # log_message({'type': 2, 'msg_to': '98938890', 'msg_subject': '', 'msg_body': 'teste de mensagem', 'msg_files': ''})
