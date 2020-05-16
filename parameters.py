@@ -46,17 +46,12 @@ db_host = '192.168.0.98'
 db_port = '5432'
 db_user = 'root'
 db_password = 'masterkey'
-DEVELOP = True
-VERSION = '2020.02.12'
+DEVELOP = False
+VERSION = '2020.05.16'
 version = 12
 if DEVELOP:
     print('DEVELOP MODE')
     db_host = '192.168.0.250'
-if WAN:
-    db_host = '109.48.17.250'
-    db_port = '9409'
-    db_user = 'premote'
-    db_password = 'wJ4qzR8N!5_#4j+67$34DegA3auqJ6jv%6E?rxTzx#Gu^%8qPY*jmzB+p24GC6v$'
 db_database = 'prism'
 dsSoftType = {}
 ds_soft_type_dict = {}
