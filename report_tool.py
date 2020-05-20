@@ -178,7 +178,7 @@ class ReportTool(QDialog):
         elif report == 'licenças pedidas':
             sql = '''SELECT  software.sf_id, un_nome, software_lic_status.lic_st_name,
                  to_char(software.sf_time_order, 'YYYY-MM-DD HH24:MI') as orde,area_name,
-                to_char(DATE 'now' - sf_time_order , 'DD')  as s, lic_st_id,un_id
+                to_char(date 'now' - sf_time_order, 'DD" dias "HH24" horas'), lic_st_id,un_id
                  FROM software
                  inner join software_type  on software.sf_version = software_type.sft_id
                  inner join software_lic_status on lic_st_id=sf_status
@@ -188,13 +188,13 @@ class ReportTool(QDialog):
                  ORDER BY software.sf_id DESC, sf_date_valid DESC;'''
             xl = libpg.query_many(sql, (True,))
             ex_grid.make_grid(self.gridMain, ['ID', 'Unidade', 'Estado', 'Data', 'Zona', 'Atraso','st_lic','unit_id'],
-                              [(0, 50), (1, 240), (2, 80), (3, 140), (4, 260), (5, 60),(6,0), (7,0)])
+                              [(0, 50), (1, 240), (2, 80), (3, 140), (4, 260), (5, 120),(6,0), (7,0)])
             ex_grid.grid_std(self.gridMain, data=xl, f_col=['i', 's', 's', 's', 's','s', 'i','i'])
             self.setWindowTitle(self.reportTypeCbx.currentText())
         elif report == 'unidades em actualização':
             sql = '''SELECT  software.sf_id, un_nome, software_lic_status.lic_st_name,
                  to_char(software.sf_time_order, 'YYYY-MM-DD HH24:MI') as orde,area_name,
-                to_char(DATE 'now' - sf_time_order , 'DD')  as s, lic_st_id,unidades.un_id
+                to_char(date 'now' - sf_time_order, 'DD" dias "HH24" horas'), lic_st_id,unidades.un_id
                  FROM software
                  inner join software_type  on software.sf_version = software_type.sft_id
                  inner join software_lic_status on lic_st_id=sf_status
@@ -204,13 +204,13 @@ class ReportTool(QDialog):
                  ORDER BY software.sf_id DESC, sf_date_valid DESC;'''
             xl = libpg.query_many(sql, (True,))
             ex_grid.make_grid(self.gridMain, ['ID', 'Unidade', 'Estado', 'Data', 'Zona', 'Atraso','st_lic','unit_id'],
-                              [(0, 50), (1, 240), (2, 120), (3, 140), (4, 260), (5, 60),(6,0),(7,0)])
+                              [(0, 50), (1, 240), (2, 120), (3, 140), (4, 260), (5, 120),(6,0),(7,0)])
             ex_grid.grid_std(self.gridMain, data=xl, f_col=['i', 's', 's', 's', 's','s', 'i','i'])
             self.setWindowTitle(self.reportTypeCbx.currentText())
         elif report == 'unidades actualizadas':
             sql = '''SELECT  software.sf_id, un_nome, software_lic_status.lic_st_name,
                  to_char(software.sf_time_order, 'YYYY-MM-DD HH24:MI') as orde,area_name,
-                to_char(DATE 'now' - sf_time_order , 'DD')  as s, lic_st_id,unidades.un_id
+                to_char(date 'now' - sf_time_order, 'DD" dias "HH24" horas'), lic_st_id,unidades.un_id
                  FROM software
                  inner join software_type  on software.sf_version = software_type.sft_id
                  inner join software_lic_status on lic_st_id=sf_status
@@ -220,7 +220,7 @@ class ReportTool(QDialog):
                  ORDER BY sf_time_order DESC;'''
             xl = libpg.query_many(sql, (True,))
             ex_grid.make_grid(self.gridMain, ['ID', 'Unidade', 'Estado', 'Data', 'Zona', 'Atraso','st_lic','unit_id'],
-                              [(0, 50), (1, 240), (2, 120), (3, 140), (4, 260), (5, 60),(6,0),(7,0)])
+                              [(0, 50), (1, 240), (2, 120), (3, 140), (4, 260), (5, 120),(6,0),(7,0)])
             ex_grid.grid_std(self.gridMain, data=xl, f_col=['i', 's', 's', 's', 's','s', 'i','i'])
             self.setWindowTitle(self.reportTypeCbx.currentText())
         

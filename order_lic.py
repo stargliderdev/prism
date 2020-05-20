@@ -109,7 +109,7 @@ class MakeLic(QDialog):
         self.date_contract.setMinimumWidth(140)
         self.date_contract.setDisplayFormat("yyyy-MM-dd")
         self.date_contract.setCalendarPopup(True)
-        self.date_contract.setReadOnly(True)
+        self.date_contract.setReadOnly(False)
         self.date_contract.dateChanged.connect(self.calc_date_end)
         
         self.date_valid = QDateEdit()

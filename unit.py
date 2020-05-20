@@ -750,8 +750,15 @@ class UnitEdit(QDialog):
                     liblogos.set_unit_settings(gl.unit_dict['un_id'], 2, lic_dict['terminals'])
                     liblogos.set_unit_settings(gl.unit_dict['un_id'], 26, datetime.datetime.now().strftime("%Y-%m-%d"), gl.user_dict['user_name'])
                     liblogos.set_unit_settings(gl.unit_dict['un_id'], 28, lic_dict['commercial_version'], '')
-                    liblogos.set_unit_settings(gl.unit_dict['un_id'], 7, lic_dict['rdp'], '')
-                    liblogos.set_unit_settings(gl.unit_dict['un_id'], 29, lic_dict['printon'], '')
+                    try:
+                        liblogos.set_unit_settings(gl.unit_dict['un_id'], 7, lic_dict['rdp'], '')
+                    except KeyError:
+                        libpg.execute_query('delete from unit_settings where us_unit_id = %s and us_act_id=%s', (gl.unit_dict['un_id'], 7))
+                    try:
+                        liblogos.set_unit_settings(gl.unit_dict['un_id'], 29, lic_dict['printon'], '')
+                    except KeyError:
+                        libpg.execute_query('delete from unit_settings where us_unit_id = %s and us_act_id=%s', (gl.unit_dict['un_id'], 29))
+                        
                     '''actualiza as grelhas'''
                     self.refresh_cmt_restware()
                     self.refresh_un_sets()

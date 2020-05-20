@@ -622,19 +622,19 @@ def get_sys_admin(unit_it):
 
 
 def order_mark_upload(unit_id):
-    ''' pode carregar sem restrições mesmo se já tiver carregada '''
-    lic_status : int = 3
+    """ pode carregar sem restrições mesmo se já tiver carregada """
+    lic_status: int = 3
     sql = '''SELECT sf_id FROM software WHERE sf_status = 0 AND sf_unit_id =%s ORDER BY sf_id DESC LIMIT 1'''
     try:
         lic_number = libpg.query_one(sql, (unit_id,))[0]
     except TypeError:
         sql = '''SELECT sf_id FROM software WHERE sf_unit_id =%s ORDER BY sf_id DESC LIMIT 1'''
         lic_number = libpg.query_one(sql, (unit_id,))[0]
-        print('TypeError')
-        print('get last lic ', lic_number)
-        print('re-upload')
-        '''já foi carregada e actualizada e activa passa a re-carregada'''
-        lic_status = 5
+        # print('TypeError')
+        # print('get last lic ', lic_number)
+        # print('re-upload')
+        # '''já foi carregada e actualizada e activa passa a re-carregada'''
+        # lic_status = 3
     sql = '''INSERT INTO software (sf_unit_id, sf_lic_json, sf_version, sf_date_contract,
                 sf_date_valid, sf_lic_type,sf_json_version, sf_status, sf_who)
                 SELECT sf_unit_id, sf_lic_json, sf_version, sf_date_contract,

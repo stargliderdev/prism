@@ -249,7 +249,8 @@ class InputDateComits(QDialog):
         self.close()
     
     def lifetime_click(self):
-        self.ret = (True, datetime.datetime(2050, 0o1, 0o1))
+        self.ret = (True,  datetime.datetime(2050, 1, 1).strftime('%Y-%m-%d'))
+        # self.ret = (True, datetime.datetime(2050, 0o1, 0o1))
         self.close()
 
 
