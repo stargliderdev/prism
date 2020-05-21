@@ -627,6 +627,8 @@ def order_mark_upload(unit_id):
     sql = '''SELECT sf_id FROM software WHERE sf_status = 0 AND sf_unit_id =%s ORDER BY sf_id DESC LIMIT 1'''
     try:
         lic_number = libpg.query_one(sql, (unit_id,))[0]
+        """coloca a lic em carregada """
+        libpg.execute_query('update software set sf_status=1 where sf_id=%s', (lic_number,))
     except TypeError:
         sql = '''SELECT sf_id FROM software WHERE sf_unit_id =%s ORDER BY sf_id DESC LIMIT 1'''
         lic_number = libpg.query_one(sql, (unit_id,))[0]
@@ -635,6 +637,9 @@ def order_mark_upload(unit_id):
         # print('re-upload')
         # '''já foi carregada e actualizada e activa passa a re-carregada'''
         # lic_status = 3
+    """coloca todas em 5 substituida """
+    libpg.execute_query('update software set sf_status=5 where sf_status = 3 and sf_unit_id=%s', (unit_id,))
+    """ cria novo registo do que foi carregado """
     sql = '''INSERT INTO software (sf_unit_id, sf_lic_json, sf_version, sf_date_contract,
                 sf_date_valid, sf_lic_type,sf_json_version, sf_status, sf_who)
                 SELECT sf_unit_id, sf_lic_json, sf_version, sf_date_contract,

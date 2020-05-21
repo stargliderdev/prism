@@ -47,7 +47,7 @@ db_port = '5432'
 db_user = 'root'
 db_password = 'masterkey'
 DEVELOP = True
-VERSION = '2020.05.16'
+VERSION = '2020.05.21'
 version = 12
 if DEVELOP:
     print('DEVELOP MODE')
