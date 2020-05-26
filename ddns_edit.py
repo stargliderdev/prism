@@ -140,9 +140,9 @@ class DdnsEdit(QDialog):
     
     def save_click(self):
         if self.unit_setting_id == -1:
-            liblogos.add_unit_setting(gl.unit_dict['un_id'], 13, self.ddnsEdt.text(), self.ownerEdt.text())
+            liblogos.insert_unit_setting(gl.unit_dict['un_id'], 13, self.ddnsEdt.text(), self.ownerEdt.text())
         else:
-            liblogos.edit_unit_settings(self.unit_setting_id, self.ddnsEdt.text(), self.ownerEdt.text())
+            liblogos.update_unit_settings(self.unit_setting_id, self.ddnsEdt.text(), self.ownerEdt.text())
         self.close()
     
     def center(self):

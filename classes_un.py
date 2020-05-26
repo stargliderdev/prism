@@ -181,28 +181,27 @@ class AddContactsBrowser(QDialog):
 
 
 class TerminalsDialog(QDialog):
-    def __init__(self, parent=None, **kwargs):
+    def __init__(self, unit_id, setting_id, edit=False, names='', parent=None):
         super(TerminalsDialog, self).__init__(parent)
-        self.kwargs = kwargs
+        self.edit = edit
+        self.setting_id = setting_id
+        self.unit_id = unit_id
         self.setWindowTitle('Alterar Postos')
         masterLayout = QVBoxLayout(self)
         
         self.new_terminals = QLineEdit()
-        self.new_terminals.setInputMask('DD')
+        # self.new_terminals.setInputMask('DD')
         self.new_terminals.setText('2')
         self.terminal_names = QLineEdit()
-        if self.kwargs['edit']:
-            self.terminal_names.setText(kwargs['names'])
+        if edit:
+            self.terminal_names.setText(names)
         masterLayout.addLayout(qc.addHLayout(['Novo # de Postos', self.new_terminals, True], lw=120))
         masterLayout.addLayout(qc.addHLayout(['Nomes dos Postos', self.terminal_names, True], lw=120))
         
         okBtn = QPushButton('Valida')
-        # self.connect(okBtn, SIGNAL("clicked()"), self.save_click)
         okBtn.clicked.connect(self.save_click)
         
-        
         cancelBtn = QPushButton('Cancela')
-        # self.connect(cancelBtn, SIGNAL("clicked()"), self.cancel_btn_click)
         cancelBtn.clicked.connect(self.cancel_btn_click)
         
         masterLayout.addLayout(qc.addHLayout([okBtn, cancelBtn]))
@@ -211,12 +210,10 @@ class TerminalsDialog(QDialog):
         self.close()
     
     def save_click(self):
-        if self.kwargs['edit']:
-            liblogos.edit_unit_settings(self.kwargs['us_id'], int(self.new_terminals.text()),
-                                        self.terminal_names.text())
+        if self.edit:
+            liblogos.update_unit_settings(self.setting_id, int(self.new_terminals.text()), self.terminal_names.text())
         else:
-            liblogos.add_unit_setting(self.kwargs['unit_id'], self.kwargs['act_id'],
-                                      int(self.new_terminals.text()), self.terminal_names.text())
+            liblogos.insert_unit_setting(self.unit_id, self.setting_id, int(self.new_terminals.text()), self.terminal_names.text())
         self.close()
 
 
@@ -279,19 +276,19 @@ class InputDateSettings(QDialog):
     
     def save_click(self):
         if self.kwargs['edit']:  # edita
-            liblogos.edit_unit_settings(self.kwargs['us_id'],
-                                        self.calendarQCalendarWidget.selectedDate().toPyDate().strftime('%Y-%m-%d'), '')
+            liblogos.update_unit_settings(self.kwargs['us_id'],
+                                          self.calendarQCalendarWidget.selectedDate().toPyDate().strftime('%Y-%m-%d'), '')
         else:
-            liblogos.add_unit_setting(self.kwargs['unit_id'], self.kwargs['act_id'],
-                                      self.calendarQCalendarWidget.selectedDate().toPyDate().strftime('%Y-%m-%d'), '')
+            liblogos.insert_unit_setting(self.kwargs['unit_id'], self.kwargs['act_id'],
+                                         self.calendarQCalendarWidget.selectedDate().toPyDate().strftime('%Y-%m-%d'), '')
         self.ret = (True, self.calendarQCalendarWidget.selectedDate().toPyDate())
         self.close()
     
     def lifetime_click(self):
         if self.us_id == -1:
-            liblogos.add_unit_setting(self.unit_id, 103, datetime.datetime(2050, 0o1, 0o1).strftime('%Y-%m-%d'))
+            liblogos.insert_unit_setting(self.unit_id, 103, datetime.datetime(2050, 0o1, 0o1).strftime('%Y-%m-%d'))
         else:
-            liblogos.edit_unit_settings(self.us_id, 103, datetime.datetime(2050, 0o1, 0o1).strftime('%Y-%m-%d'))
+            liblogos.update_unit_settings(self.us_id, 103, datetime.datetime(2050, 0o1, 0o1).strftime('%Y-%m-%d'))
         self.ret = (True, datetime.datetime(2050, 0o1, 0o1).strftime('%Y-%m-%d'))
         self.close()
 
@@ -353,11 +350,11 @@ class DbmsDialog(QDialog):
     
     def save_click(self):
         if self.kwargs['edit']:
-            liblogos.edit_unit_settings(self.kwargs['us_id'], self.dbms_grd.item(self.dbms_grd.currentRow(), 0).text(),
+            liblogos.update_unit_settings(self.kwargs['us_id'], self.dbms_grd.item(self.dbms_grd.currentRow(), 0).text(),
                                         '')
         else:
-            liblogos.add_unit_setting(self.kwargs['unit_id'], self.kwargs['act_id'],
-                                      self.dbms_grd.item(self.dbms_grd.currentRow(), 0).text(), '')
+            liblogos.insert_unit_setting(self.kwargs['unit_id'], self.kwargs['act_id'],
+                                         self.dbms_grd.item(self.dbms_grd.currentRow(), 0).text(), '')
         self.close()
 
 
@@ -388,25 +385,30 @@ class OsSetDialog(QDialog):
     
     def save_click(self):
         if self.kwargs['edit']:
-            liblogos.edit_unit_settings(self.kwargs['us_id'], self.os.currentText(), self.os_arch.currentText())
+            liblogos.update_unit_settings(self.kwargs['us_id'], self.os.currentText(), self.os_arch.currentText())
         else:
-            liblogos.add_unit_setting(self.kwargs['unit_id'], self.kwargs['act_id'], self.os.currentText(),
-                                      self.os_arch.currentText())
+            liblogos.insert_unit_setting(self.kwargs['unit_id'], self.kwargs['act_id'], self.os.currentText(),
+                                         self.os_arch.currentText())
         self.close()
 
 
 class ProductionPrinters(QDialog):
-    def __init__(self, parent=None, **kwargs):
+    def __init__(self, unit_id, setting_type, title, label_title, count=0,names='', edit=False, parent=None):
         super(ProductionPrinters, self).__init__(parent)
-        self.kwargs = kwargs
-        self.setWindowTitle(self.kwargs['title'])
+        # self.kwargs = kwargs
+        self.edit = edit
+        self.names = names
+        self.count = count
+        self.unit_id = unit_id
+        self.setting_type = setting_type
+        self.setWindowTitle(title)
         masterLayout = QVBoxLayout(self)
         self.rprinter_cnt = QLineEdit()
-        self.rprinter_cnt.setInputMask('DD')
+        # self.rprinter_cnt.setInputMask('DD')
         masterLayout.addLayout(qc.addHLayout(['Quantidade', self.rprinter_cnt, True], lw=180))
-        self.rprinter_names = QLineEdit()
-        self.rprinter_names.setMinimumWidth(200)
-        masterLayout.addLayout(qc.addHLayout([self.kwargs['label_title'], self.rprinter_names, True], lw=180))
+        self.rPrinterEdt = QLineEdit()
+        self.rPrinterEdt.setMinimumWidth(200)
+        masterLayout.addLayout(qc.addHLayout([label_title, self.rPrinterEdt, True], lw=180))
         
         okBtn = QPushButton('Valida')
         okBtn.clicked.connect(self.save_click)
@@ -415,24 +417,66 @@ class ProductionPrinters(QDialog):
         
         masterLayout.addLayout(qc.addHLayout([okBtn, cancelBtn]))
         
-        if self.kwargs['edit'] == False:
+        if self.edit == False:
             self.rprinter_cnt.setText('1')
         else:
-            self.rprinter_cnt.setText(str(self.kwargs['count']))
-            self.rprinter_names.setText(self.kwargs['names'])
+            self.rprinter_cnt.setText(self.count)
+            self.rPrinterEdt.setText(self.names)
     
     def cancel_btn_click(self):
         self.close()
     
     def save_click(self):
-        if self.kwargs['edit']:  # edita
-            liblogos.edit_unit_settings(self.kwargs['us_id'], int(self.rprinter_cnt.text()),
-                                        self.rprinter_names.text())
+        """edita"""
+        if self.edit:
+            liblogos.update_unit_settings(self.us_id, self.rprinter_cnt.text(), self.rPrinterEdt.text())
         else:  # adiciona
-            liblogos.add_unit_setting(self.kwargs['unit_id'], self.kwargs['ptype'], int(self.rprinter_cnt.text()),
-                                      self.rprinter_names.text())
+            liblogos.insert_unit_setting(self.unit_id, self.setting_type, self.rprinter_cnt.text(), self.rPrinterEdt.text())
         self.close()
 
+
+class InputTwoString(QDialog):
+    def __init__(self, unit_id, setting_type, edit=False, parent=None):
+        super(ProductionPrinters, self).__init__(parent)
+        # self.kwargs = kwargs
+        self.edit = edit
+        self.names = names
+        self.count = count
+        self.unit_id = unit_id
+        self.setting_type = setting_type
+        self.setWindowTitle(title)
+        masterLayout = QVBoxLayout(self)
+        self.rprinter_cnt = QLineEdit()
+        # self.rprinter_cnt.setInputMask('DD')
+        masterLayout.addLayout(qc.addHLayout(['Quantidade', self.rprinter_cnt, True], lw=180))
+        self.rPrinterEdt = QLineEdit()
+        self.rPrinterEdt.setMinimumWidth(200)
+        masterLayout.addLayout(qc.addHLayout([label_title, self.rPrinterEdt, True], lw=180))
+        
+        okBtn = QPushButton('Valida')
+        okBtn.clicked.connect(self.save_click)
+        cancelBtn = QPushButton('Cancela')
+        cancelBtn.clicked.connect(self.cancel_btn_click)
+        
+        masterLayout.addLayout(qc.addHLayout([okBtn, cancelBtn]))
+        
+        if self.edit == False:
+            self.rprinter_cnt.setText('1')
+        else:
+            self.rprinter_cnt.setText(self.count)
+            self.rPrinterEdt.setText(self.names)
+    
+    def cancel_btn_click(self):
+        self.close()
+    
+    def save_click(self):
+        """edita"""
+        if self.edit:
+            liblogos.update_unit_settings(self.us_id, self.rprinter_cnt.text(), self.rPrinterEdt.text())
+        else:  # adiciona
+            liblogos.insert_unit_setting(self.unit_id, self.setting_type, self.rprinter_cnt.text(),
+                                         self.rPrinterEdt.text())
+        self.close()
 
 class SetIsp(QDialog):
     def __init__(self, parent=None, **kwargs):
@@ -458,61 +502,10 @@ class SetIsp(QDialog):
     
     def save_click(self):
         if self.kwargs['edit']:
-            liblogos.edit_unit_settings(self.kwargs['us_id'], self.isp_b.currentText(), self.gateway_b.text())
+            liblogos.update_unit_settings(self.kwargs['us_id'], self.isp_b.currentText(), self.gateway_b.text())
         else:
-            liblogos.add_unit_setting(self.kwargs['unit_id'], 12, self.isp_b.currentText(), self.gateway_b.text())
+            liblogos.insert_unit_setting(self.kwargs['unit_id'], 12, self.isp_b.currentText(), self.gateway_b.text())
         self.close()
-
-
-class AddSettingBrowser(QDialog):
-    def __init__(self, unit_id, unit_type, parent=None):
-        super(AddSettingBrowser, self).__init__(parent)
-        masterLayout = QVBoxLayout(self)
-        self.resize(400, 450)
-        self.toto = None
-        self.unit_id = unit_id
-        self.unit_type = unit_type
-        self.setWindowTitle('Adicionar Configuração')
-        self.settings_grid = QTableWidget()
-        self.settings_grid.itemDoubleClicked.connect(self.new_setting_click)
-        
-        self.settings_grid.setSelectionBehavior(QTableWidget.SelectRows)
-        self.settings_grid.setSelectionMode(QTableWidget.SingleSelection)
-        self.settings_grid.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.settings_grid.verticalHeader().setDefaultSectionSize(20)
-        self.settings_grid.setAlternatingRowColors(True)
-        self.settings_grid.setStyleSheet("alternate-background-color: #d9f2e6;")
-        self.settings_grid.verticalHeader().setVisible(False)
-        
-        ex_grid.make_grid(self.settings_grid, ['us_id', 'Nome'], [(0, 0), (1, 270)])
-        masterLayout.addWidget(self.settings_grid)
-        sql = '''select ust_id,ust_name,ust_order,ust_group,ust_multi
-                from unit_types_ref, us_types
-                where un_type_ref_class=0 and un_type_ref_unit_type =%s and un_type_ref_setting_id=us_types.ust_id order by ust_name'''
-        hl = libpg.query_many(sql, (unit_type,))
-        ex_grid.grid_std(self.settings_grid, data=hl, f_col=['i', 's'])
-        cancelBtn = QPushButton('Esquece')
-        cancelBtn.clicked.connect(self.cancel_click)
-        masterLayout.addWidget(cancelBtn)
-    
-    def cancel_click(self):
-        self.close()
-    
-    def new_setting_click(self):
-        c = int(self.settings_grid.item(self.settings_grid.currentRow(), 0).text())
-        bc = libpg.query_one('''SELECT us_types.ust_id,  us_types.ust_multi
-                FROM unit_settings
-                INNER JOIN us_types ON (unit_settings.us_act_id = us_types.ust_id)
-                WHERE unit_settings.us_unit_id= %s AND us_act_id=%s ''', (self.unit_id, c))
-        if bc is None:
-            self.close()
-            unit_setup.add_settings_main(unit_id=self.unit_id, act_id=c, unit_type=self.unit_type, terminal_names='')
-        else:
-            if bc[1] is True:
-                self.close()
-                unit_setup.add_settings_main(unit_id=self.unit_id, act_id=c, unit_type=self.unit_type)
-            else:
-                QMessageBox.warning(None,"Erro","Esta configuração já existe\n e não pode ser adicionada novamente!\nTem de ser editada!")
 
 
 class SetText(QDialog):
@@ -542,10 +535,10 @@ class SetText(QDialog):
     
     def save_click(self):
         if self.kwargs['edit']:
-            liblogos.edit_unit_settings(self.kwargs['us_id'], self.text_1.text(), self.text_2.text())
+            liblogos.update_unit_settings(self.kwargs['us_id'], self.text_1.text(), self.text_2.text())
         else:
-            liblogos.add_unit_setting(self.kwargs['unit_id'], self.kwargs['act_id'], self.text_1.text(),
-                                      self.text_2.text())
+            liblogos.insert_unit_setting(self.kwargs['unit_id'], self.kwargs['act_id'], self.text_1.text(),
+                                         self.text_2.text())
         self.close()
 
 
@@ -571,9 +564,9 @@ class SetTextOne(QDialog):
     
     def save_click(self):
         if self.kwargs['edit']:
-            liblogos.edit_unit_settings(self.kwargs['us_id'], self.text_1.text(), '')
+            liblogos.update_unit_settings(self.kwargs['us_id'], self.text_1.text(), '')
         else:
-            liblogos.add_unit_setting(self.kwargs['unit_id'], self.kwargs['act_id'], self.text_1.text(), '')
+            liblogos.insert_unit_setting(self.kwargs['unit_id'], self.kwargs['act_id'], self.text_1.text(), '')
         self.close()
 
 
@@ -601,10 +594,10 @@ class SetArch(QDialog):
     
     def save_click(self):
         if self.kwargs['edit']:
-            liblogos.edit_unit_settings(self.kwargs['us_id'], self.arch.currentText(), self.ip.text())
+            liblogos.update_unit_settings(self.kwargs['us_id'], self.arch.currentText(), self.ip.text())
         else:
-            liblogos.add_unit_setting(self.kwargs['unit_id'], self.kwargs['act_id'], self.arch.currentText(),
-                                      self.ip.text())
+            liblogos.insert_unit_setting(self.kwargs['unit_id'], self.kwargs['act_id'], self.arch.currentText(),
+                                         self.ip.text())
         self.close()
 
 

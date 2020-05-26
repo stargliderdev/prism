@@ -197,7 +197,10 @@ class Assistencia(QDialog):
         toto += self.last_proc['proc_quem'] + ' ' + self.last_proc['proc_contacto'] + '<br>'
         toto += self.last_proc['proc_meio'] + '<br>'
         toto += self.last_proc['proc_reported'] + '<br><hr>'
-        toto += self.last_proc['proc_model'] + '<br>'
+        try:
+            toto += self.last_proc['proc_model'] + '<br>'
+        except TypeError:
+            pass
         self.as_montanteLabel.setHtml(toto)
         self.as_relatorio_interno_montante.setPlainText(self.last_proc['proc_report_internal'])
         self.as_avaria.setText(self.last_proc['proc_reported'])

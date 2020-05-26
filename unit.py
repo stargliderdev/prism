@@ -1,15 +1,17 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from PyQt5.QtWidgets import QDialog, QLabel, QCheckBox, QVBoxLayout, QLineEdit, QAction,QTableWidget,QPushButton, QWidget,\
-     QToolButton, QTabWidget, QTextEdit, QMessageBox, QFileDialog, QErrorMessage,QHBoxLayout, QInputDialog, QComboBox
-from PyQt5.QtGui import QIcon,QPixmap, QFont
 from PyQt5.Qt import Qt
+from PyQt5.QtGui import QIcon, QPixmap, QFont
+from PyQt5.QtWidgets import QDialog, QLabel, QCheckBox, QVBoxLayout, QLineEdit, QAction, QTableWidget, QPushButton, \
+    QWidget, \
+    QToolButton, QTabWidget, QTextEdit, QMessageBox, QFileDialog, QErrorMessage, QHBoxLayout, QInputDialog, QComboBox
 
 import client_edit
 import hardware
 import hardware_edit
 import msg_sms
 import report_display
+import settings_manage
 import smtpmail
 import unit_comitments
 import unit_transfer
@@ -395,16 +397,21 @@ class UnitEdit(QDialog):
     
     def refresh_un_sets(self):
         try:
-            hl = libpg.query_many('''SELECT us_id, us_types.ust_id, us_types.ust_name, unit_settings.us_value1, unit_settings.us_value2
+            hl = libpg.query_many('''SELECT us_id, unit_set_types.unit_set_id, unit_set_types.unit_set_name, unit_settings.us_value1, unit_settings.us_value2
                 FROM unit_settings
-                  INNER JOIN us_types ON (unit_settings.us_act_id = us_types.ust_id)
-                  where us_unit_id = %s order by ust_group,ust_order''', (gl.unit_dict['un_id'],))
+                  INNER JOIN unit_set_types ON (unit_settings.us_act_id = unit_set_types.unit_set_id)
+                  where us_unit_id = %s order by unit_set_group,unit_set_order''', (gl.unit_dict['un_id'],))
             ex_grid.grid_std(self.un_sets, data=hl, f_col=['i', 'i', 's', 's', 's'])
         except TypeError:
             pass
         
     def add_setting(self):
-        form = classes_un.AddSettingBrowser(gl.unit_dict['un_id'], gl.unit_dict['un_type'])
+        print('--------Debug---------')
+        print('add_setting')
+        print(gl.unit_dict['un_id'], gl.unit_dict['un_type'])
+        print('------end debug-------')
+        
+        form = settings_manage.AddSettingBrowser(gl.unit_dict['un_id'], gl.unit_dict['un_type'])
         form.exec_()
         self.refresh_un_sets()
     

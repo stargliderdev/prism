@@ -11,65 +11,6 @@ import libpg
 import ddns_edit
 import software
 
-#
-# def add_comitments_unit(cmt_type, unit_id):
-#     if cmt_type == 15:
-#         form = classes_un.InputDateComits(title='Call Center', eternal=False)
-#         form.exec_()
-#         if form.ret[0]:
-#             c_end = form.ret[1]
-#             if gl.commit_types[cmt_type][6] == 1: # factura
-#                 form = classes_un.InputInvoice()
-#                 form.exec_()
-#                 if form.ret[0]:
-#                     liblogos.add_unit_comitment(unit_id, cmt_type , c_end, form.ret[1], reset=True)
-#     # if cmt_type == 16: # tickets
-#     #     a = liblogos.get_unit_tickets(kwargs['unit_id'])
-#     #     form = classes_un.AddInteger(a, ['Tickets','Tickets Actuais','Tickets'])
-#     #     form.exec_()
-#     #     if form.ret[0]:
-#     #         t_old = form.ret[1]
-#     #         t_add = form.ret[2]
-#     #         if gl.commit_types[kwargs['cmt_type']][6] == 1: # factura
-#     #             form = classes_un.InputInvoice()
-#     #             form.exec_()
-#     #             if form.ret[0]:
-#     #                 liblogos.add_unit_comitment(kwargs['unit_id'], kwargs['cmt_type'], t_add, form.ret[1], reset=True) # adiciona tickects
-#     #                 libpg.execute_query('update comitments_unit set cm_value=%s where cm_unit_id = %s and cm_act_id =17', (int(t_old) + int(t_add), kwargs['unit_id']))
-#     if cmt_type == 18: # users
-#         form = classes_un.AddInteger(-1, ['Utilizadores','Utilizadores Actuais','Utilizadores'])
-#         form.exec_()
-#         if form.ret[0]:
-#             t_add = form.ret[2]
-#             form = classes_un.InputInvoice()
-#             form.exec_()
-#             if form.ret[0]:
-#                 liblogos.add_unit_comitment(unit_id,cmt_type, t_add, form.ret[1], reset=True) # adiciona tickects
-#
-#     if cmt_type == 12:
-#         form = classes_un.InputDateComits(title='Data do contracto', eternal=True)
-#         form.exec_()
-#         if form.ret[0]:
-#             # liblogos.set_unit_comitment(unit_id, cmt_type, form.ret[1])
-#             liblogos.add_unit_comitment(unit_id, cmt_type, form.ret[1], invoice='', reset=True)
-#
-#     if cmt_type == 13:
-#         form = classes_un.InputDateComits(title='Data de Bloqueio', eternal=True)
-#         form.exec_()
-#         if form.ret[0]:
-#             liblogos.add_unit_comitment(unit_id, cmt_type, form.ret[1], invoice='', reset=True)
-#     if cmt_type == 21:
-#         b, ok = QInputDialog.getText(self, "Código IWS", "Código", QLineEdit.Normal)
-#         if ok and not b == '':
-#             pass
-#         else:
-#             pass
-#         # form = classes_un.SetTextCommit(unit_id, cmt_type,'Código IWS', 'Código')
-#         # form.exec_()
-#     # if cmt_type == 22:
-#     #     form = classes_un.SetTextCommit( title='AGD Password', unit_id, cmt_type,field1='Código', reset=True)
-#     #     form.exec_()
-
 
 def edit_contact_main(ct_id, unit_id, title, v1, v2, way):
     pass
@@ -82,7 +23,7 @@ def add_settings_main(**kwargs):
             form = software.SoftwareBrowser({'unit_type': kwargs['unit_type']})
             form.exec_()
             if form.ret[0]:
-                liblogos.add_unit_setting(unit_id,1, form.ret[1], form.ret[2])
+                liblogos.insert_unit_setting(unit_id, 1, form.ret[1], form.ret[2])
                 liblogos.software_update_settings(unit_id)
         elif act_id == 2:
             form = classes_un.TerminalsDialog(edit=False, unit_id=kwargs['unit_id'], act_id=kwargs['act_id'])
@@ -153,7 +94,7 @@ def edit_settings_main(**kwargs):
             form = software.SoftwareBrowser({'unit_type': kwargs['unit_type']})
             form.exec_()
             if form.ret[0]:
-                liblogos.edit_unit_settings(kwargs['us_id'],form.ret[1], form.ret[2])
+                liblogos.update_unit_settings(kwargs['us_id'], form.ret[1], form.ret[2])
                 liblogos.software_update_settings(kwargs['unit_id'])
         elif kwargs['act_id'] == 2:
             form = classes_un.TerminalsDialog(edit=True, us_id=kwargs['us_id'],names=kwargs['v2'])
