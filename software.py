@@ -44,8 +44,8 @@ class SoftwareBrowser(QDialog):
         self.software_refresh()
      
     def software_refresh(self):
-        f = ' sft_active = True and sft_software_type  =' + str(self.software_dict['unit_type'])
-        if self.software_dict['unit_type'] == 0:
+        f = ' sft_active = True and sft_software_type  =' + str(self.software_dict['un_type'])
+        if self.software_dict['un_type'] == 0:
             f = ' sft_software_type >0'
         sql = '''SELECT sft_id, sft_software
                     from software_type
@@ -56,7 +56,7 @@ class SoftwareBrowser(QDialog):
     def version_refresh(self):
         sft_id = int(self.softwareGrid.item(self.softwareGrid.currentRow(), 0).text())
         f = ''' sversion_active= True and sversion_software_id=''' + str(sft_id)
-        if self.software_dict['unit_type'] == 0:
+        if self.software_dict['un_type'] == 0:
             f = ''' sversion_software_id=''' + str(sft_id)
         sql = '''SELECT sversion_id, sversion_name, cast(sversion_free as TEXT)
                  from software_version

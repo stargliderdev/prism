@@ -81,7 +81,7 @@ class ReportTool(QDialog):
                 self.setWindowTitle(self.reportTypeCbx.currentText())
         elif report == 'versão do software':
             """unidades por softwate"""
-            form = software.SoftwareBrowser({'unit_type': 0})
+            form = software.SoftwareBrowser({'un_type': 0})
             form.exec_()
             if form.ret[0]:
                 sql = ''' SELECT  un_id, un_nome, un_localidade, un_cp, area_name

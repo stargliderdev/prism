@@ -584,7 +584,7 @@ class MainWindow(QMainWindow):
                 self.filterLabel.setText(self.report_dict['report_name'] + ':' + form.ret['brand_name'] + ':' + form.ret['model_name'] + ':' + form.ret['hw_type_name'])
         elif self.report_dict['report_id'] == 2:
             """unidades por softwate"""
-            form = software.SoftwareBrowser({'unit_type': 0})
+            form = software.SoftwareBrowser({'un_type': 0})
             form.exec_()
             if form.ret[0]:
                 sql = ''' SELECT  un_id, un_nome, 'n/d',un_localidade, un_cp, area_name
@@ -848,8 +848,8 @@ class MainWindow(QMainWindow):
 
 
 def check_alive():
-    print('check alive ')
-    print('            ', gl.db_host)
+    # print('check alive ')
+    # print('            ', gl.db_host)
     # print('            ', gl.db_user)
     gl.conn_string = "host=" + gl.db_host + " dbname=" + gl.db_database + " port=" + gl.db_port + " user=" + gl.db_user + " password=" + gl.db_password
 
@@ -858,7 +858,7 @@ def check_alive():
         cur = conn.cursor()
         conn.set_client_encoding('UTF8')
         cur.execute('Select * from unidades')
-        print('ligado a', gl.db_host)
+        # print('ligado a', gl.db_host)
         return True
     except Exception as e:  # psycopg2.DatabaseError:
         stdio.log_write('update.log', str(e))

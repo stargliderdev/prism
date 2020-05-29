@@ -61,7 +61,7 @@ def copy_cl_external():
 def insert_unit_type_ref():
     libpg.execute_query('''delete from unit_types_ref''')
     commit_types = libpg.query_many('''select cmt_id from comit_types where cmt_active=True''')
-    settings_types = libpg.query_many('''select ust_id from us_types where ust_active=True''')
+    settings_types = libpg.query_many('''select unit_set_id from unit_set_types where unit_set_active=True''')
     for f in range(1,8):
         for n in commit_types:
             sql = 'insert into unit_types_ref ( un_type_ref_class, un_type_ref_unit_type, un_type_ref_setting_id) VALUES (%s,%s,%s) '

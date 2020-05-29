@@ -321,11 +321,11 @@ class InputInvoice(QDialog):
 
 
 class DbmsDialog(QDialog):
-    def __init__(self, parent=None, **kwargs):
+    def __init__(self, setting_key, title, data=None, parent=None):
         super(DbmsDialog, self).__init__(parent)
-        self.setWindowTitle('Altera Motor de Base de Dados')
+        self.setWindowTitle(title)
         masterLayout = QVBoxLayout(self)
-        self.kwargs = kwargs
+        self.setting_key = setting_key
         self.dbms_grd = QTableWidget()
         self.dbms_grd.setSelectionBehavior(QTableWidget.SelectRows)
         self.dbms_grd.setSelectionMode(QTableWidget.SingleSelection)
@@ -342,19 +342,17 @@ class DbmsDialog(QDialog):
         masterLayout.addLayout(qc.addHLayout([cancelBtn]))
         hl = libpg.sql_query('''SELECT db_edition from dbms
                 where  db_active = True and substring(db_unit_type from ''' + str(
-            kwargs['unit_type']) + ''' for 1) = '1'  order by db_order ASC''')
+            gl.unit_dict['un_type']) + ''' for 1) = '1'  order by db_order ASC''')
         ex_grid.grid_std(self.dbms_grd, data=hl, f_col=['s'])
     
     def cancel_btn_click(self):
         self.close()
     
     def save_click(self):
-        if self.kwargs['edit']:
-            liblogos.update_unit_settings(self.kwargs['us_id'], self.dbms_grd.item(self.dbms_grd.currentRow(), 0).text(),
-                                        '')
+        if self.data is None:
+            liblogos.insert_unit_setting(gl.unit_dict['un_id'], 8, self.dbms_grd.item(self.dbms_grd.currentRow(), 0).text(), '')
         else:
-            liblogos.insert_unit_setting(self.kwargs['unit_id'], self.kwargs['act_id'],
-                                         self.dbms_grd.item(self.dbms_grd.currentRow(), 0).text(), '')
+            liblogos.update_unit_settings(self.setting_key, self.dbms_grd.item(self.dbms_grd.currentRow(), 0).text(), '')
         self.close()
 
 
@@ -436,76 +434,153 @@ class ProductionPrinters(QDialog):
 
 
 class InputTwoString(QDialog):
-    def __init__(self, unit_id, setting_type, edit=False, parent=None):
-        super(ProductionPrinters, self).__init__(parent)
-        # self.kwargs = kwargs
-        self.edit = edit
-        self.names = names
-        self.count = count
-        self.unit_id = unit_id
-        self.setting_type = setting_type
+    """a setting key pode ser o tipo de setting se for novo ou o us_id se for para editar"""
+    def __init__(self, setting_key, title, form_string, data=None, parent=None):
+        super(InputTwoString, self).__init__(parent)
+        form_string = form_string.split(';')
+        self.setting_key = setting_key
+        self.data = data
         self.setWindowTitle(title)
         masterLayout = QVBoxLayout(self)
         self.rprinter_cnt = QLineEdit()
-        # self.rprinter_cnt.setInputMask('DD')
-        masterLayout.addLayout(qc.addHLayout(['Quantidade', self.rprinter_cnt, True], lw=180))
+        masterLayout.addLayout(qc.addHLayout([form_string[0], self.rprinter_cnt, True], lw=180))
         self.rPrinterEdt = QLineEdit()
         self.rPrinterEdt.setMinimumWidth(200)
-        masterLayout.addLayout(qc.addHLayout([label_title, self.rPrinterEdt, True], lw=180))
-        
+        masterLayout.addLayout(qc.addHLayout([form_string[1], self.rPrinterEdt, True], lw=180))
         okBtn = QPushButton('Valida')
         okBtn.clicked.connect(self.save_click)
         cancelBtn = QPushButton('Cancela')
         cancelBtn.clicked.connect(self.cancel_btn_click)
-        
         masterLayout.addLayout(qc.addHLayout([okBtn, cancelBtn]))
         
-        if self.edit == False:
-            self.rprinter_cnt.setText('1')
+        if data is None:
+            pass
         else:
-            self.rprinter_cnt.setText(self.count)
-            self.rPrinterEdt.setText(self.names)
+            self.rprinter_cnt.setText(data[0])
+            self.rPrinterEdt.setText(data[1])
     
     def cancel_btn_click(self):
         self.close()
     
     def save_click(self):
         """edita"""
-        if self.edit:
-            liblogos.update_unit_settings(self.us_id, self.rprinter_cnt.text(), self.rPrinterEdt.text())
-        else:  # adiciona
-            liblogos.insert_unit_setting(self.unit_id, self.setting_type, self.rprinter_cnt.text(),
-                                         self.rPrinterEdt.text())
+        if self.data is None:
+            """não tem dados so pode ser nova"""
+            liblogos.insert_unit_setting(gl.unit_dict['un_id'], self.setting_key, self.rprinter_cnt.text(), self.rPrinterEdt.text())
+        else:
+            """tem dados edita"""
+            liblogos.update_unit_settings(self.setting_key, self.rprinter_cnt.text(), self.rPrinterEdt.text())
         self.close()
 
-class SetIsp(QDialog):
-    def __init__(self, parent=None, **kwargs):
-        super(SetIsp, self).__init__(parent)
-        self.setWindowTitle('Fornecedor de Internet')
+
+class InputOneString(QDialog):
+    """a setting key pode ser o tipo de setting se for novo ou o us_id se for para editar"""
+    def __init__(self, setting_key, title, form_string, data=None, parent=None):
+        super(InputOneString, self).__init__(parent)
+        form_string = form_string.split(';')
+        self.setting_key = setting_key
+        self.data = data
+        self.setWindowTitle(title)
         masterLayout = QVBoxLayout(self)
-        self.kwargs = kwargs
-        self.isp_b = QComboBox()
-        self.isp_b.setEditable(True)
-        self.isp_b.addItems(['Meo', 'Vodafone', 'Telepac', 'Nos', 'Cabovisão'])
-        self.isp_b.setEditText(kwargs['v1'])
-        self.gateway_b = QLineEdit()
-        self.gateway_b.setText(kwargs['v2'])
+        self.rprinter_cnt = QLineEdit()
+        masterLayout.addLayout(qc.addHLayout([form_string[0], self.rprinter_cnt, True], lw=180))
         okBtn = QPushButton('Valida')
         okBtn.clicked.connect(self.save_click)
         cancelBtn = QPushButton('Cancela')
         cancelBtn.clicked.connect(self.cancel_btn_click)
-        masterLayout.addLayout(qc.addVLayout(['Fornce. Internet ', self.isp_b, 'Gateway', self.gateway_b, True]))
         masterLayout.addLayout(qc.addHLayout([okBtn, cancelBtn]))
+        
+        if data is None:
+            pass
+        else:
+            self.rprinter_cnt.setText(data[0])
     
     def cancel_btn_click(self):
         self.close()
     
     def save_click(self):
-        if self.kwargs['edit']:
-            liblogos.update_unit_settings(self.kwargs['us_id'], self.isp_b.currentText(), self.gateway_b.text())
+        """edita"""
+        if self.data is None:
+            """não tem dados so pode ser nova"""
+            liblogos.insert_unit_setting(gl.unit_dict['un_id'], self.setting_key, self.rprinter_cnt.text(),'')
         else:
-            liblogos.insert_unit_setting(self.kwargs['unit_id'], 12, self.isp_b.currentText(), self.gateway_b.text())
+            """tem dados edita"""
+            liblogos.update_unit_settings(self.setting_key, self.rprinter_cnt.text(), '')
         self.close()
+
+
+# class SetISP(QDialog):
+#     """a setting key pode ser o tipo de setting se for novo ou o us_id se for para editar"""
+#     def __init__(self, setting_key, title, form_string, data=None, parent=None):
+#         super(SetISP, self).__init__(parent)
+#         form_string = form_string.split(';')
+#         self.setting_key = setting_key
+#         self.data = data
+#         self.setWindowTitle('Fornecedor de Internet')
+#         masterLayout = QVBoxLayout(self)
+#         self.isp_b = QComboBox()
+#         self.isp_b.setEditable(True)
+#         self.isp_b.addItems(['Meo', 'Vodafone', 'Telepac', 'Nos', 'Cabovisão'])
+#         self.isp_b.setEditText(form_string[0])
+#         self.gateway_b = QLineEdit()
+#         self.gateway_b.setText(form_string[1])
+#         okBtn = QPushButton('Valida')
+#         okBtn.clicked.connect(self.save_click)
+#         cancelBtn = QPushButton('Cancela')
+#         cancelBtn.clicked.connect(self.cancel_btn_click)
+#         masterLayout.addLayout(qc.addVLayout(['Fornce. Internet ', self.isp_b, 'Gateway', self.gateway_b, True]))
+#         masterLayout.addLayout(qc.addHLayout([okBtn, cancelBtn]))
+#
+#         if data is None:
+#             pass
+#         else:
+#             self.rprinter_cnt.setText(data[0])
+#             self.rPrinterEdt.setText(data[1])
+#
+#     def cancel_btn_click(self):
+#         self.close()
+#
+#     def save_click(self):
+#         """edita"""
+#         if self.data is None:
+#             """não tem dados so pode ser nova"""
+#             liblogos.insert_unit_setting(gl.unit_dict['un_id'], self.setting_key, self.isp_b.currentText(),
+#                                          self.gateway_b.text())
+#         else:
+#             """tem dados edita"""
+#             liblogos.update_unit_settings(self.setting_key, self.isp_b.text(), self.gateway_b.text())
+#         self.close()
+#
+        
+
+# class SetIsp(QDialog):
+#     def __init__(self, parent=None, **kwargs):
+#         super(SetIsp, self).__init__(parent)
+#         self.setWindowTitle('Fornecedor de Internet')
+#         masterLayout = QVBoxLayout(self)
+#         self.kwargs = kwargs
+#         self.isp_b = QComboBox()
+#         self.isp_b.setEditable(True)
+#         self.isp_b.addItems(['Meo', 'Vodafone', 'Telepac', 'Nos', 'Cabovisão'])
+#         self.isp_b.setEditText(kwargs['v1'])
+#         self.gateway_b = QLineEdit()
+#         self.gateway_b.setText(kwargs['v2'])
+#         okBtn = QPushButton('Valida')
+#         okBtn.clicked.connect(self.save_click)
+#         cancelBtn = QPushButton('Cancela')
+#         cancelBtn.clicked.connect(self.cancel_btn_click)
+#         masterLayout.addLayout(qc.addVLayout(['Fornce. Internet ', self.isp_b, 'Gateway', self.gateway_b, True]))
+#         masterLayout.addLayout(qc.addHLayout([okBtn, cancelBtn]))
+#
+#     def cancel_btn_click(self):
+#         self.close()
+#
+#     def save_click(self):
+#         if self.kwargs['edit']:
+#             liblogos.update_unit_settings(self.kwargs['us_id'], self.isp_b.currentText(), self.gateway_b.text())
+#         else:
+#             liblogos.insert_unit_setting(self.kwargs['unit_id'], 12, self.isp_b.currentText(), self.gateway_b.text())
+#         self.close()
 
 
 class SetText(QDialog):

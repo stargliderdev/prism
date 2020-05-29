@@ -72,8 +72,8 @@ class SeetingsManager(QDialog):
         b = int(self.unitTypesGrid.item(self.unitTypesGrid.currentRow(), 0).text())
         setting_type = self.settingTypeCBox.currentIndex()
         if setting_type== 0 :
-            sql = '''select un_type_ref_id, ust_name from unit_types_ref, us_types
-                    where unit_types_ref.un_type_ref_setting_id=us_types.ust_id and unit_types_ref.un_type_ref_unit_type=%s and un_type_ref_class = %s   '''
+            sql = '''select un_type_ref_id, unit_set_name from unit_types_ref, unit_set_types
+                    where unit_types_ref.un_type_ref_setting_id=unit_set_types.unit_set_id and unit_types_ref.un_type_ref_unit_type=%s and un_type_ref_class = %s   '''
             dataset = libpg.query_many(sql, (b, setting_type))
         else:
             sql = '''select un_type_ref_id, cmt_name from unit_types_ref, comit_types
@@ -109,14 +109,14 @@ class SeetingsManager(QDialog):
             if self.settingTypeCBox.currentIndex() == 0:
                 form = ShowSettingsBrowser()
                 form.exec_()
-                if form.ret['ust_id'] > 0:
-                    print('insert ', unit_type, 'in', form.ret['ust_id'])
+                if form.ret['unit_set_id'] > 0:
+                    print('insert ', unit_type, 'in', form.ret['unit_set_id'])
                     libpg.execute_query(
                         'DELETE FROM unit_types_ref WHERE un_type_ref_unit_type= %s and un_type_ref_setting_id=%s',
-                        (unit_type, form.ret['ust_id']))
+                        (unit_type, form.ret['unit_set_id']))
                     libpg.execute_query(
                         'INSERT INTO unit_types_ref (un_type_ref_class, un_type_ref_unit_type, un_type_ref_setting_id) values (0,%s,%s)',
-                        (unit_type, form.ret['ust_id']))
+                        (unit_type, form.ret['unit_set_id']))
 
             elif self.settingTypeCBox.currentIndex() == 1:
                 form = ShowCommitementsBrowser()
@@ -186,7 +186,7 @@ class ShowSettingsBrowser(QDialog):
     def __init__(self, parent=None):
         super(ShowSettingsBrowser, self).__init__(parent)
         masterLayout = QVBoxLayout(self)
-        self.ret = {'ust_id': 0}
+        self.ret = {'unit_set_id': 0}
         self.resize(600, 300)
         self.setWindowTitle('Adiciona Tipo de Configuração')
         self.settingsGrid = QTableWidget()
@@ -202,13 +202,13 @@ class ShowSettingsBrowser(QDialog):
         
         ex_grid.make_grid(self.settingsGrid, ['cm_id', 'Nome'], [(0, 0), (1, 270)])
         masterLayout.addWidget(self.settingsGrid)
-        hl = libpg.query_many('''SELECT ust_id, ust_name
-        FROM us_types where ust_active = True
-          ORDER BY ust_group, ust_order''', (True,))
+        hl = libpg.query_many('''SELECT unit_set_id, unit_set_name
+        FROM unit_set_types where unit_set_active = True
+          ORDER BY unit_set_group, unit_set_order''', (True,))
         ex_grid.grid_std(self.settingsGrid, data=hl, f_col=['i', 's'])
     
     def add_commit_click(self):
-        self.ret = {'ust_id': int(self.settingsGrid.item(self.settingsGrid.currentRow(), 0).text())}
+        self.ret = {'unit_set_id': int(self.settingsGrid.item(self.settingsGrid.currentRow(), 0).text())}
         self.close()
 
 def main():

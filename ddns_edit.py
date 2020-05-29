@@ -81,7 +81,10 @@ class DdnsEdit(QDialog):
         cancelBtn.clicked.connect(self.cancel_btn_click)
         
         masterLayout.addLayout(qc.addHLayout([okBtn, testBtn, cancelBtn]))
-        if self.unit_setting_id == -1:
+        # if self.unit_setting_id == -1:
+        #     pass
+        # else:
+        if self.ddns is None:
             pass
         else:
             self.ddnsEdt.setText(self.ddns)

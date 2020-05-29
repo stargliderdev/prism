@@ -50,7 +50,6 @@ DEVELOP = True
 VERSION = '2020.05.21'
 version = 12
 if DEVELOP:
-    print('DEVELOP MODE')
     db_host = '192.168.0.250'
 db_database = 'prism'
 dsSoftType = {}

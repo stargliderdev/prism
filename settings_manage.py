@@ -7,11 +7,12 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, \
     QMessageBox, QTableWidget
 
 import classes_un
+import ddns_edit
 import ex_grid
 import liblogos
 import libpg
 import software
-
+import parameters as gl
 
 class AddSettingBrowser(QDialog):
     def __init__(self, unit_id, unit_type, parent=None):
@@ -35,9 +36,9 @@ class AddSettingBrowser(QDialog):
         
         ex_grid.make_grid(self.settings_grid, ['us_id', 'Nome'], [(0, 0), (1, 270)])
         masterLayout.addWidget(self.settings_grid)
-        sql = '''select ust_id,ust_name,ust_order,ust_group,ust_multi
-                from unit_types_ref, us_types
-                where un_type_ref_class=0 and un_type_ref_unit_type =%s and un_type_ref_setting_id=us_types.ust_id order by ust_name'''
+        sql = '''select unit_set_id,unit_set_name,unit_set_order,unit_set_group,unit_set_multi
+                from unit_types_ref, unit_set_types
+                where un_type_ref_class=0 and un_type_ref_unit_type =%s and un_type_ref_setting_id=unit_set_types.unit_set_id order by unit_set_name'''
         hl = libpg.query_many(sql, (unit_type,))
         ex_grid.grid_std(self.settings_grid, data=hl, f_col=['i', 's'])
         cancelBtn = QPushButton('Esquece')
@@ -49,37 +50,58 @@ class AddSettingBrowser(QDialog):
     
     def new_setting_click(self):
         """adiciona settings"""
-        c = int(self.settings_grid.item(self.settings_grid.currentRow(), 0).text())
-        bc = libpg.query_one('''SELECT us_types.ust_id,  us_types.ust_multi
+        setting_id = int(self.settings_grid.item(self.settings_grid.currentRow(), 0).text())
+        title = self.settings_grid.item(self.settings_grid.currentRow(), 1).text()
+        current_settting = libpg.query_one('''SELECT unit_set_types.unit_set_name,  unit_set_types.unit_set_multi
                 FROM unit_settings
-                INNER JOIN us_types ON (unit_settings.us_act_id = us_types.ust_id)
-                WHERE unit_settings.us_unit_id= %s AND us_act_id=%s ''', (self.unit_id, c))
-        print('--------Debug---------')
-        print('new_setting_click, BC')
-        print(bc)
-        print('------end debug-------')
-        
-        if bc is None:
-            """não tem settings"""
+                INNER JOIN unit_set_types ON (unit_settings.us_act_id = unit_set_types.unit_set_id)
+                WHERE unit_settings.us_unit_id= %s AND us_act_id=%s ''', (self.unit_id, setting_id))
+        setting_type = libpg.query_one('select unit_set_form, unit_set_strings from unit_set_types where unit_set_id = %s', (setting_id,))
+        if current_settting is None:
+            """não tem este settings"""
             self.close()
-            settings_add_edit(self.unit_id, c, self.unit_type, terminal_names='')
+            settings_form_parser(setting_id, title, setting_type[0], setting_type[1], data=None)
+    
         else:
-            if bc[1] is True:
-                """ tem setting pode editar"""
+            if current_settting[1] is True:
+                """ tem setting pode editar e permite mais de um"""
                 self.close()
-                settings_add_edit(unit_id=self.unit_id, act_id=c, unit_type=self.unit_type)
-                
+                settings_form_parser(setting_id, title, setting_type[0],setting_type[1], data=None)
             else:
                 """ tem setting mas não é editavel"""
                 QMessageBox.warning(None, "Erro",
                                     "Esta configuração já existe\n e não pode ser adicionada novamente!\nTem de ser editada!")
 
 
+def settings_form_parser(set_id, title, frm_type, set_strings, data=None):
+    if frm_type == 'STR2':
+        form = classes_un.InputTwoString(set_id, title, set_strings, data)
+        form.exec_()
+    elif frm_type == 'STR1':
+        form = classes_un.InputOneString(set_id, title, set_strings, data)
+        form.exec_()
+    elif frm_type == 'SP01':
+        """DDNS"""
+        form = ddns_edit.DdnsEdit(set_id , data[0], data[1])
+        form.exec_()
+    elif frm_type == 'SOFT':
+        """software"""
+        form = software.SoftwareBrowser(gl.unit_dict) # 'unit_type': unit_type})
+        form.exec_()
+        if form.ret[0]:
+            liblogos.insert_unit_setting(gl.unit_dict['un_id'], 1, form.ret[1], form.ret[2])
+            liblogos.software_update_settings(gl.unit_dict['un_id'])
+
+    elif frm_type == 'DBS02':
+        print('call DB02')
+        form = classes_un.DbmsDialog(set_id, title, data=None)
+        form.exec_()
+        
+
+
 def settings_add_edit(unit_id, setting_id, unit_type,terminal_names):
-    # unit_id = kwargs['unit_id']
-    # setting_id = kwargs['act_id']
     if setting_id == 1:
-        form = software.SoftwareBrowser({'unit_type': unit_type})
+        form = software.SoftwareBrowser({'un_type': unit_type})
         form.exec_()
         if form.ret[0]:
             liblogos.insert_unit_setting(unit_id, 1, form.ret[1], form.ret[2])
@@ -87,23 +109,23 @@ def settings_add_edit(unit_id, setting_id, unit_type,terminal_names):
     elif setting_id == 2:
         form = classes_un.TerminalsDialog(unit_id, setting_id,edit=False)
         form.exec_()
-    elif setting_id == 3:
-        form = classes_un.ProductionPrinters(unit_id, ptype=3, count=0, title='Adicionar Monitores de Pedidos', label_title='Monitores',edit=False)
-        form.exec_()
-    elif setting_id == 5:
-        form = classes_un.ProductionPrinters(edit=False, unit_id=unit_id, ptype=5,
-                                             title='Adicionar Impressoras de Contas',
-                                             label_title='Impressoras de Contas')
-        form.exec_()
-    elif setting_id == 6:
-        form = classes_un.ProductionPrinters(edit=False, unit_id=unit_id, ptype=6,
-                                             title='Adicionar Impressoras de Pedidos',
-                                             label_title='Impressoras de Pedidos')
-        form.exec_()
-    elif setting_id == 7:
-        form = classes_un.ProductionPrinters(edit=False, unit_id=unit_id, ptype=7, title='Adicionar Sessões RDP',
-                                             label_title='Sessões RDP')
-        form.exec_()
+    # elif setting_id == 3:
+    #     form = classes_un.ProductionPrinters(unit_id, ptype=3, count=0, title='Adicionar Monitores de Pedidos', label_title='Monitores',edit=False)
+    #     form.exec_()
+    # elif setting_id == 5:
+    #     form = classes_un.ProductionPrinters(edit=False, unit_id=unit_id, ptype=5,
+    #                                          title='Adicionar Impressoras de Contas',
+    #                                          label_title='Impressoras de Contas')
+    #     form.exec_()
+    # elif setting_id == 6:
+    #     form = classes_un.ProductionPrinters(edit=False, unit_id=unit_id, ptype=6,
+    #                                          title='Adicionar Impressoras de Pedidos',
+    #                                          label_title='Impressoras de Pedidos')
+    #     form.exec_()
+    # elif setting_id == 7:
+    #     form = classes_un.ProductionPrinters(edit=False, unit_id=unit_id, ptype=7, title='Adicionar Sessões RDP',
+    #                                          label_title='Sessões RDP')
+    #     form.exec_()
     elif setting_id == 8:
         form = classes_un.DbmsDialog(edit=False, unit_id=kwargs['unit_id'], act_id=kwargs['act_id'],
                                      unit_type=kwargs['unit_type'])
@@ -122,28 +144,28 @@ def settings_add_edit(unit_id, setting_id, unit_type,terminal_names):
         # á data de instalação adicionar um compromisso de alpha + 30 dias
         if form.ret[0]:
             liblogos.add_unit_comitment(unit_id, 15, form.ret[1] + datetime.timedelta(days=30), 'auto', reset=True)
-    elif setting_id == 12:
-        form = classes_un.SetIsp(unit_id=kwargs['unit_id'], edit=False, v1='NOS', v2='192.168.1.1')
-        form.exec_()
-    elif setting_id == 13:
-        form = ddns_edit.DdnsEdit(-1, '', '')
-        form.exec_()
-    elif setting_id == 14:
-        form = classes_un.SetText(act_id=setting_id, unit_id=unit_id, edit=False, field1='ID', field2='Obs',
-                                  title='TeamViewer', v1='Servidor ID', v2='Nome')
-        form.exec_()
-    elif setting_id == 15:
-        form = classes_un.SetText(act_id=setting_id, unit_id=unit_id, edit=False, field1='ID', field2='Posto',
-                                  title='TeamViewer Posto', v1='Posto ID', v2='Nome')
-        form.exec_()
-    elif setting_id == 16:
-        form = classes_un.SetText(act_id=setting_id, unit_id=unit_id, edit=False, field1='ID', field2='Obs',
-                                  title='AnyDesk', v1='Servidor ID', v2='Nome')
-        form.exec_()
-    elif setting_id == 17:
-        form = classes_un.SetText(act_id=setting_id, unit_id=unit_id, edit=False, field1='ID', field2='Posto',
-                                  title='AnyDesk Posto', v1='Posto ID', v2='Nome')
-        form.exec_()
+    # elif setting_id == 12:
+    #     form = classes_un.SetIsp(unit_id=kwargs['unit_id'], edit=False, v1='NOS', v2='192.168.1.1')
+    #     form.exec_()
+    # elif setting_id == 13:
+    #     form = ddns_edit.DdnsEdit(-1, '', '')
+    #     form.exec_()
+    # elif setting_id == 14:
+    #     form = classes_un.SetText(act_id=setting_id, unit_id=unit_id, edit=False, field1='ID', field2='Obs',
+    #                               title='TeamViewer', v1='Servidor ID', v2='Nome')
+    #     form.exec_()
+    # elif setting_id == 15:
+    #     form = classes_un.SetText(act_id=setting_id, unit_id=unit_id, edit=False, field1='ID', field2='Posto',
+    #                               title='TeamViewer Posto', v1='Posto ID', v2='Nome')
+    #     form.exec_()
+    # elif setting_id == 16:
+    #     form = classes_un.SetText(act_id=setting_id, unit_id=unit_id, edit=False, field1='ID', field2='Obs',
+    #                               title='AnyDesk', v1='Servidor ID', v2='Nome')
+    #     form.exec_()
+    # elif setting_id == 17:
+    #     form = classes_un.SetText(act_id=setting_id, unit_id=unit_id, edit=False, field1='ID', field2='Posto',
+    #                               title='AnyDesk Posto', v1='Posto ID', v2='Nome')
+    #     form.exec_()
     elif setting_id == 19:
         form = classes_un.SetTextOne(act_id=setting_id, unit_id=unit_id, edit=False, field1='Password',
                                      title='Backoffice Password')
@@ -163,6 +185,7 @@ def settings_add_edit(unit_id, setting_id, unit_type,terminal_names):
 
 
 def edit_settings_main(**kwargs):
+    """APAGAR """
     if kwargs is not None:
         # act_id = kwargs['act_id']
         if kwargs['act_id'] == 1:

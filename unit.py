@@ -406,22 +406,19 @@ class UnitEdit(QDialog):
             pass
         
     def add_setting(self):
-        print('--------Debug---------')
-        print('add_setting')
-        print(gl.unit_dict['un_id'], gl.unit_dict['un_type'])
-        print('------end debug-------')
-        
         form = settings_manage.AddSettingBrowser(gl.unit_dict['un_id'], gl.unit_dict['un_type'])
         form.exec_()
         self.refresh_un_sets()
     
     def edit_setting(self):
         us_id = int(self.un_sets.item(self.un_sets.currentRow(), 0).text())
-        us_act_id = int(self.un_sets.item(self.un_sets.currentRow(), 1).text())
         v1 = self.un_sets.item(self.un_sets.currentRow(), 3).text()
         v2 = self.un_sets.item(self.un_sets.currentRow(), 4).text()
-        unit_setup.edit_settings_main(us_id=us_id, act_id=us_act_id, unit_type=gl.unit_dict['un_type'],
-                                      unit_id=gl.unit_dict['un_id'], v1=v1, v2=v2)
+        setting_data = libpg.query_one('''SELECT unit_set_form, unit_set_strings, unit_set_multi, unit_set_name, us_id, us_unit_id, us_act_id, us_value1, us_value2
+                                            FROM unit_settings
+                                            INNER JOIN unit_set_types on us_act_id=unit_set_id
+                                            WHERE us_id= %s''', (us_id,))
+        settings_manage.settings_form_parser(us_id, setting_data[3], setting_data[0], setting_data[1], data=(v1, v2))
         self.refresh_un_sets()
     
     def del_setting_click(self):

@@ -411,9 +411,7 @@ def edit_unit_contacts(index, value1, value2):
 
 def update_unit_settings(index, value1, value2):
     libpg.execute_query('''UPDATE unit_settings SET us_value1 =%s, us_value2 = %s
-                                WHERE us_id = %s''',
-                        (value1, value2, index))
-
+                                WHERE us_id = %s''', (value1, value2, index))
 
 def insert_unit_setting(unit, setting, value1='', value2=''):
     ''' o ultimo registo criado, para que possa ser editado'''
