@@ -252,10 +252,11 @@ class InputDateComits(QDialog):
 
 
 class InputDateSettings(QDialog):
-    def __init__(self, parent=None, **kwargs):
+    def __init__(self,setting_key, title, form_string, data=None, parent=None):
         super(InputDateSettings, self).__init__(parent)
-        self.setWindowTitle(kwargs['title'])
-        self.kwargs = kwargs
+        self.setWindowTitle(title)
+        self.setting_key = setting_key
+        self.data = data
         self.ret = (False,)
         masterLayout = QVBoxLayout(self)
         self.calendarQCalendarWidget = QCalendarWidget()
@@ -263,7 +264,7 @@ class InputDateSettings(QDialog):
         masterLayout.addWidget(self.calendarQCalendarWidget)
         lifetime_Btn = QPushButton('Vitalicio')
         lifetime_Btn.clicked.connect(self.lifetime_click)
-        lifetime_Btn.setVisible(kwargs['eternal'])
+        lifetime_Btn.setVisible(True)
         okBtn = QPushButton('Valida')
         okBtn.clicked.connect(self.save_click)
         cancelBtn = QPushButton('Cancela')
@@ -275,20 +276,20 @@ class InputDateSettings(QDialog):
         self.close()
     
     def save_click(self):
-        if self.kwargs['edit']:  # edita
-            liblogos.update_unit_settings(self.kwargs['us_id'],
-                                          self.calendarQCalendarWidget.selectedDate().toPyDate().strftime('%Y-%m-%d'), '')
+        if self.data is None:  
+            print('insert')
+            liblogos.insert_unit_setting(gl.unit_dict['un_id'], self.setting_key, self.calendarQCalendarWidget.selectedDate().toPyDate().strftime('%Y-%m-%d'), '')
         else:
-            liblogos.insert_unit_setting(self.kwargs['unit_id'], self.kwargs['act_id'],
-                                         self.calendarQCalendarWidget.selectedDate().toPyDate().strftime('%Y-%m-%d'), '')
+            print('update')
+            liblogos.update_unit_settings(self.setting_key, self.calendarQCalendarWidget.selectedDate().toPyDate().strftime('%Y-%m-%d'), '')
         self.ret = (True, self.calendarQCalendarWidget.selectedDate().toPyDate())
         self.close()
     
     def lifetime_click(self):
         if self.us_id == -1:
-            liblogos.insert_unit_setting(self.unit_id, 103, datetime.datetime(2050, 0o1, 0o1).strftime('%Y-%m-%d'))
+            liblogos.insert_unit_setting(gl.unit_dict['un_id'], self.setting_key, datetime.datetime(2050, 0o1, 0o1).strftime('%Y-%m-%d'))
         else:
-            liblogos.update_unit_settings(self.us_id, 103, datetime.datetime(2050, 0o1, 0o1).strftime('%Y-%m-%d'))
+            liblogos.update_unit_settings(self.setting_key, self.setting_key, datetime.datetime(2050, 0o1, 0o1).strftime('%Y-%m-%d'))
         self.ret = (True, datetime.datetime(2050, 0o1, 0o1).strftime('%Y-%m-%d'))
         self.close()
 
@@ -326,6 +327,7 @@ class DbmsDialog(QDialog):
         self.setWindowTitle(title)
         masterLayout = QVBoxLayout(self)
         self.setting_key = setting_key
+        self.data = data
         self.dbms_grd = QTableWidget()
         self.dbms_grd.setSelectionBehavior(QTableWidget.SelectRows)
         self.dbms_grd.setSelectionMode(QTableWidget.SingleSelection)
@@ -357,20 +359,24 @@ class DbmsDialog(QDialog):
 
 
 class OsSetDialog(QDialog):
-    def __init__(self, parent=None, **kwargs):
+    def __init__(self, setting_key, title, form_string, data=None,parent=None):
         super(OsSetDialog, self).__init__(parent)
         self.setWindowTitle('Altera Sistema Operativo')
         masterLayout = QVBoxLayout(self)
-        self.kwargs = kwargs
-        
+        self.setting_key = setting_key
+        self.title = title
+        self.data = data
         self.os = QComboBox()
         self.os.setEditable(True)
         self.os.addItems(gl.os_version)
-        self.os.setEditText(self.kwargs['version'])
         self.os_arch = QComboBox()
         self.os_arch.setEditable(True)
         self.os_arch.addItems(['32 bit', '64 bit'])
-        self.os_arch.setEditText(self.kwargs['arch'])
+        if self.data is None:
+            pass
+        else:
+            self.os_arch.setEditText(data[1])
+            self.os.setEditText(data[0])
         okBtn = QPushButton('Valida')
         okBtn.clicked.connect(self.save_click)
         cancelBtn = QPushButton('Cancela')
@@ -382,11 +388,10 @@ class OsSetDialog(QDialog):
         self.close()
     
     def save_click(self):
-        if self.kwargs['edit']:
-            liblogos.update_unit_settings(self.kwargs['us_id'], self.os.currentText(), self.os_arch.currentText())
+        if self.data is None:
+            liblogos.insert_unit_setting(gl.unit_dict['un_id'], self.setting_key, self.os.currentText(), self.os_arch.currentText())
         else:
-            liblogos.insert_unit_setting(self.kwargs['unit_id'], self.kwargs['act_id'], self.os.currentText(),
-                                         self.os_arch.currentText())
+            liblogos.update_unit_settings(self.setting_key, self.os.currentText(), self.os_arch.currentText())
         self.close()
 
 
@@ -646,17 +651,22 @@ class SetTextOne(QDialog):
 
 
 class SetArch(QDialog):
-    def __init__(self, parent=None, **kwargs):
+    def __init__(self, setting_key, title, form_string, data=None,parent=None):
         super(SetArch, self).__init__(parent)
         self.setWindowTitle('Arquitectura')
         masterLayout = QVBoxLayout(self)
-        self.kwargs = kwargs
+        self.setting_key = setting_key
+        self.title = title
+        self.data = data
         self.arch = QComboBox()
         self.arch.setEditable(True)
         self.arch.addItems(['Servidor', 'Monoposto', 'Multiposto', 'Virtualizado', 'Cloud'])
-        self.arch.setEditText(self.kwargs['arch_type'])
         self.ip = QLineEdit()
-        self.ip.setText('192.168.0.10')
+        if self.data is None:
+            pass
+        else:
+            self.arch.setEditText(data[0])
+            self.ip.setText(data[1])
         okBtn = QPushButton('Valida')
         okBtn.clicked.connect(self.save_click)
         cancelBtn = QPushButton('Cancela')
@@ -668,11 +678,10 @@ class SetArch(QDialog):
         self.close()
     
     def save_click(self):
-        if self.kwargs['edit']:
-            liblogos.update_unit_settings(self.kwargs['us_id'], self.arch.currentText(), self.ip.text())
+        if self.data is None:
+            liblogos.insert_unit_setting(gl.unit_dict['un_id'], self.setting_key, self.arch.currentText(), self.ip.text())
         else:
-            liblogos.insert_unit_setting(self.kwargs['unit_id'], self.kwargs['act_id'], self.arch.currentText(),
-                                         self.ip.text())
+            liblogos.update_unit_settings(self.setting_key, self.arch.currentText(), self.ip.text())
         self.close()
 
 

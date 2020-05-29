@@ -86,17 +86,31 @@ def settings_form_parser(set_id, title, frm_type, set_strings, data=None):
         form.exec_()
     elif frm_type == 'SOFT':
         """software"""
-        form = software.SoftwareBrowser(gl.unit_dict) # 'unit_type': unit_type})
+        form = software.SoftwareBrowser(gl.unit_dict)
         form.exec_()
         if form.ret[0]:
-            liblogos.insert_unit_setting(gl.unit_dict['un_id'], 1, form.ret[1], form.ret[2])
+            if data is None:
+                liblogos.insert_unit_setting(gl.unit_dict['un_id'], 1, form.ret[1], form.ret[2])
+            else:
+                liblogos.update_unit_settings(set_id, form.ret[1], form.ret[2])
             liblogos.software_update_settings(gl.unit_dict['un_id'])
-
-    elif frm_type == 'DBS02':
-        print('call DB02')
-        form = classes_un.DbmsDialog(set_id, title, data=None)
+    elif frm_type == 'DATE':
+        form = classes_un.InputDateSettings(set_id, title, set_strings, data)
         form.exec_()
-        
+        # á data de instalação adicionar um compromisso de alpha + 30 dias
+        if form.ret[0]:
+            liblogos.add_unit_comitment(gl.unit_dict['un_id'], 15, form.ret[1] + datetime.timedelta(days=30), 'auto', reset=True)
+
+    elif frm_type == 'DB02':
+        print('call DB02')
+        form = classes_un.DbmsDialog(set_id, title, data)
+        form.exec_()
+    elif frm_type == 'DB01':
+        form = classes_un.OsSetDialog(set_id,title, set_strings,data=data)
+        form.exec_()
+    elif frm_type == 'DB03':
+        form = classes_un.SetArch(set_id,title, set_strings,data=data)
+        form.exec_()
 
 
 def settings_add_edit(unit_id, setting_id, unit_type,terminal_names):

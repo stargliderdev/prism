@@ -1,16 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from PyQt5.QtWidgets import QDialog, QLabel, QCheckBox, QVBoxLayout, QLineEdit, QTabWidget, QPushButton, \
-    QWidget, QToolButton, QDateEdit, QTextEdit, QMessageBox, QCalendarWidget, QDesktopWidget, QTableWidget, QComboBox, \
-    QInputDialog
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTableWidget
 
 import classes_un
+import ex_grid
 import liblogos
 import libpg
-import ex_grid
-import unit_setup
 import parameters as gl
 
 
