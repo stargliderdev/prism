@@ -233,6 +233,10 @@ def lic_view(lic_dict, lic_type):
         body_text += td_caixa + 'Versão Binario' + td_data + lic_dict['version'] + td_end
     except KeyError:
         pass
+    try:
+        body_text += td_caixa + 'Imprime Directamente' + td_data + lic_dict['printon'] + td_end
+    except KeyError:
+        body_text += td_caixa + 'Imprime Directamente' + td_data + 'N/D' + td_end
     body_text += td_caixa + 'Data do Contracto' + td_data + lic_dict['date_contract'] + td_end
     body_text += td_caixa + 'P.V.P.' + td_data + str(lic_dict['total_public']) + td_end
     try:

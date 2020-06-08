@@ -65,6 +65,7 @@ class MainWindow(QMainWindow):
             data_sets.get_hardware_types()
             data_sets.get_ds_areas()
             data_sets.get_canned_messages_sms()
+            
         else:
             QMessageBox.critical(None,"Erro", "Erro na ligação à Base de Dados")
             sys.exit()
@@ -333,18 +334,6 @@ class MainWindow(QMainWindow):
         self.tags_browserBtn.clicked.connect(self.tags_browser_click)       
         mTabLay.addLayout(qc.addHLayout(['Nome', self.unitSearchEdt, 'Activas', self.unitActiveCkBox, searchUnitsTBtn, clearSearchBtn, printBtn,True,
                                          self.logicTags, self.tags_to_searchEdit, self.tags_browserBtn, search_tags_Btn, clear_tags_Btn, True,self.hamburguer]))
-        # self.filterLabel = QLabel()
-        # self.filterLabel.setMinimumWidth(400)
-        # self.filterLabel.setStyleSheet("background-color: #dbf3ff;")
-        # self.filterLabel.setText('sem filtro')
-        # filterRefreshTBtn = QToolButton()
-        # filterRefreshTBtn.setToolTip('Refresca filtro')
-        # filterRefreshTBtn.setIcon(QIcon('.//img//refresh.png'))
-        # filterRefreshTBtn.clicked.connect(self.filter_by_change)
-        # reportBtn = QPushButton()
-        # reportBtn.setToolTip('Relatórios')
-        # reportBtn.setIcon(QIcon('.//img//unit_reports.png'))
-        # reportBtn.clicked.connect(self.make_report)
         self.reportsGroupCmb = QComboBox()
         self.reportsGroupCmb.currentIndexChanged.connect(self.report_groups_change)
         
@@ -360,7 +349,7 @@ class MainWindow(QMainWindow):
         self.grid_units.verticalHeader().setVisible(False)
         self.grid_units.resizeColumnsToContents()
         ex_grid.make_grid(self.grid_units, headers=['ID', 'Unidade', 'Tipo', 'Localidade', 'C.P.', 'Zona'],
-                          col_width=[(0, 54), (1, 350), (2, 100), (3, 200), (4, 280),(5,220)])
+                          col_width=[(0, 54), (1, 300), (2, 100), (3, 200), (4, 280),(5,220)])
         self.grid_units.itemDoubleClicked.connect(self.show_unit)
         mTabLay.addWidget(self.grid_units)
         
@@ -510,7 +499,7 @@ class MainWindow(QMainWindow):
     def unit_name_change(self, tx):
         gl.current_unit = 0
         if len(tx) > 2:
-            search = '\'%%' + tx + '%%\''
+            search = '\'%%' + tx.lower() + '%%\''
             self.units_seach_inc(tx=search)
     
     def units_seach_inc(self, tx='', client=0):
@@ -706,7 +695,7 @@ class MainWindow(QMainWindow):
         
         mainTabLayout.addWidget(self.grid_customers)
         ex_grid.make_grid(self.grid_customers, headers=['ID', 'Nome', 'Localidade', 'NIF','C.P.','C.C.'], col_width=[(0, 88), (1, 378), (2, 200), (3, 100),(4,220),(5,70)])
-        self.customer_refresh()
+        # self.customer_refresh()
         add_customer = QAction("Adiciona Cliente", self)
         add_customer.setIcon(QIcon('.//img//mk_request.png'))
         add_customer.triggered.connect(self.add_customer_click)
@@ -738,21 +727,21 @@ class MainWindow(QMainWindow):
         tx = self.cl_name.text().lower()
         if len(tx) > 3:
             search = '\'%%' + tx + '%%\''
-            sql = '''SELECT cl_id , cl_nome, cl_localidade, cl_nif
+            sql = '''SELECT cl_id , cl_nome, cl_localidade, cl_nif, cl_cc
                       FROM clientes where unaccent(LOWER(cl_nome)) LIKE ''' + search + ' and cl_active = ' + str(
                 self.cl_active.isChecked()) + ' order by cl_nome'
             bc = libpg.sql_query(sql)
-            ex_grid.grid_std(self.grid_customers, data=bc, f_col=['i', 's', 's', 'i'])
+            ex_grid.grid_std(self.grid_customers, data=bc, f_col=['i', 's', 's', 'i','d2'])
     
     def customer_nif_change(self):
         tx = self.cl_nif.text().lower()
         if len(tx) > 2:
             search = '\'%%' + tx + '%%\''
-            sql = '''SELECT cl_id , cl_nome, cl_localidade, cl_nif
+            sql = '''SELECT cl_id , cl_nome, cl_localidade, cl_nif, cl_cc
                       FROM clientes where cl_nif LIKE ''' + search + ' and cl_active = ' + str(
                 self.cl_active.isChecked()) + ' order by cl_nome'
             bc = libpg.sql_query(sql)
-            ex_grid.grid_std(self.grid_customers, data=bc, f_col=['i', 's', 's', 'i'])
+            ex_grid.grid_std(self.grid_customers, data=bc, f_col=['i', 's', 's', 'i','d2'])
     
     def customer_click(self):
         b = int(self.grid_customers.item(self.grid_customers.currentRow(), 0).text())

@@ -36,9 +36,14 @@ class AddSettingBrowser(QDialog):
         
         ex_grid.make_grid(self.settings_grid, ['us_id', 'Nome'], [(0, 0), (1, 270)])
         masterLayout.addWidget(self.settings_grid)
+        """ vai procurar as referncias por tipo de unidade, não é utilizado"""
+        # sql = '''select unit_set_id,unit_set_name,unit_set_order,unit_set_group,unit_set_multi
+        #         from unit_types_ref, unit_set_types
+        #         where un_type_ref_class=0 and un_type_ref_unit_type =%s and un_type_ref_setting_id=unit_set_types.unit_set_id order by unit_set_name'''
         sql = '''select unit_set_id,unit_set_name,unit_set_order,unit_set_group,unit_set_multi
-                from unit_types_ref, unit_set_types
-                where un_type_ref_class=0 and un_type_ref_unit_type =%s and un_type_ref_setting_id=unit_set_types.unit_set_id order by unit_set_name'''
+                        from unit_set_types
+                        where unit_set_active=True
+                        order by unit_set_group, unit_set_order;'''
         hl = libpg.query_many(sql, (unit_type,))
         ex_grid.grid_std(self.settings_grid, data=hl, f_col=['i', 's'])
         cancelBtn = QPushButton('Esquece')
@@ -61,7 +66,6 @@ class AddSettingBrowser(QDialog):
             """não tem este settings"""
             self.close()
             settings_form_parser(setting_id, title, setting_type[0], setting_type[1], data=None)
-    
         else:
             if current_settting[1] is True:
                 """ tem setting pode editar e permite mais de um"""
@@ -82,7 +86,7 @@ def settings_form_parser(set_id, title, frm_type, set_strings, data=None):
         form.exec_()
     elif frm_type == 'SP01':
         """DDNS"""
-        form = ddns_edit.DdnsEdit(set_id , data[0], data[1])
+        form = ddns_edit.DdnsEdit(set_id, data)
         form.exec_()
     elif frm_type == 'SOFT':
         """software"""

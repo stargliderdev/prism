@@ -390,7 +390,7 @@ sql_server_conn_str = ("Driver={SQL Server Native Client 11.0};"
                        "uid=sa;pwd=1697fo")
 conn_string = 'host=192.168.0.98 dbname=prism user=root password=masterkey'
 
-print('version: 2019-11-29')
+print('version: 2020-06-02')
 # print('sync compras')
 # sync_compras(compras())
 # print('sync vendas')
@@ -398,7 +398,7 @@ print('version: 2019-11-29')
 # print (datetime.datetime.now(),';' , format(sync_clientes_cc(), '10.2f').replace(' ', ''), file=open("clientes.log", "a"))
 # develop
 # show_vendas()
-
+print(datetime.datetime.now())
 add_new_products()
 add_new_hardware()
 sales_update()

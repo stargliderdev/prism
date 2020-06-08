@@ -128,7 +128,8 @@ def send_mail_lic_order(to, msg_headers):
 
 
 def upload_lic_mail(order_num, unid_dict):
-    subject = 'LOAD-' + str(order_num).zfill(5) + '-' + unid_dict['cl_nif'] + '-' + unid_dict['un_nome']
+    """LOAD"""
+    subject = '⏫ LOAD-' + str(order_num).zfill(5) + '-' + unid_dict['cl_nif'] + '-' + unid_dict['un_nome']
     body = '''<!DOCTYPE html><html lang="pt_pt"><head><meta charset="utf-8"></head><pre>'''
     body += 'Origem: ' + str(order_num) + '<br>'
     body += unid_dict['un_nome'] + '<br>'
@@ -172,8 +173,6 @@ def upload_lic_mail(order_num, unid_dict):
   
 
 def send_process_mail(process_id):
-    # self.status_label.setText('Envia mail geral')
-    # self.status_label.repaint()
     process_dict: int = data_sets.process_to_dict(process_id)
 
     msg_body = liblogos.process_to_html(process_dict)
@@ -181,7 +180,7 @@ def send_process_mail(process_id):
         assunto = '❌ [' + process_dict['proc_type'] + '] ' + process_dict['proc_unit_name']
     else:
         assunto = '✅ [' + process_dict['proc_type'] + '] ' + process_dict['proc_unit_name']
-    # envia internamente
+    """ envia internamente """
     if pa.DEVELOP:
         mailing_list = ['xeo@net.vodafone.pt']
     else:

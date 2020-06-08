@@ -48,7 +48,7 @@ class ReportTool(QDialog):
         self.gridMain.setEditTriggers(QTableWidget.NoEditTriggers)
         self.gridMain.verticalHeader().setDefaultSectionSize(20)
         self.gridMain.setAlternatingRowColors(True)
-        self.gridMain.setStyleSheet("alternate-background-color: #f5f5f0;")
+        self.gridMain.setStyleSheet("alternate-background-color: #ccffcc;")
         self.gridMain.verticalHeader().setVisible(False)
         
         masterLayout.addWidget(self.gridMain)
@@ -178,7 +178,7 @@ class ReportTool(QDialog):
         elif report == 'licenças pedidas':
             sql = '''SELECT  software.sf_id, un_nome, software_lic_status.lic_st_name,
                  to_char(software.sf_time_order, 'YYYY-MM-DD HH24:MI') as orde,area_name,
-                to_char(date 'now' - sf_time_order, 'DD" dias "HH24" horas'), lic_st_id,un_id
+                TO_CHAR(age('now', sf_time_order), 'DD HH24:MI '), lic_st_id,un_id
                  FROM software
                  inner join software_type  on software.sf_version = software_type.sft_id
                  inner join software_lic_status on lic_st_id=sf_status
@@ -187,14 +187,17 @@ class ReportTool(QDialog):
                     WHERE lic_st_id=0
                  ORDER BY software.sf_id DESC, sf_date_valid DESC;'''
             xl = libpg.query_many(sql, (True,))
-            ex_grid.make_grid(self.gridMain, ['ID', 'Unidade', 'Estado', 'Data', 'Zona', 'Atraso','st_lic','unit_id'],
+            xl.append((0, '-'*43, '-'*11, '-'*21, '-'*31, '-'*13, 0, 0))
+            xl.append((len(xl)-1, report,'','','','',0,0))
+            
+            ex_grid.make_grid(self.gridMain, ['ID', 'Unidade', 'Estado', 'Data', 'Zona', 'Atraso D H:M','st_lic','unit_id'],
                               [(0, 50), (1, 240), (2, 80), (3, 140), (4, 260), (5, 120),(6,0), (7,0)])
             ex_grid.grid_std(self.gridMain, data=xl, f_col=['i', 's', 's', 's', 's','s', 'i','i'])
             self.setWindowTitle(self.reportTypeCbx.currentText())
         elif report == 'unidades em actualização':
             sql = '''SELECT  software.sf_id, un_nome, software_lic_status.lic_st_name,
                  to_char(software.sf_time_order, 'YYYY-MM-DD HH24:MI') as orde,area_name,
-                to_char(date 'now' - sf_time_order, 'DD" dias "HH24" horas'), lic_st_id,unidades.un_id
+                TO_CHAR(age('now', sf_time_order), 'DD HH24:MI '), lic_st_id,unidades.un_id
                  FROM software
                  inner join software_type  on software.sf_version = software_type.sft_id
                  inner join software_lic_status on lic_st_id=sf_status
@@ -203,14 +206,16 @@ class ReportTool(QDialog):
                     WHERE lic_st_id=3
                  ORDER BY software.sf_id DESC, sf_date_valid DESC;'''
             xl = libpg.query_many(sql, (True,))
-            ex_grid.make_grid(self.gridMain, ['ID', 'Unidade', 'Estado', 'Data', 'Zona', 'Atraso','st_lic','unit_id'],
+            xl.append((0, '-'*43, '-'*11, '-'*21, '-'*31, '-'*13, 0, 0))
+            xl.append((len(xl)-1, report,'','','','',0,0))
+            ex_grid.make_grid(self.gridMain, ['ID', 'Unidade', 'Estado', 'Data', 'Zona', 'Atraso D H:M','st_lic','unit_id'],
                               [(0, 50), (1, 240), (2, 120), (3, 140), (4, 260), (5, 120),(6,0),(7,0)])
             ex_grid.grid_std(self.gridMain, data=xl, f_col=['i', 's', 's', 's', 's','s', 'i','i'])
             self.setWindowTitle(self.reportTypeCbx.currentText())
         elif report == 'unidades actualizadas':
             sql = '''SELECT  software.sf_id, un_nome, software_lic_status.lic_st_name,
                  to_char(software.sf_time_order, 'YYYY-MM-DD HH24:MI') as orde,area_name,
-                to_char(date 'now' - sf_time_order, 'DD" dias "HH24" horas'), lic_st_id,unidades.un_id
+                TO_CHAR(age('now', sf_time_order), 'DD HH24:MI '), lic_st_id,unidades.un_id
                  FROM software
                  inner join software_type  on software.sf_version = software_type.sft_id
                  inner join software_lic_status on lic_st_id=sf_status
@@ -219,7 +224,9 @@ class ReportTool(QDialog):
                     WHERE lic_st_id=4  and (sf_time_order between NOW() - INTERVAL '30 DAY' and 'now')
                  ORDER BY sf_time_order DESC;'''
             xl = libpg.query_many(sql, (True,))
-            ex_grid.make_grid(self.gridMain, ['ID', 'Unidade', 'Estado', 'Data', 'Zona', 'Atraso','st_lic','unit_id'],
+            xl.append((0, '-'*43, '-'*11, '-'*21, '-'*31, '-'*13, 0, 0))
+            xl.append((len(xl)-1, report,'','','','',0,0))
+            ex_grid.make_grid(self.gridMain, ['ID', 'Unidade', 'Estado', 'Data', 'Zona', 'Atraso D H:M','st_lic','unit_id'],
                               [(0, 50), (1, 240), (2, 120), (3, 140), (4, 260), (5, 120),(6,0),(7,0)])
             ex_grid.grid_std(self.gridMain, data=xl, f_col=['i', 's', 's', 's', 's','s', 'i','i'])
             self.setWindowTitle(self.reportTypeCbx.currentText())

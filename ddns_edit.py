@@ -18,14 +18,16 @@ import stdio
 
 
 class DdnsEdit(QDialog):
-    def __init__(self, unit_setting, ddns, owner, parent=None):
+    def __init__(self, unit_setting, data, parent=None):
         super(DdnsEdit, self).__init__(parent)
         self.resize(768, 600)
         self.center()
         self.unit_setting_id = unit_setting
-        self.ddns: str = ddns
-        self.owner: str = owner
+        # if not data is None:
+        #     self.ddns: str = data[0]
+        #     self.owner: str = data[1]
         self.ddns_error: str
+        self.data = data
         self.setWindowTitle('Edita/Testa DDNS')
         masterLayout = QVBoxLayout(self)
         self.ddnsEdt = QLineEdit()
@@ -72,7 +74,7 @@ class DdnsEdit(QDialog):
         self.outputPlainText.setPalette(palette)
         self.outputPlainText.setFont(font)
         masterLayout.addWidget(self.outputPlainText)
-        okBtn = QPushButton('Valida')
+        okBtn = QPushButton('Grava')
         okBtn.clicked.connect(self.save_click)
         testBtn = QPushButton('Testa')
         testBtn.clicked.connect(self.ddns_test_click)
@@ -81,14 +83,11 @@ class DdnsEdit(QDialog):
         cancelBtn.clicked.connect(self.cancel_btn_click)
         
         masterLayout.addLayout(qc.addHLayout([okBtn, testBtn, cancelBtn]))
-        # if self.unit_setting_id == -1:
-        #     pass
-        # else:
-        if self.ddns is None:
+        if data is None:
             pass
         else:
-            self.ddnsEdt.setText(self.ddns)
-            self.ownerEdt.setText(self.owner)
+            self.ddnsEdt.setText(data[0])
+            self.ownerEdt.setText(data[1])
     
     def cancel_btn_click(self):
         self.close()
@@ -142,7 +141,7 @@ class DdnsEdit(QDialog):
         self.outputPlainText.append(html)
     
     def save_click(self):
-        if self.unit_setting_id == -1:
+        if self.data is None:
             liblogos.insert_unit_setting(gl.unit_dict['un_id'], 13, self.ddnsEdt.text(), self.ownerEdt.text())
         else:
             liblogos.update_unit_settings(self.unit_setting_id, self.ddnsEdt.text(), self.ownerEdt.text())

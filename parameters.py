@@ -47,8 +47,8 @@ db_port = '5432'
 db_user = 'root'
 db_password = 'masterkey'
 DEVELOP = True
-VERSION = '2020.05.21'
-version = 12
+VERSION = '2020.01.01'
+version = 13
 if DEVELOP:
     db_host = '192.168.0.250'
 db_database = 'prism'
@@ -64,3 +64,4 @@ user_dict = {}
 PRODUCTION_VERSION = '2020.1'
 file1 = ('espiridiao@infornash.pt', 'O&!y7A?HZr6q$tZX', 'ftp.infornash.pt')
 unit_dict = {}
+insoft_comercial_version = []

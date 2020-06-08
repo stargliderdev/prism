@@ -229,6 +229,13 @@ def get_ds_areas():
         gl.ds_areas.append(n[0])
 
 
+def get_comercial_version():
+    gl.ds_areas = []
+    a = libpg.query_many('select insoft_opt_name  from insoft_opt where insoft_opt_level=1 order by insoft_opt_order')
+    for n in a:
+        gl.insoft_comercial_version.append(n[0])
+
+
 def get_ds_falhas():
     a = libpg.query_many('select fa_id, fa_nome from falhas order by fa_id')
     gl.dsFalhas = []

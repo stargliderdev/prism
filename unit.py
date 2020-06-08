@@ -770,8 +770,7 @@ class UnitEdit(QDialog):
                 else:
                     QMessageBox.warning(None, "Erro",'Não foi a ultima licença gerada.\nLicença não activada')
             else:
-                QMessageBox.warning(None, "Erro",
-                                    "Esta licença não pode ser activada!")
+                QMessageBox.warning(None, "Erro", "Esta licença não pode ser activada!")
         except Exception as e:
             errorMessage = QErrorMessage(self)
             errorMessage.showMessage('Ocorreu um erro:' + str(e))
