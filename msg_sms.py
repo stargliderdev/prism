@@ -93,15 +93,19 @@ class MsgSendSMS(QDialog):
             self.textMsgTEdt.setText(xl[4])
         else:
             # vai buscar outra info')
-            if xl[0] in (5, 7):  # conta corrente
+            if xl[0] in (5, 7):
+                """ conta corrente"""
                 dum = xl[4]
                 dum = dum.replace('$', "{:.2f}".format(self.data_dict['cl_cc']))
                 self.textMsgTEdt.setText(dum)
-            elif xl[0] == 9:  # envia DDNS ok internamente
+            elif xl[0] == 9:
+                """envia DDNS ok internamente"""
                 dum = xl[4]
-                dum = dum.replace('$', self.data_dict['ddns'])
+                ddns = data_sets.get_one_setting(gl.unit_dict['un_id'], 13)[0]
+                dum = dum.replace('$', ddns)
                 self.textMsgTEdt.setText(dum)
-            elif xl[0] == 10:  # envia BO a funcionar para o cliente.
+            elif xl[0] == 10:
+                """envia BO a funcionar para o cliente"""
                 dum = xl[4]
                 dum = dum.replace('$', self.data_dict['un_nome'])
                 self.textMsgTEdt.setText(dum)

@@ -28,7 +28,7 @@ import stdio
 class MakeLic(QDialog):
     def __init__(self, unit_id,lic_id, parent=None):
         super(MakeLic,  self).__init__(parent)
-        self.com_version_data = False,0,0,0
+        self.com_version_data = False,0
         self.resize(800, 800)
         """ entra: unidade, lic_id na tabela software"""
         masterLayout = QVBoxLayout(self)
@@ -41,6 +41,7 @@ class MakeLic(QDialog):
         self.get_db_data()
         self.last_lic_dict = {}
         self.software_id = 0
+        # self.comercial_version_key = ''
         if self.lic_id == -1:
             self.lic_values['lic_type'] = 1
             self.lic_values['lictype_txt'] = 'Nova'
@@ -149,7 +150,7 @@ class MakeLic(QDialog):
             bc = libpg.query_many('SELECT insoft_opt_code, null as qtd, insoft_opt_name, insoft_opt_price_2/100 FROM insoft_opt where insoft_opt_active = True and insoft_opt_level = 2 ORDER BY insoft_opt_order')
         ex_grid.grid_std(self.gridOptions, data=bc, f_col=['s', 's', 's', 'd2'])
         tabLayout.addWidget(self.gridOptions)
-        self.gridOptions.cellChanged.connect(self.insoft_opt_grid_change)
+        self.gridOptions.cellChanged.connect(self.grid_change)
 
         self.total_public = QLineEdit()
         self.total_public.setMaximumWidth(60)
@@ -241,13 +242,17 @@ class MakeLic(QDialog):
         if form.ret[0]:
             self.com_version_data = form.ret
             self.comercialVersionEdt.setText(form.ret[2])
+            # self.comercial_version_key=
+            self.com_version_data = data_sets.get_comercial_version(form.ret[1])
 
-    def insoft_opt_grid_change(self):
-        sum = 0.0
+    def grid_change(self):
+        try:
+            sum = float(self.com_version_data['p1'])
+        except KeyError:
+            sum = 0.0
         for linha in range(0, self.gridOptions.rowCount()):
             try:
-                sum += int(self.gridOptions.item(linha, 1).text()) * float(
-                    self.gridOptions.item(linha, 3).text())
+                sum += int(self.gridOptions.item(linha, 1).text()) * float(self.gridOptions.item(linha, 3).text())
             except ValueError:
                 pass
         self.total_public.setText(str(sum))
@@ -301,43 +306,17 @@ class MakeLic(QDialog):
         else:
             new_lic_dict = lic_dict
             new_lic_dict['clockin'] = '1' # força clockin
-            pprint.pprint(lic_dict)
-            # new_lic_dict['base'] = ''
-            # new_lic_dict['pro'] = ''
-            # new_lic_dict['proplus'] = ''
-            # new_lic_dict['premium'] = ''
-            # new_lic_dict['premiumplus'] = ''
-            # new_lic_dict['corporate'] = ''
-            # new_lic_dict['corporateplus'] = ''
-            if 'commercial_version' not in new_lic_dict:
-                new_lic_dict['commercial_version'] = ''
-            if new_lic_dict['commercial_version'] == 'Premium':
-                new_lic_dict['premium'] = '1'
+            if 'comercial_version_key' not in new_lic_dict:
+                self.comercialVersionEdt.setText('')
             else:
-                new_lic_dict['base'] = '1'
-            if new_lic_dict['commercial_version'] == 'Premium+':
-                new_lic_dict['corporateplus'] = '1'
-            else:
-                new_lic_dict['base'] = '1'
-            if new_lic_dict['commercial_version'] == 'Professional':
-                new_lic_dict['pro'] = '1'
-            else:
-                new_lic_dict['base'] = '1'
-            if new_lic_dict['commercial_version'] == 'Professional+':
-                new_lic_dict['proplus'] = '1'
-            else:
-                new_lic_dict['base'] = '1'
-            if new_lic_dict['commercial_version'] == 'Corporate':
-                new_lic_dict['corporate'] = '1'
-            else:
-                new_lic_dict['base'] = '1'
-            if new_lic_dict['commercial_version'] == 'Corporate+':
-                new_lic_dict['corporate'] = '1'
-            else:
-                new_lic_dict['base'] = '1'
-            
-            # new_lic_dict['comercial_version']
-            self.comercialVersionEdt.setText(new_lic_dict['commercial_version'])
+                self.comercialVersionEdt.setText(new_lic_dict['comercial_version'])
+                print('--------Debug---------')
+                print('renew_lic')
+                print(new_lic_dict['comercial_version_key'])
+                self.com_version_data = data_sets.get_comercial_version(new_lic_dict['comercial_version_key'])
+                print(self.com_version_data)
+                print('------end debug-------')
+                
             new_lic_dict['sector'] = liblogos.get_unit_setting1(self.unit_id, 16)
             new_lic_dict['serie'] = liblogos.get_unit_setting1(self.unit_id, 20)
             new_lic_dict['rdp'] = liblogos.get_unit_setting1(self.unit_id, 7)
@@ -373,22 +352,24 @@ class MakeLic(QDialog):
     def save_lic(self):
         if self.software_id > 0:
             self.lic_values['software_name'] = self.software_type.currentText().upper()
-            # variavel a ser gravada me JSON
-            self.make_lic_dict()
-            sys.exit()
-            if not self.com_version_data[0]:        #'commercial_version' in self.lic_values:
+            """ tem a chave da versão comercial"""
+            if self.comercial_version_key == '':
+                QMessageBox.warning(None, "Erro", "Falta  a versão comercial!")
+            else:
+                """variavel a ser gravada em JSON"""
+                self.make_lic_dict()
+                """grava na base de dados"""
                 sql = '''INSERT INTO software (sf_unit_id, sf_lic_json, sf_version, sf_date_contract,
                         sf_date_valid, sf_lic_type,sf_json_version, sf_status, sf_who) values (%s, %s, %s, %s, %s, %s,0,0,%s)'''
                 data = (self.unit_id, self.make_lic_dict_to_string(), self.software_id, self.date_contract.date().toPyDate(),
                          self.date_valid.date().toPyDate(), self.lic_values['lictype_txt'], gl.user_dict['user_name'])
                 libpg.execute_query(sql, data)
                 self.order_num = str(libpg.query_one('SELECT sf_id FROM software ORDER BY sf_id DESC LIMIT 1', (True, ))[0])
+                """envia e mail a partir do dic"""
                 self.send_lic_mail()
                 b = "Licença: " + self.order_num + " enviada com sucesso."
                 QMessageBox.information(self, "Informação",b)
                 self.close()
-            else:
-                QMessageBox.warning(None, "Erro", "Falta  a versão comercial!")
         else:
             QMessageBox.warning(None, "Erro","Falta  o <b>software</b>!")
 
@@ -430,54 +411,51 @@ class MakeLic(QDialog):
         self.lic_values['date_valid'] = self.date_valid.date().toPyDate().strftime("%Y-%m-%d")
         self.lic_values['who'] = gl.user_dict['user_name']
         self.lic_values['sector'] = liblogos.get_unit_setting1(self.unit_id, 16)
-        self.lic_values['serie'] = liblogos.get_unit_setting1(self.unit_id, 20)
-        self.lic_values['rdp'] = liblogos.get_unit_setting1(self.unit_id, 7)
+        # self.lic_values['serie'] = liblogos.get_unit_setting1(self.unit_id, 20)
+        # self.lic_values['rdp'] = liblogos.get_unit_setting1(self.unit_id, 7)
         self.lic_values['printon'] = liblogos.get_unit_setting1(self.unit_id, 29)
-        self.lic_values['commercial_version'] = self.com_version_data[2]
-        self.lic_values['commercial_version_key'] = self.com_version_data[1]
-        set_list = self.com_version_data[3].split(',')
-        print('--------Debug---------')
-        print('make_lic_dict')
+        self.lic_values['comercial_version'] = self.com_version_data[2]
+        self.lic_values['comercial_version_key'] = self.comercial_version_key
         a = libpg.query_many('select unit_set_id, unit_set_name from unit_set_types where unit_set_id in(' + self.com_version_data[3] + ')', (True,))
-        # print(a)
-        
+        opt_list = []
         for n in a:
-            # print('--------->',n)
             v = libpg.query_one('select us_value1, us_value2 from unit_settings where us_unit_id=%s and  us_act_id=%s', (self.unit_id, n[0]))
             if v is None:
-                print(n[1],'n/d')
+                opt_list.append((n[1], 'n/d'))
             else:
-                print(n[1], v[0])
-        print('------end debug-------')
-    
-        # for linha in range(0, self.gridOptions.rowCount()):
-        #     try:
-        #         gr_key = self.gridOptions.item(linha, 0).text()
-        #         if gr_key == 'base':
-        #             if self.gridOptions.item(linha, 1).text() == '1':
-        #                 self.lic_values['commercial_version'] = 'Base'
-        #         elif gr_key == 'pro':
-        #             if self.gridOptions.item(linha, 1).text() == '1':
-        #                 self.lic_values['commercial_version'] = 'Professional'
-        #         elif gr_key == 'proplus':
-        #             if self.gridOptions.item(linha, 1).text() == '1':
-        #                 self.lic_values['commercial_version'] = 'Professional +'
-        #         elif gr_key == 'premium':
-        #             if self.gridOptions.item(linha, 1).text() == '1':
-        #                 self.lic_values['commercial_version'] = 'Premium'
-        #         if gr_key == 'premiumplus':
-        #             if self.gridOptions.item(linha, 1).text() == '1':
-        #                 self.lic_values['commercial_version'] = 'Premium +'
-        #         elif gr_key == 'corporate':
-        #             if self.gridOptions.item(linha, 1).text() == '1':
-        #                 self.lic_values['commercial_version'] = 'Corporate'
-        #         elif gr_key == 'corporateplus':
-        #             if self.gridOptions.item(linha, 1).text() == '1':
-        #                 self.lic_values['commercial_version'] = 'Corporate +'
-        #         else:
-        #             self.lic_values[gr_key] = self.gridOptions.item(linha, 1).text()
-        #     except KeyError:
-        #         pass
+                opt_list.append((n[1], v[0]))
+        self.lic_values['option'] = opt_list
+        # for n in self.lic_values['option']:
+        #     print(n)
+            
+        for linha in range(0, self.gridOptions.rowCount()):
+            try:
+                gr_key = self.gridOptions.item(linha, 0).text()
+                # if gr_key == 'base':
+                #     if self.gridOptions.item(linha, 1).text() == '1':
+                #         self.lic_values['commercial_version'] = 'Base'
+                # elif gr_key == 'pro':
+                #     if self.gridOptions.item(linha, 1).text() == '1':
+                #         self.lic_values['commercial_version'] = 'Professional'
+                # elif gr_key == 'proplus':
+                #     if self.gridOptions.item(linha, 1).text() == '1':
+                #         self.lic_values['commercial_version'] = 'Professional +'
+                # elif gr_key == 'premium':
+                #     if self.gridOptions.item(linha, 1).text() == '1':
+                #         self.lic_values['commercial_version'] = 'Premium'
+                # if gr_key == 'premiumplus':
+                #     if self.gridOptions.item(linha, 1).text() == '1':
+                #         self.lic_values['commercial_version'] = 'Premium +'
+                # elif gr_key == 'corporate':
+                #     if self.gridOptions.item(linha, 1).text() == '1':
+                #         self.lic_values['commercial_version'] = 'Corporate'
+                # elif gr_key == 'corporateplus':
+                #     if self.gridOptions.item(linha, 1).text() == '1':
+                #         self.lic_values['commercial_version'] = 'Corporate +'
+                # else:
+                self.lic_values[gr_key] = self.gridOptions.item(linha, 1).text()
+            except KeyError:
+                pass
         self.lic_values['header'] = self.header.text()
         self.lic_values['comments'] = self.comments_Text.toPlainText()
 

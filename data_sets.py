@@ -203,6 +203,14 @@ def get_params():
     gl.ds_params = rec
 
 
+def get_one_setting(unit_id,setting):
+    setting_values = libpg.query_one('select us_value1, us_value2 from unit_settings where us_unit_id=%s and us_act_id=%s', (unit_id,setting))
+    if setting_values is None:
+        return '',''
+    else:
+        return setting_values
+
+
 def get_ds_assistencias():
     # print 'get get_ds_assistencias'
     
@@ -381,10 +389,12 @@ def get_user_data(u_name, u_pin):
     dict_cur.close()
     conn.close()
     return rec
-    
-    
 
-
+ 
+def get_comercial_version(com_key):
+    return libpg.get_record_dic('''select insoft_opt_code, insoft_opt_name, insoft_opt_price_1/100 as p1, insoft_opt_order, insoft_opt_discount, insoft_opt_price_2/100 as p2,
+                                 insoft_opt_level, insoft_opt_settings, insoft_opt_active  from insoft_opt where insoft_opt_code = %s''',(com_key,))
+    
 
 if __name__ == "__main__":
     pass

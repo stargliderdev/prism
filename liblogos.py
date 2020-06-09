@@ -118,25 +118,39 @@ def lic_to_html(lic_dict, lic_type):
     body_text += td_caixa + 'Capital Social' + td_data + lic_dict['cs'] + td_end
     body_text += td_caixa + 'Reg. C.R.C.' + td_data + lic_dict['crc'] + td_end
     body_text += '<tr>  <td id="label1"; colspan="2">Conteudo da Licença</td> </tr>'
-    body_text += td_caixa + 'Versão Comercial' + td_data + lic_dict['commercial_version'] + td_end
+    body_text += td_caixa + 'Versão Comercial' + td_data + lic_dict['comercial_version'] + td_end
     body_text += td_caixa + 'Tipo Software' + td_data + lic_dict['software_name'] + td_end
-    body_text += td_caixa + 'Postos adicionais' + td_data + lic_dict['terminals'] + td_end
-    body_text += td_caixa + 'Série' + td_data + lic_dict['serie'] + td_end
-    body_text += td_caixa + 'Sector' + td_data + lic_dict['sector'] + td_end
+    try:
+        body_text += td_caixa + 'Postos adicionais' + td_data + lic_dict['terminals'] + td_end
+    except KeyError:
+        body_text += td_caixa + 'Postos adicionais' + td_data + ' ' + td_end
+    
+    # body_text += td_caixa + 'Série' + td_data + lic_dict['serie'] + td_end
+    # body_text += td_caixa + 'Sector' + td_data + lic_dict['sector'] + td_end
     body_text += td_caixa + 'Data de Validade' + td_data + lic_dict['date_valid'] + td_end
-    if lic_dict['consolidate'] == '1':
-        body_text += td_caixa + 'Sede Consolidada' + td_data + lic_dict['consolidate'] + td_end
+    try:
+        if lic_dict['consolidate'] == '1':
+            body_text += td_caixa + 'Sede Consolidada' + td_data + lic_dict['consolidate'] + td_end
+    except KeyError:
+        pass
     body_text += td_caixa + 'Stocks/Compras/C.Correntes' + td_data + lic_dict['stocks'] + td_end
     body_text += td_caixa + 'Sucursais Adicionais' + td_data + lic_dict['succ_add'] + td_end
     body_text += td_caixa + 'Web Service ligações adicionais' + td_data + lic_dict['webserviceadd'] + td_end
+    # try:
+    #     body_text += td_caixa + 'Imprime Directamente' + td_data + lic_dict['printon'] + td_end
+    # except KeyError:
+    #     pass
+    # try:
+    #     body_text += td_caixa + 'Remote Desktop' + td_data + lic_dict['rdp'] + td_end
+    # except KeyError:
+    #     pass
     try:
-        body_text += td_caixa + 'Imprime Directamente' + td_data + lic_dict['printon'] + td_end
+        body_text += '<tr>  <td id="label1"; colspan="2">Opções</td> </tr>'
+        for n in lic_dict['option']:
+            body_text += td_caixa + n[0] + td_data + n[1] + td_end
     except KeyError:
         pass
-    try:
-        body_text += td_caixa + 'Remote Desktop' + td_data + lic_dict['rdp'] + td_end
-    except KeyError:
-        pass
+    body_text += '<tr>  <td id="label1"; colspan="2">Datas e Custos</td> </tr>'
     body_text += td_caixa + 'Data do Contracto' + td_data + lic_dict['date_contract'] + td_end
     body_text += td_caixa + 'P.V.P.' + td_data + str(lic_dict['total_public']) + td_end
     body_text += td_caixa + 'Pedido por' + td_data + lic_dict['who'] + td_end
