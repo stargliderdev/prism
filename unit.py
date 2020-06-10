@@ -743,7 +743,7 @@ class UnitEdit(QDialog):
                         lic_dict['clockin'] = lic_dict['clockin']
                     except KeyError:
                         lic_dict['clockin'] = '1'
-                    liblogos.set_unit_comitments(gl.unit_dict['un_id'], 6, lic_dict['clockin'])
+                    # liblogos.set_unit_comitments(gl.unit_dict['un_id'], 6, lic_dict['clockin'])
                     liblogos.set_unit_comitments(gl.unit_dict['un_id'], 14, lic_dict['date_valid'])
                     liblogos.set_unit_comitments(gl.unit_dict['un_id'], 13, lic_dict['date_valid'])
                     liblogos.set_unit_comitments(gl.unit_dict['un_id'], 12, lic_dict['date_contract'])
@@ -751,9 +751,9 @@ class UnitEdit(QDialog):
                     liblogos.set_unit_settings(gl.unit_dict['un_id'], 1, lic_dict['software'], lic_dict['version'])
                     if lic_dict['terminals'] == '':
                         lic_dict['terminals'] = '1'
-                    liblogos.set_unit_settings(gl.unit_dict['un_id'], 2, lic_dict['terminals'])
+                    # liblogos.set_unit_settings(gl.unit_dict['un_id'], 2, lic_dict['terminals'])
                     liblogos.set_unit_settings(gl.unit_dict['un_id'], 26, datetime.datetime.now().strftime("%Y-%m-%d"), gl.user_dict['user_name'])
-                    liblogos.set_unit_settings(gl.unit_dict['un_id'], 28, lic_dict['commercial_version'], '')
+                    liblogos.set_unit_settings(gl.unit_dict['un_id'], 28, lic_dict['comercial_version'], '')
                     try:
                         liblogos.set_unit_settings(gl.unit_dict['un_id'], 7, lic_dict['rdp'], '')
                     except KeyError:

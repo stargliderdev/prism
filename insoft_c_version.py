@@ -30,17 +30,17 @@ class ChangeComercialVersion(QDialog):
         cancelBtn.clicked.connect(self.cancel_btn_click)
         masterLayout.addLayout(qc.addHLayout([self.dbms_grd]))
         masterLayout.addLayout(qc.addHLayout([cancelBtn]))
-        hl = libpg.sql_query('''select insoft_opt_code, insoft_opt_name, insoft_opt_settings  from insoft_opt where insoft_opt_level=1 order by insoft_opt_order''')
-        ex_grid.grid_std(self.dbms_grd, data=hl, f_col=['s','s','s'])
+        hl = libpg.sql_query('''select insoft_opt_code, insoft_opt_name from insoft_opt where insoft_opt_level=1 order by insoft_opt_order''')
+        ex_grid.grid_std(self.dbms_grd, data=hl, f_col=['s','s'])
 
     def cancel_btn_click(self):
         self.ret = False, '',''
         self.close()
     
     def save_click(self):
+        """devolve true se e a chave do registo escolhido"""
         self.ret = True,self.dbms_grd.item(self.dbms_grd.currentRow(), 0).text(),\
-                   self.dbms_grd.item(self.dbms_grd.currentRow(), 1).text(),\
-                   self.dbms_grd.item(self.dbms_grd.currentRow(), 2).text()
+                   self.dbms_grd.item(self.dbms_grd.currentRow(), 1).text()
         self.close()
         
         
