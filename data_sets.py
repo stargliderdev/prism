@@ -395,6 +395,10 @@ def get_comercial_version(com_key):
     return libpg.get_record_dic('''select insoft_opt_code, insoft_opt_name, insoft_opt_price_1/100 as p1, insoft_opt_order, insoft_opt_discount, insoft_opt_price_2/100 as p2,
                                  insoft_opt_level, insoft_opt_settings, insoft_opt_active, insoft_opt_include  from insoft_opt where insoft_opt_code = %s''',(com_key,))
     
+    
+def get_settings_data(set_type_id):
+    return libpg.get_record_dic('''select * from unit_set_types where unit_set_id = %s''', (set_type_id,))
+
 
 if __name__ == "__main__":
     pass

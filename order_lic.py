@@ -28,7 +28,7 @@ import stdio
 class MakeLic(QDialog):
     def __init__(self, unit_id,lic_id, parent=None):
         super(MakeLic,  self).__init__(parent)
-        self.com_version_data = False,0
+        self.com_version_data = None
         self.resize(800, 800)
         """ entra: unidade, lic_id na tabela software"""
         masterLayout = QVBoxLayout(self)
@@ -143,7 +143,7 @@ class MakeLic(QDialog):
         self.gridOptions.setStyleSheet("alternate-background-color: #ffff99;")
         self.gridOptions.verticalHeader().setVisible(False)
         self.gridOptions.resizeColumnsToContents()
-        ex_grid.make_grid(self.gridOptions, headers=['ID', 'Valor', 'Modulo', 'Preço', 'D'], col_width=[(0, 30), (1, 50), (2, 350), (3, 100), (4, 0)])
+        ex_grid.make_grid(self.gridOptions, headers=['ID', 'Valor', 'Modulo', 'Preço', 'D'], col_width=[(0, 0), (1, 50), (2, 350), (3, 100), (4, 0)])
         if self.lic_values['lic_type'] == 1:  # nova
             bc = libpg.query_many('SELECT insoft_opt_code, null as qtd, insoft_opt_name, insoft_opt_price_1/100 FROM insoft_opt where insoft_opt_active = True and  insoft_opt_level = 2 ORDER BY insoft_opt_order')
         elif self.lic_values['lic_type'] == 2:  # renova
@@ -281,8 +281,13 @@ class MakeLic(QDialog):
         self.lic_id = libpg.query_one(sql, (self.unit_id,))[0]
         self.last_lic_dict = data_sets.licence_to_dict(self.lic_id)
         self.software_id = self.last_lic_dict['sf_version']
-        # carrega dicionario com os dados da licenca da base de dados
+        """carrega dicionario com os dados da licenca da base de dados"""
         lic_dict = json.loads(self.last_lic_dict[6])['0']
+        try:
+            lic_dict['comercial_version'] = lic_dict['commercial_version']
+            del lic_dict['commercial_version']
+        except KeyError:
+            lic_dict['comercial_version'] = ''
         self.un_morada.setText(self.unit_dict['un_morada'])
         self.un_cp.setText(str(self.unit_dict['un_cp']))
         self.un_localidade.setText(self.unit_dict['un_localidade'])
@@ -300,7 +305,6 @@ class MakeLic(QDialog):
 
         self.date_contract.setDate(datetime.datetime.strptime(lic_dict['date_contract'],"%Y-%m-%d"))
         self.software_type.setCurrentText(lic_dict['software_name'].title())
-
         new_lic_dict = {}
         if self.last_lic_dict['sf_json_version'] == 1:
             if lic_dict['tables'] == 'True':
@@ -318,7 +322,8 @@ class MakeLic(QDialog):
             new_lic_dict = lic_dict
             new_lic_dict['clockin'] = '1' # força clockin
             if 'comercial_version_key' not in new_lic_dict:
-                self.comercialVersionEdt.setText('')
+                self.comercialVersionEdt.setText(new_lic_dict['comercial_version'])
+
             else:
                 self.comercialVersionEdt.setText(new_lic_dict['comercial_version'])
                 self.com_version_data = data_sets.get_comercial_version(new_lic_dict['comercial_version_key'])
@@ -358,58 +363,52 @@ class MakeLic(QDialog):
         self.software_id = 10
 
     def save_lic(self):
-        if self.software_id > 0:
-            self.lic_values['software_name'] = self.software_type.currentText().upper()
-            """ tem a chave da versão comercial"""
-            if self.com_version_data['insoft_opt_code'] is None:
-                QMessageBox.warning(None, "Erro", "Falta  a versão comercial!")
-            else:
-                """verifica se tem os settings para esta versão"""
-                
-                """variavel a ser gravada em JSON"""
-                self.make_lic_dict()
-                """grava na base de dados"""
-                sql = '''INSERT INTO software (sf_unit_id, sf_lic_json, sf_version, sf_date_contract,
-                        sf_date_valid, sf_lic_type,sf_json_version, sf_status, sf_who) values (%s, %s, %s, %s, %s, %s,0,0,%s)'''
-                data = (self.unit_id, self.make_lic_dict_to_string(), self.software_id, self.date_contract.date().toPyDate(),
-                         self.date_valid.date().toPyDate(), self.lic_values['lictype_txt'], gl.user_dict['user_name'])
-                libpg.execute_query(sql, data)
-                self.order_num = str(libpg.query_one('SELECT sf_id FROM software ORDER BY sf_id DESC LIMIT 1', (True, ))[0])
-                """envia e mail a partir do dic"""
-                self.send_lic_mail()
-                b = "Licença: " + self.order_num + " enviada com sucesso."
-                QMessageBox.information(self, "Informação",b)
-                self.close()
-        else:
-            QMessageBox.warning(None, "Erro","Falta  o <b>software</b>!")
+        if self.validate_lic():
+            """cria dicionario"""
+            self.make_lic_dict()
+            """grava na base de dados"""
+            sql = '''INSERT INTO software (sf_unit_id, sf_lic_json, sf_version, sf_date_contract,
+                    sf_date_valid, sf_lic_type,sf_json_version, sf_status, sf_who) values (%s, %s, %s, %s, %s, %s,0,0,%s)'''
+            data = (self.unit_id, self.make_lic_dict_to_string(), self.software_id, self.date_contract.date().toPyDate(),
+                     self.date_valid.date().toPyDate(), self.lic_values['lictype_txt'], gl.user_dict['user_name'])
+            libpg.execute_query(sql, data)
+            self.order_num = str(libpg.query_one('SELECT sf_id FROM software ORDER BY sf_id DESC LIMIT 1', (True, ))[0])
+            """envia e mail a partir do dic"""
+            self.send_lic_mail()
+            b = "Licença: " + self.order_num + " enviada com sucesso."
+            QMessageBox.information(self, "Informação",b)
+            self.close()
 
     def validate_lic(self):
         if self.software_id > 0:
             self.lic_values['software_name'] = self.software_type.currentText().upper()
             """ tem a chave da versão comercial"""
-            if self.com_version_data['insoft_opt_code'] is None:
+            try:
+                if self.com_version_data['insoft_opt_code'] is None:
+                    QMessageBox.warning(None, "Erro", "Falta  a versão comercial!")
+            except TypeError:
                 QMessageBox.warning(None, "Erro", "Falta  a versão comercial!")
             else:
                 """verifica se tem os settings para esta versão"""
-            
-                """variavel a ser gravada em JSON"""
-                self.make_lic_dict()
-                """grava na base de dados"""
-                sql = '''INSERT INTO software (sf_unit_id, sf_lic_json, sf_version, sf_date_contract,
-                        sf_date_valid, sf_lic_type,sf_json_version, sf_status, sf_who) values (%s, %s, %s, %s, %s, %s,0,0,%s)'''
-                data = (
-                self.unit_id, self.make_lic_dict_to_string(), self.software_id, self.date_contract.date().toPyDate(),
-                self.date_valid.date().toPyDate(), self.lic_values['lictype_txt'], gl.user_dict['user_name'])
-                libpg.execute_query(sql, data)
-                self.order_num = str(
-                    libpg.query_one('SELECT sf_id FROM software ORDER BY sf_id DESC LIMIT 1', (True,))[0])
-                """envia e mail a partir do dic"""
-                self.send_lic_mail()
-                b = "Licença: " + self.order_num + " enviada com sucesso."
-                QMessageBox.information(self, "Informação", b)
-                self.close()
+                # for key, value in self.com_version_data.items():
+                #     print('[' + key + ']', value)
+                sett_list = self.com_version_data['insoft_opt_settings'].split(',')
+                sett_error = [True,'']
+                for n in sett_list:
+                    has_sett = libpg.query_one('select us_id from unit_settings where us_unit_id = %s and us_act_id = %s', (gl.unit_dict['un_id'], n))
+                    if has_sett is None:
+                        a = data_sets.get_settings_data(n)
+                        sett_error[0] = False
+                        sett_error[1] = sett_error[1] + '\n' + a[1]
+                if sett_error[0]:
+                    return True
+                else:
+                    QMessageBox.warning(None, "Erro", "Faltam os seguintes dados:\n " + sett_error[1])
+                    
         else:
             QMessageBox.warning(None, "Erro", "Falta  o <b>software</b>!")
+
+        return False
 
     def send_lic_mail(self):
         """cria email em html"""
