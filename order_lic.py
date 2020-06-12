@@ -462,13 +462,22 @@ class MakeLic(QDialog):
             else:
                 opt_list.append((n[1], v[0]))
         self.lic_values['option'] = opt_list
-        
+        insoft_options_list = []
         for linha in range(0, self.gridOptions.rowCount()):
             try:
                 gr_key = self.gridOptions.item(linha, 0).text()
                 self.lic_values[gr_key] = self.gridOptions.item(linha, 1).text()
+                """só adiciona para impressão os que tiverem valor"""
+                if not self.gridOptions.item(linha, 1).text() == '':
+                    insoft_options_list.append((self.gridOptions.item(linha, 1).text(),
+                                                self.gridOptions.item(linha, 2).text(),
+                                                self.gridOptions.item(linha, 3).text()))
+                else:
+                    pass
+        
             except KeyError:
                 pass
+        self.lic_values['insoft_options'] = insoft_options_list
         self.lic_values['header'] = self.header.text()
         self.lic_values['comments'] = self.comments_Text.toPlainText()
 
