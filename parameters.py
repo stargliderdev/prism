@@ -48,7 +48,7 @@ db_user = 'root'
 db_password = 'masterkey'
 DEVELOP = True
 VERSION = '2020.01.01'
-version = 13
+version = 14
 if DEVELOP:
     db_host = '192.168.0.250'
 db_database = 'prism'

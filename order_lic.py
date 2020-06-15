@@ -255,6 +255,7 @@ class MakeLic(QDialog):
                             self.gridOptions.item(linha,1).setText('')
                 except KeyError:
                     pass
+            self.validate_lic()
             
     def grid_change(self):
         try:
@@ -287,7 +288,7 @@ class MakeLic(QDialog):
             lic_dict['comercial_version'] = lic_dict['commercial_version']
             del lic_dict['commercial_version']
         except KeyError:
-            lic_dict['comercial_version'] = ''
+            pass
         self.un_morada.setText(self.unit_dict['un_morada'])
         self.un_cp.setText(str(self.unit_dict['un_cp']))
         self.un_localidade.setText(self.unit_dict['un_localidade'])
@@ -320,10 +321,10 @@ class MakeLic(QDialog):
                 new_lic_dict['clockin'] = '1'
         else:
             new_lic_dict = lic_dict
-            new_lic_dict['clockin'] = '1' # força clockin
+            """ força clockin """
+            new_lic_dict['clockin'] = '1'
             if 'comercial_version_key' not in new_lic_dict:
                 self.comercialVersionEdt.setText(new_lic_dict['comercial_version'])
-
             else:
                 self.comercialVersionEdt.setText(new_lic_dict['comercial_version'])
                 self.com_version_data = data_sets.get_comercial_version(new_lic_dict['comercial_version_key'])
@@ -385,13 +386,11 @@ class MakeLic(QDialog):
             """ tem a chave da versão comercial"""
             try:
                 if self.com_version_data['insoft_opt_code'] is None:
-                    QMessageBox.warning(None, "Erro", "Falta  a versão comercial!")
+                    QMessageBox.warning(None, "Erro", "Falta a versão comercial!")
             except TypeError:
-                QMessageBox.warning(None, "Erro", "Falta  a versão comercial!")
+                QMessageBox.warning(None, "Erro", "Falta a versão comercial!")
             else:
                 """verifica se tem os settings para esta versão"""
-                # for key, value in self.com_version_data.items():
-                #     print('[' + key + ']', value)
                 sett_list = self.com_version_data['insoft_opt_settings'].split(',')
                 sett_error = [True,'']
                 for n in sett_list:
@@ -404,7 +403,6 @@ class MakeLic(QDialog):
                     return True
                 else:
                     QMessageBox.warning(None, "Erro", "Faltam os seguintes dados:\n " + sett_error[1])
-                    
         else:
             QMessageBox.warning(None, "Erro", "Falta  o <b>software</b>!")
 
