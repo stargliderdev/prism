@@ -753,7 +753,12 @@ class UnitEdit(QDialog):
                         lic_dict['terminals'] = '1'
                     # liblogos.set_unit_settings(gl.unit_dict['un_id'], 2, lic_dict['terminals'])
                     liblogos.set_unit_settings(gl.unit_dict['un_id'], 26, datetime.datetime.now().strftime("%Y-%m-%d"), gl.user_dict['user_name'])
-                    liblogos.set_unit_settings(gl.unit_dict['un_id'], 28, lic_dict['comercial_version'], '')
+                    try:
+                        """já tem o nome moderno """
+                        liblogos.set_unit_settings(gl.unit_dict['un_id'], 28, lic_dict['comercial_version'], '')
+                    except KeyError:
+                        """ nome antigo"""
+                        liblogos.set_unit_settings(gl.unit_dict['un_id'], 28, lic_dict['commercial_version'], '')
                     try:
                         liblogos.set_unit_settings(gl.unit_dict['un_id'], 7, lic_dict['rdp'], '')
                     except KeyError:

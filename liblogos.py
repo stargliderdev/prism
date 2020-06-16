@@ -215,7 +215,13 @@ def lic_view(lic_dict, lic_type):
     body_text += td_caixa + 'Capital Social' + td_data + lic_dict['cs'] + td_end
     body_text += td_caixa + 'Reg. C.R.C.' + td_data + lic_dict['crc'] + td_end
     body_text += '<tr>  <td id="label1"; colspan="2">Conteudo da Licença</td> </tr>'
-    body_text += td_caixa + 'Versão Comercial' + td_data + lic_dict['software'] + td_end
+    try:
+        body_text += td_caixa + 'Versão Comercial' + td_data + lic_dict['comercial_version'] + td_end
+    except KeyError:
+        try:
+            body_text += td_caixa + 'Versão Comercial' + td_data + lic_dict['commercial_version'] + td_end
+        except KeyError:
+            body_text += td_caixa + 'Versão Comercial' + td_data + 'Formato antigo' + td_end
     try:
         body_text += td_caixa + 'Tipo Software' + td_data + lic_dict['software_name'] + td_end
     except KeyError:
@@ -304,7 +310,7 @@ def eorder_to_html(lic_dict, lic_type):
     body_text += td_caixa + 'Localidade' + td_data + lic_dict['localidade'] + td_end
     body_text += td_caixa + 'Código Postal' + td_data + lic_dict['cp1'] + td_end
     body_text += '<tr>  <td id="label1"; colspan="2">Conteudo da Licença</td> </tr>'
-    body_text += td_caixa + 'Versão Comercial' + td_data + lic_dict['software'] + td_end
+    body_text += td_caixa + 'Versão Comercial' + td_data + lic_dict['comercial_version'] + td_end
     body_text += td_caixa + 'Password' + td_data + lic_dict['password'] + td_end
     body_text += td_caixa + 'Serie' + td_data + lic_dict['serie'] + td_end
     body_text += td_caixa + 'Data de Validade' + td_data + lic_dict['date_valid'] + td_end

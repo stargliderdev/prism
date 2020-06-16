@@ -394,11 +394,32 @@ class MakeLic(QDialog):
                 sett_list = self.com_version_data['insoft_opt_settings'].split(',')
                 sett_error = [True,'']
                 for n in sett_list:
-                    has_sett = libpg.query_one('select us_id from unit_settings where us_unit_id = %s and us_act_id = %s', (gl.unit_dict['un_id'], n))
+                    """ verifica o seting que obriga"""
+                    has_sett = libpg.query_one('select us_act_id, us_value1 from unit_settings where us_unit_id = %s and us_act_id = %s', (gl.unit_dict['un_id'], n))
                     if has_sett is None:
-                        a = data_sets.get_settings_data(n)
-                        sett_error[0] = False
-                        sett_error[1] = sett_error[1] + '\n' + a[1]
+                        if int(n) == 29:
+                            """ é o direct print que não é obrigatorio mas tem de ir no relatorio"""
+                            """ isto devia ser subtiuido por uma lista do que vai mas não é obrigatório """
+                            print('pass o 29',n)
+                            pass
+                        else:
+                            a = data_sets.get_settings_data(n)
+                            sett_error[0] = False
+                            sett_error[1] = sett_error[1] + '\n' + a[1]
+                    elif has_sett[0] == 30:
+                        """apanha o nivel do AGD"""
+                        if has_sett[1].upper() in ['A','R']:
+                            """ se for um dos que obriga a sector"""
+                            has_sector = libpg.query_one('select us_act_id, us_value1 from unit_settings where us_unit_id = %s and us_act_id = %s', (gl.unit_dict['un_id'], 16))
+                            if has_sector is None:
+                                """ não tem sector mas obriga a ter"""
+                                sett_error[0] = False
+                                sett_error[1] = 'Nivel A ou R, mas sem sector'
+                        else:
+                            """ +e o M não faz nada  """
+                            # libpg.execute_query('delete from unit_settings where us_unit_id = %s and us_act_id = %s', (gl.unit_dict['un_id'], 16))
+                            pass
+
                 if sett_error[0]:
                     return True
                 else:
@@ -445,10 +466,14 @@ class MakeLic(QDialog):
         self.lic_values['date_contract'] = self.date_contract.date().toPyDate().strftime("%Y-%m-%d")
         self.lic_values['date_valid'] = self.date_valid.date().toPyDate().strftime("%Y-%m-%d")
         self.lic_values['who'] = gl.user_dict['user_name']
-        self.lic_values['sector'] = liblogos.get_unit_setting1(self.unit_id, 16)
-        # self.lic_values['serie'] = liblogos.get_unit_setting1(self.unit_id, 20)
-        # self.lic_values['rdp'] = liblogos.get_unit_setting1(self.unit_id, 7)
-        self.lic_values['printon'] = liblogos.get_unit_setting1(self.unit_id, 29)
+        if liblogos.get_unit_setting1(self.unit_id, 16) == 'N/D':
+            pass
+        else:
+            self.lic_values['sector'] = liblogos.get_unit_setting1(self.unit_id, 16)
+        if liblogos.get_unit_setting1(self.unit_id, 29) == 'N/D':
+            pass
+        else:
+            self.lic_values['printon'] = liblogos.get_unit_setting1(self.unit_id, 29)
         self.lic_values['comercial_version'] = self.com_version_data['insoft_opt_name']
         self.lic_values['comercial_version_key'] = self.com_version_data['insoft_opt_code'] # self.comercial_version_key
         a = libpg.query_many('select unit_set_id, unit_set_name from unit_set_types where unit_set_id in(' + self.com_version_data['insoft_opt_settings'] + ')', (True,))
@@ -456,7 +481,8 @@ class MakeLic(QDialog):
         for n in a:
             v = libpg.query_one('select us_value1, us_value2 from unit_settings where us_unit_id=%s and  us_act_id=%s', (self.unit_id, n[0]))
             if v is None:
-                opt_list.append((n[1], 'n/d'))
+                pass
+                # opt_list.append((n[1], 'n/d'))
             else:
                 opt_list.append((n[1], v[0]))
         self.lic_values['option'] = opt_list
