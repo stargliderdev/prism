@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLineEdit, QPushButton, QTextE
 
 import add_info
 import liblogos
+import libpg
 import msg_sms
 import parameters as gl
 import process_save
@@ -39,15 +40,17 @@ class DdnsEdit(QDialog):
         self.time_out.setMaximumWidth(30)
         smsInternalBtn = QPushButton('SMS interna')
         smsInternalBtn.clicked.connect(self.send_sms_internal)
-        self.makeProcessBtn = QPushButton('Pedido')
+        self.makeProcessBtn = QPushButton('Cria Pedido')
         self.makeProcessBtn.setEnabled(False)
         self.makeProcessBtn.clicked.connect(self.make_process_click)
-        
+        self.closeProcessBtn = QPushButton('Fecha Pedido')
+        self.closeProcessBtn.setEnabled(True)
+        self.closeProcessBtn.clicked.connect(self.close_process_click)
         smsClientBtn = QPushButton('SMS Cliente')
         smsClientBtn.clicked.connect(self.send_sms_client)
         
-        masterLayout.addLayout(qc.addHLayout(['DDNS:', self.ddnsEdt, 'Time out (s)', self.time_out, smsInternalBtn, self.makeProcessBtn]))
-        masterLayout.addLayout(qc.addHLayout(['Proprietário', self.ownerEdt, smsClientBtn]))
+        masterLayout.addLayout(qc.addHLayout(['DDNS:', self.ddnsEdt, 'Time out (s)', self.time_out, self.makeProcessBtn, self.closeProcessBtn]))
+        masterLayout.addLayout(qc.addHLayout(['Proprietário', self.ownerEdt,smsInternalBtn, smsClientBtn]))
         self.outputPlainText = QTextEdit()
         palette = QPalette()
         brush = QBrush(QColor(0, 255, 0))
@@ -88,6 +91,17 @@ class DdnsEdit(QDialog):
         else:
             self.ddnsEdt.setText(data[0])
             self.ownerEdt.setText(data[1])
+        self.has_pend_p = libpg.query_one('''select proc_id, proc_date, proc_reported from assistencias where proc_unit_id=%s and proc_type=%s and proc_pendente=True''',
+                                     (gl.unit_dict['un_id'],'DDNS'))
+        print('--------Debug---------')
+        print('__init__')
+        print(self.has_pend_p)
+        print('------end debug-------')
+        
+        if self.has_pend_p is None:
+            self.closeProcessBtn.setEnabled(False)
+        else:
+            self.closeProcessBtn.setEnabled(True)
     
     def cancel_btn_click(self):
         self.close()
@@ -110,6 +124,18 @@ class DdnsEdit(QDialog):
             smtpmail.send_process_mail(process_id)
             QMessageBox.critical(None, "Info", "Processo criado " + str(process_id))
             self.close()
+            
+    def close_process_click(self):
+        x_dict = {'problem': self.ddns_error, 'proc_type': 'DDNS'}
+        form = add_info.AddInfo()
+        form.exec_()
+        if form.ret[0]:
+            x_dict.update(form.ret[1])
+            process_id: int = process_save.intervention(x_dict)
+            smtpmail.send_process_mail(process_id)
+            QMessageBox.critical(None, "Info", "Processo criado " + str(process_id))
+            self.close()
+    
         
     def ddns_test_click(self):
         self.ddns = self.ddnsEdt.text()
@@ -129,7 +155,10 @@ class DdnsEdit(QDialog):
             html += '\n Respondeu em: ' + str((t1 - t0))[0:4] + ' segundos.'
         else:
             t1 = time.time()
-            self.makeProcessBtn.setEnabled(True)
+            if self.has_pend_p is None:
+                self.makeProcessBtn.setEnabled(True)
+            else:
+                pass
             html = ''' <!DOCTYPE
                     html > < html
                     lang = "pt_pt"> <head> <meta

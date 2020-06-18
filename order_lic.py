@@ -92,22 +92,29 @@ class MakeLic(QDialog):
         self.pcounter.setMinimumWidth(20)
         tabLayout.addLayout(qc.addHLayout(['Cabeçalho',self.header, self.hcounter,'Telefones',self.phones], lw=100))
         self.un_morada = QLineEdit()
-        self.un_morada.setReadOnly(True)
+        # self.un_morada.setReadOnly(True)
         self.un_morada.setMaxLength(255)
         self.un_morada.setMaximumWidth(300)
-        tabLayout.addLayout(qlib.addHLayout(['Morada', self.un_morada, True], lw=100))
+        self.un_morada.setMaxLength(40)
+        self.unMoradaLenght = QLabel('00')
+        self.un_morada.textChanged.connect(self.calc_len)
+        tabLayout.addLayout(qlib.addHLayout(['Morada', self.un_morada, self.unMoradaLenght,True], lw=100))
         self.un_localidade = QLineEdit()
-        self.un_localidade.setReadOnly(True)
+        # self.un_localidade.setReadOnly(True)
         self.un_localidade.setMaxLength(35)
         self.un_localidade.setMaximumWidth(300)
         self.un_cp = QLineEdit()
-        self.un_cp.setReadOnly(True)
+        self.un_cp.setMaxLength(40)
+        # self.un_cp.setReadOnly(True)
+        self.unCpLenght = QLabel('00')
+        self.un_cp.textChanged.connect(self.calc_len)
         # self.un_cp.setMaximumWidth(300)
         cp_drill = QToolButton()
         cp_drill.setIcon(QIcon('.//img//drill_down.png'))
         cp_drill.setToolTip('Consultar Cliente')
         cp_drill.clicked.connect(self.cp_drill_down)
-        tabLayout.addLayout(qlib.addHLayout(['Localidade', self.un_localidade,'Código Postal', self.un_cp,cp_drill], lw=100))
+        tabLayout.addLayout(qlib.addHLayout(['Localidade', self.un_localidade,True],lw=100))
+        tabLayout.addLayout(qlib.addHLayout(['Código Postal', self.un_cp,cp_drill,self.unCpLenght,True], lw=100))
         tabLayout.addWidget(qc.HLine())
         self.date_contract = QDateEdit()
         self.date_contract.setMaximumWidth(140)
@@ -183,19 +190,23 @@ class MakeLic(QDialog):
         tabLayout.addLayout(qlib.addHLayout(['NIF', self.cl_nif, True], lw=120))
 
         self.cl_nome = QLineEdit()
-        self.cl_nome.setMaxLength(50)
-        self.cl_nome.setMaximumWidth(300)
-        tabLayout.addLayout(qlib.addHLayout(['D. Social', self.cl_nome, True], lw=120))
+        self.cl_nome.setMaxLength(40)
+        self.cl_nome.setMinimumWidth(600)
+        self.clNameLenght = QLabel('00')
+        self.cl_nome.textChanged.connect(self.calc_len)
+        tabLayout.addLayout(qlib.addHLayout(['D. Social', self.cl_nome, True, self.clNameLenght], lw=120))
         self.cl_morada = QLineEdit()
-        self.cl_morada.setReadOnly(True)
-        self.cl_morada.setMaxLength(255)
-        self.cl_morada.setMaximumWidth(300)
-        tabLayout.addLayout(qlib.addHLayout(['Morada', self.cl_morada, True], lw=120))
+        # self.cl_morada.setReadOnly(True)
+        self.cl_morada.setMaxLength(40)
+        self.cl_morada.setMinimumWidth(600)
+        self.clMoradaLenght =QLabel('00')
+        self.cl_morada.textChanged.connect(self.calc_len)
+        tabLayout.addLayout(qlib.addHLayout(['Morada', self.cl_morada,self.clMoradaLenght, True], lw=120))
 
         self.cl_localidade = QLineEdit()
-        self.cl_localidade.setReadOnly(True)
+        # self.cl_localidade.setReadOnly(True)
         self.cl_localidade.setMaxLength(35)
-        self.cl_localidade.setMaximumWidth(300)
+        self.cl_localidade.setMaximumWidth(600)
         tabLayout.addLayout(qlib.addHLayout(['Localidade', self.cl_localidade, True], lw=120))
 
         self.cl_cap_social = QLineEdit()
@@ -209,17 +220,20 @@ class MakeLic(QDialog):
         self.cl_conservatoria = QLineEdit()
         self.cl_conservatoria.setReadOnly(True)
         self.cl_conservatoria.setMaxLength(100)
-        self.cl_conservatoria.setMaximumWidth(300)
+        self.cl_conservatoria.setMaximumWidth(600)
         tabLayout.addLayout(qlib.addHLayout(['Conservatória', self.cl_conservatoria, True], lw=120))
 
         self.cl_cp = QLineEdit()
-        self.cl_cp.setReadOnly(True)
+        # self.cl_cp.setReadOnly(True)
         self.cl_cp.setMaximumWidth(300)
-        tabLayout.addLayout(qlib.addHLayout(['Código Postal', self.cl_cp, True], lw=120))
+        self.cl_cp.setMaxLength(40)
+        self.clCpLenght = QLabel('00')
+        self.cl_cp.textChanged.connect(self.calc_len)
+        tabLayout.addLayout(qlib.addHLayout(['Código Postal', self.cl_cp,self.clCpLenght, True], lw=120))
         self.cl_email = QLineEdit()
         self.cl_email.setReadOnly(True)
         self.cl_email.setMaxLength(30)
-        self.cl_email.setMaximumWidth(300)
+        self.cl_email.setMinimumWidth(600)
         tabLayout.addLayout(qlib.addHLayout(['e-mail', self.cl_email, True], lw=120))
         tabLayout.addStretch()
         mainTabLayout.addLayout(tabLayout)
@@ -235,6 +249,7 @@ class MakeLic(QDialog):
         label.setText('Utilizar mudança de linha, mais conhecido como ENTER, nos comentários S.F.F.')
         tabLayout.addWidget(label)
         mainTabLayout.addLayout(tabLayout)
+    
     
     def com_version_drill(self):
         form = insoft_c_version.ChangeComercialVersion()
@@ -397,28 +412,25 @@ class MakeLic(QDialog):
                     """ verifica o seting que obriga"""
                     has_sett = libpg.query_one('select us_act_id, us_value1 from unit_settings where us_unit_id = %s and us_act_id = %s', (gl.unit_dict['un_id'], n))
                     if has_sett is None:
-                        if int(n) == 29:
-                            """ é o direct print que não é obrigatorio mas tem de ir no relatorio"""
-                            """ isto devia ser subtiuido por uma lista do que vai mas não é obrigatório """
-                            print('pass o 29',n)
-                            pass
-                        else:
-                            a = data_sets.get_settings_data(n)
-                            sett_error[0] = False
-                            sett_error[1] = sett_error[1] + '\n' + a[1]
-                    elif has_sett[0] == 30:
-                        """apanha o nivel do AGD"""
-                        if has_sett[1].upper() in ['A','R']:
-                            """ se for um dos que obriga a sector"""
-                            has_sector = libpg.query_one('select us_act_id, us_value1 from unit_settings where us_unit_id = %s and us_act_id = %s', (gl.unit_dict['un_id'], 16))
-                            if has_sector is None:
-                                """ não tem sector mas obriga a ter"""
-                                sett_error[0] = False
-                                sett_error[1] = 'Nivel A ou R, mas sem sector'
-                        else:
-                            """ +e o M não faz nada  """
-                            # libpg.execute_query('delete from unit_settings where us_unit_id = %s and us_act_id = %s', (gl.unit_dict['un_id'], 16))
-                            pass
+                        # if int(n) == 16:
+                        #     """falta o sector"""
+                        #     """apanha o nivel do AGD"""
+                        #     agd_level = libpg.query_one('select us_act_id, us_value1 from unit_settings where us_unit_id = %s and us_act_id = %s', (gl.unit_dict['un_id'], 30))
+                        #     if agd_level[1].upper() == 'M':
+                        #         """ não obriga a ter sector"""
+                        #         pass
+                        #     else:
+                        #         """ não tem sector mas obriga a ter"""
+                        #         sett_error[0] = False
+                        #         sett_error[1] = 'Nivel A ou R, mas sem sector'
+                        #         """ +e o M não faz nada  """
+                        # elif int(n) == 29:
+                        #     """ não tem direct print mas não chateia """
+                        #     pass
+                        # else:
+                        a = data_sets.get_settings_data(n)
+                        sett_error[0] = False
+                        sett_error[1] = sett_error[1] + '\n' + a[1]
 
                 if sett_error[0]:
                     return True
@@ -485,6 +497,13 @@ class MakeLic(QDialog):
                 # opt_list.append((n[1], 'n/d'))
             else:
                 opt_list.append((n[1], v[0]))
+        has_remote_desktop = libpg.query_one('select us_value1, us_value2 from unit_settings where us_unit_id=%s and  us_act_id=%s', (self.unit_id, 7))
+        if has_remote_desktop is None:
+            """ não tem remote desktop #7"""
+            pass
+        else:
+            """ tem remote desktop #7 adiciona"""
+            opt_list.append(('Remote Desktop', has_remote_desktop[0]))
         self.lic_values['option'] = opt_list
         insoft_options_list = []
         for linha in range(0, self.gridOptions.rowCount()):
@@ -506,8 +525,14 @@ class MakeLic(QDialog):
         self.lic_values['comments'] = self.comments_Text.toPlainText()
 
     def calc_len(self,text):
-        self.hcounter.setNum(42 - len(self.header.text()))
+        self.hcounter.setNum(40 - len(self.header.text()))
         self.pcounter.setNum(9 - len(self.phones.text()))
+        self.clNameLenght.setNum(40 - len(self.cl_nome.text()))
+        self.clCpLenght.setNum(40 - len(self.cl_cp.text()))
+        self.unCpLenght.setNum(40 - len(self.un_cp.text()))
+        self.unMoradaLenght.setNum(40 - len(self.un_morada.text()))
+        self.clMoradaLenght.setNum(40 - len(self.cl_morada.text()))
+        
 
     def posto_change(self, value):
         self.calc_lic()
