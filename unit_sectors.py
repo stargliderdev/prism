@@ -17,7 +17,7 @@ def simple_table():
     # unaccent(lower(authors.au_name))
     # LIKE
     # unaccent('%varios%')
-    data = libpg.query_many('''select un_nome, us_value1
+    data = libpg.query_many('''select un_name, us_value1
        from unit_settings, unidades
             where us_unit_id= un_id and us_act_id = 16 and unidades.un_activa=True ''')
     # '%charlier,giraud%'

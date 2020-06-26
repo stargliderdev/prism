@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import time
+import datetime
 
 import psycopg2
 from PyQt5.QtCore import Qt
@@ -24,6 +25,7 @@ class DdnsEdit(QDialog):
         self.resize(768, 600)
         self.center()
         self.unit_setting_id = unit_setting
+        self.comm_status: str = ''
         # if not data is None:
         #     self.ddns: str = data[0]
         #     self.owner: str = data[1]
@@ -44,13 +46,14 @@ class DdnsEdit(QDialog):
         self.makeProcessBtn.setEnabled(False)
         self.makeProcessBtn.clicked.connect(self.make_process_click)
         self.closeProcessBtn = QPushButton('Fecha Pedido')
-        self.closeProcessBtn.setEnabled(True)
+        self.closeProcessBtn.setEnabled(False)
         self.closeProcessBtn.clicked.connect(self.close_process_click)
         smsClientBtn = QPushButton('SMS Cliente')
         smsClientBtn.clicked.connect(self.send_sms_client)
         
-        masterLayout.addLayout(qc.addHLayout(['DDNS:', self.ddnsEdt, 'Time out (s)', self.time_out, self.makeProcessBtn, self.closeProcessBtn]))
-        masterLayout.addLayout(qc.addHLayout(['Proprietário', self.ownerEdt,smsInternalBtn, smsClientBtn]))
+        masterLayout.addLayout(qc.addHLayout(
+            ['DDNS:', self.ddnsEdt, 'Time out (s)', self.time_out, self.makeProcessBtn, self.closeProcessBtn]))
+        masterLayout.addLayout(qc.addHLayout(['Proprietário', self.ownerEdt, smsInternalBtn, smsClientBtn]))
         self.outputPlainText = QTextEdit()
         palette = QPalette()
         brush = QBrush(QColor(0, 255, 0))
@@ -91,17 +94,25 @@ class DdnsEdit(QDialog):
         else:
             self.ddnsEdt.setText(data[0])
             self.ownerEdt.setText(data[1])
-        self.has_pend_p = libpg.query_one('''select proc_id, proc_date, proc_reported from assistencias where proc_unit_id=%s and proc_type=%s and proc_pendente=True''',
-                                     (gl.unit_dict['un_id'],'DDNS'))
+        self.has_pend_p = libpg.query_one(
+            '''select proc_id, proc_date, proc_reported from assistencias where proc_unit_id=%s and proc_type=%s and proc_pendente=True''',
+            (gl.unit_dict['un_id'], 'DDNS'))
+    
         print('--------Debug---------')
         print('__init__')
         print(self.has_pend_p)
         print('------end debug-------')
         
-        if self.has_pend_p is None:
-            self.closeProcessBtn.setEnabled(False)
-        else:
-            self.closeProcessBtn.setEnabled(True)
+    
+    
+        # if self.has_pend_p is None:
+        #     """sem processo pendente"""
+        #     self.closeProcessBtn.setEnabled(False)
+        #     """ processo pendente só activa de pois de testar"""
+        # else:
+             # self.closeProcessBtn.setEnabled(True)
+
+            
     
     def cancel_btn_click(self):
         self.close()
@@ -115,28 +126,60 @@ class DdnsEdit(QDialog):
         form.exec_()
     
     def make_process_click(self):
-        x_dict = {'problem': self.ddns_error, 'proc_type': 'DDNS'}
-        form = add_info.AddInfo()
+        gl.proc_dict.update({'proc_report_internal': self.ddns_error,
+                  'proc_type': 'DDNS',
+                  'proc_date': datetime.datetime.now(),
+                  'proc_meio': 'Escritório',
+                  'proc_reported': self.comm_status,
+                  'proc_status': 'Aguarda n/ Intervenção',
+                  'proc_montante': 0,
+                  'proc_jusante': -1,
+                  'proc_pendente': True,
+                  'proc_facturar': False,
+                  'proc_type': 'DDNS',
+                               })
+
+        form = add_info.AddInfo(gl.proc_dict)
         form.exec_()
         if form.ret[0]:
-            x_dict.update(form.ret[1])
-            process_id: int = process_save.intervention(x_dict)
-            smtpmail.send_process_mail(process_id)
-            QMessageBox.critical(None, "Info", "Processo criado " + str(process_id))
-            self.close()
+            gl.proc_dict.update(form.ret[1])
             
-    def close_process_click(self):
-        x_dict = {'problem': self.ddns_error, 'proc_type': 'DDNS'}
-        form = add_info.AddInfo()
-        form.exec_()
-        if form.ret[0]:
-            x_dict.update(form.ret[1])
-            process_id: int = process_save.intervention(x_dict)
-            smtpmail.send_process_mail(process_id)
-            QMessageBox.critical(None, "Info", "Processo criado " + str(process_id))
-            self.close()
+            process_id: int = process_save.save_process(gl.proc_dict)
+            if process_id[0]:
+                smtpmail.send_process_mail(process_id[1])
+                QMessageBox.information(None, "Info", "Processo criado " + str(process_id[1]))
+                self.close()
+            else:
+                QMessageBox.critical(None, "Erro", "Não possivel criar um processo")
     
+    def close_process_click(self):
+        gl.proc_dict.update({'proc_report_internal': self.ddns_error,
+                             'proc_type': 'DDNS',
+                             'proc_date': datetime.datetime.now(),
+                             'proc_meio': 'Escritório',
+                             'proc_reported': self.comm_status,
+                             'proc_status': 'Resolvido',
+                             'proc_montante': self.has_pend_p[0],
+                             'proc_jusante': -1,
+                             'proc_pendente': False,
+                             'proc_facturar': False,
+                             'proc_type': 'DDNS',
+                             })
         
+        form = add_info.AddInfo(gl.proc_dict)
+        form.exec_()
+        for key, value in gl.proc_dict.items():
+            print('[' + key + ']', value)
+        if form.ret[0]:
+            gl.proc_dict.update(form.ret[1])
+            process_id: int = process_save.save_process(gl.proc_dict)
+            if process_id[0]:
+                smtpmail.send_process_mail(process_id[1])
+                QMessageBox.information(None, "Info", "Processo criado " + str(process_id[1]))
+                self.close()
+            else:
+                QMessageBox.critical(None, "Erro", "Não possivel criar um processo")
+    
     def ddns_test_click(self):
         self.ddns = self.ddnsEdt.text()
         self.outputPlainText.setText('Testando DDNS de: ' + self.ddns)
@@ -145,6 +188,14 @@ class DdnsEdit(QDialog):
         time.sleep(0.23)
         t0 = time.time()
         a = psql_listen()
+        """ pode ser aberto mesmo estando a funcionar."""
+        self.makeProcessBtn.setEnabled(True)
+        """ pode ser fechado o mesmo dando erro"""
+        if self.has_pend_p is None:
+            self.closeProcessBtn.setEnabled(True)
+        else:
+            self.makeProcessBtn.setEnabled(False)
+            self.closeProcessBtn.setEnabled(True)
         if a[0]:
             html = "{:>14}".format('DDNS: ') + self.ddns + '\n'
             html += '-' * 80 + '\n'
@@ -153,12 +204,12 @@ class DdnsEdit(QDialog):
             html += self.info_psql()
             t1 = time.time()
             html += '\n Respondeu em: ' + str((t1 - t0))[0:4] + ' segundos.'
+            self.ddns_error = html
+            self.comm_status = 'A verificado e a funcionar'
         else:
             t1 = time.time()
-            if self.has_pend_p is None:
-                self.makeProcessBtn.setEnabled(True)
-            else:
-                pass
+            # if self.has_pend_p is None:
+
             html = ''' <!DOCTYPE
                     html > < html
                     lang = "pt_pt"> <head> <meta
@@ -166,6 +217,7 @@ class DdnsEdit(QDialog):
                     </head> <br><font size="5" face="verdana" color="red"><strong> ''' + a[1].replace('\n', '<br>') \
                    + '''<strong> <br><font size="3" face="verdana" color="orange">''' + 'Não respondeu em : ' + str(
                 (t1 - t0))[0:4] + ''' segundos. </font></html > '''
+            self.comm_status = 'Erro nas comunicações'
             self.ddns_error = a[1]
         self.outputPlainText.append(html)
     

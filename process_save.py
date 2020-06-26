@@ -5,10 +5,90 @@ import parameters as gl
 import libpg as libpg
 
 
+def save_process(data_dict):
+    flag = True
+    if not data_dict['proc_tecnico'] in data_dict:
+        flag = False
+        # data_dict['proc_quem'] = gl.unit_dict['user_name']
+    data_dict['proc_unit_name'] = gl.unit_dict['un_name']
+    data_dict['proc_unit_id'] = gl.unit_dict['un_id']
+    data_dict['proc_updated'] = datetime.datetime.now()
+    # data_dict['proc_data_fim'] = datetime.datetime.now() + datetime.timedelta(minutes=4)
+    data_dict['proc_area'] = gl.unit_dict['un_area']
+    data_dict['proc_user'] = gl.user_dict['user_name']
+        
+    if flag:
+        return False, -1
+    else:
+        sql = '''insert into assistencias  (
+           proc_date,
+           proc_unit_id,
+           proc_reported,
+           proc_report_internal,
+           proc_serial_number,
+           proc_report_invoice,
+           proc_model,
+           proc_contacto,
+           proc_status,
+           proc_meio,
+           proc_duracao,
+           proc_quem,
+           proc_unit_name,
+           proc_tecnico,
+           proc_updated,
+           proc_nivel,
+           proc_montante,
+           proc_jusante,
+           proc_asterisk,
+           proc_pendente,
+           proc_facturar,
+           proc_facturado,
+           proc_data_fim,
+           proc_tags,
+           proc_relatorio_cliente,
+           proc_area,
+           proc_type,
+           proc_user)
+           values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
+        data = (
+           data_dict['proc_date'],
+           data_dict['proc_unit_id'],
+           data_dict['proc_reported'],
+           data_dict['proc_report_internal'],
+           data_dict['proc_serial_number'],
+           data_dict['proc_report_invoice'],
+           data_dict['proc_model'],
+           data_dict['proc_contacto'],
+           data_dict['proc_status'],
+           data_dict['proc_meio'],
+           data_dict['proc_duracao'],
+           data_dict['proc_quem'],
+           data_dict['proc_unit_name'],
+           data_dict['proc_tecnico'],
+           data_dict['proc_updated'],
+           data_dict['proc_nivel'],
+           data_dict['proc_montante'],
+           data_dict['proc_jusante'],
+           data_dict['proc_asterisk'],
+           data_dict['proc_pendente'],
+           data_dict['proc_facturar'],
+           data_dict['proc_facturado'],
+           data_dict['proc_data_fim'],
+           data_dict['proc_tags'],
+           data_dict['proc_relatorio_cliente'],
+           data_dict['proc_area'],
+           data_dict['proc_type'],
+           data_dict['proc_user'])
+        
+        libpg.execute_query(sql, data)
+        process_number = libpg.query_one('select max(proc_id) as max_id from assistencias', (True,))[0]
+        return True,process_number
+    
+
 def intervention(data_dict):
-    sql = '''INSERT into assistencias (proc_date,
-    proc_updated, proc_unit_id, proc_tecnico, proc_report_internal,
-                  proc_quem,proc_contacto,
+    sql = '''INSERT into assistencias (PROC_DATE,
+    PROC_UPDATED, PROC_UNIT_ID, PROC_TECNICO, PROC_REPORT_INTERNAL,
+                  PROC_QUEM,proc_contacto,
                   proc_meio,proc_duracao,proc_unit_name,
                   proc_reported, proc_montante, proc_jusante, proc_status, proc_nivel,proc_facturar,proc_pendente, proc_data_fim, proc_type, proc_user)
                 values (%s,%s,%s,%s,%s,%s,'',%s,%s,%s,%s,0,-1,'Aguarda n/ Intervenção', 'Normal', False,True, %s,%s,%s)'''
@@ -20,7 +100,7 @@ def intervention(data_dict):
             data_dict['client_name'],
             'Escritorio',
             datetime.timedelta(hours=0, minutes=0, seconds=59),
-            gl.unit_dict['un_nome'],
+            gl.unit_dict['un_name'],
             'Erro nas comunicações',
             datetime.datetime.now() + datetime.timedelta(minutes=4), data_dict['proc_type'],gl.user_dict['user_name']
             )

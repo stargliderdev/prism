@@ -306,7 +306,7 @@ class MakeEorder(QDialog):
         self.cl_cp.setText(self.client['cl_cp'])
         self.cl_conservatoria.setText(self.client['cl_conservatoria'])
         self.cl_cap_social.setText(self.client['cl_cap_social'])
-        self.header.setText(self.unit['un_nome'])
+        self.header.setText(self.unit['un_name'])
         self.un_morada.setText(self.unit['un_morada'])
         self.un_localidade.setText(self.unit['un_localidade'])
         self.un_cp.setText(self.unit['un_cp'])
@@ -459,7 +459,7 @@ class MakeEorder(QDialog):
         self.move(qr.topLeft())
     
     def get_db_data(self,eorder_id):
-        self.unit = libpg.get_record_dic('''SELECT un_nome, un_morada, un_localidade, un_cp, un_cliente_id
+        self.unit = libpg.get_record_dic('''SELECT un_name, un_morada, un_localidade, un_cp, un_cliente_id
                     from unidades where un_id = %s ''', (eorder_id,))
         self.client = libpg.get_record_dic('''SELECT  cl_id, cl_nif,  cl_nome, cl_morada, cl_localidade, cl_cp,
                     cl_telefone, cl_cap_social, cl_conservatoria

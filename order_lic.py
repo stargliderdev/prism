@@ -370,7 +370,7 @@ class MakeLic(QDialog):
         stdio.read_field(self.cl_cp,'cl_cp', self.client_dict)
         stdio.read_field(self.cl_conservatoria,'cl_conservatoria', self.client_dict)
         stdio.read_field(self.cl_cap_social,'cl_cap_social', self.client_dict)
-        stdio.read_field(self.header,'un_nome', self.unit_dict)
+        stdio.read_field(self.header,'un_name', self.unit_dict)
         stdio.read_field(self.un_morada,'un_morada', self.unit_dict)
         stdio.read_field(self.un_localidade,'un_localidade', self.unit_dict)
         stdio.read_field(self.un_cp,'un_cp', self.unit_dict)
@@ -561,7 +561,7 @@ class MakeLic(QDialog):
             self.un_cp.setText(form.ret[2])
 
     def get_db_data(self):
-        self.unit_dict = libpg.get_record_dic('''SELECT un_nome, un_morada, un_localidade, un_cp, un_cliente_id
+        self.unit_dict = libpg.get_record_dic('''SELECT un_name, un_morada, un_localidade, un_cp, un_cliente_id
                     from unidades where un_id = %s ''', (self.unit_id,))
         self.client_dict = libpg.get_record_dic('''SELECT  cl_id, cl_nif, cl_nome, cl_morada, cl_localidade, cl_cp,
                     cl_telefone, cl_cap_social, cl_conservatoria

@@ -51,7 +51,7 @@ def hardware_ages_report(hl):
 
 def hardware_inventory_report(hl, unit_data):
     html = CSS_MONO
-    html += '''<br><br>''' + 'Unidade:' + unit_data['un_nome'].upper() + ''''''
+    html += '''<br><br>''' + 'Unidade:' + unit_data['un_name'].upper() + ''''''
     html += '''<hr>'''
     html += '''
         <table width="900" align="center">

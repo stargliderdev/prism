@@ -161,7 +161,7 @@ class MainWindow(QMainWindow):
             stat = ' '
         else:
             stat = ''' and as_status like  \'''' + str(self.statusCBox.currentText()) + '\''
-        sql = '''SELECT proc_id, to_char(proc_date, 'DD.MM.YYYY') , unidades.un_nome, proc_status,
+        sql = '''SELECT proc_id, to_char(proc_date, 'DD.MM.YYYY') , unidades.un_name, proc_status,
             to_char(EXTRACT(DAY FROM now()-(proc_date)), '9999') AS delay, unidades.un_localidade, proc_unit_id
             from assistencias,unidades
             where ''' + p + stat + search_tags + ''' and unidades.un_id= assistencias.proc_unit_id
@@ -171,7 +171,7 @@ class MainWindow(QMainWindow):
     
     def process_grid_refresh(self, data_filter):
         if not data_filter:
-            sql = '''select proc_id,to_char(proc_date, 'DD.MM.YYYY'), un_nome,proc_status, unidades.un_localidade, area_name, proc_unit_id
+            sql = '''select proc_id,to_char(proc_date, 'DD.MM.YYYY'), un_name,proc_status, unidades.un_localidade, area_name, proc_unit_id
              from unidades
              inner join assistencias on proc_unit_id = un_id
              inner join areas on area_id = unidades.un_area
@@ -180,11 +180,11 @@ class MainWindow(QMainWindow):
         else:
             area = str(data_filter['areas_ids']).replace('[', '(')
             area = area.replace(']',')')
-            sql = '''select proc_id,to_char(proc_date, 'DD.MM.YYYY'), un_nome,proc_status, unidades.un_localidade, area_name, proc_unit_id
+            sql = '''select proc_id,to_char(proc_date, 'DD.MM.YYYY'), un_name,proc_status, unidades.un_localidade, area_name, proc_unit_id
              from unidades
              inner join assistencias on proc_unit_id = un_id
              inner join areas on area_id = unidades.un_area
-                    where proc_pendente = True and as_area in ''' + area + ''' and
+                    where proc_pendente = True and proc_area in ''' + area + ''' and
              un_activa = true
              order by area_name, proc_id desc'''
         hl = libpg.query_many(sql)
@@ -212,7 +212,7 @@ class MainWindow(QMainWindow):
     def hardware_unit_process(self):
         b = int(self.gridProcess.item(self.gridProcess.currentRow(), 6).text())
         un_name = self.gridProcess.item(self.gridProcess.currentRow(), 1).text()
-        form = hardware.HardwareBrw({'unit_id': b, 'model_id': 0, 'un_nome': un_name})
+        form = hardware.HardwareBrw({'unit_id': b, 'model_id': 0, 'un_name': un_name})
         form.exec_()
     
     def make_process_label(self):
@@ -391,7 +391,7 @@ class MainWindow(QMainWindow):
             pass
     
     def make_sql_for_tags(self):
-        sql = '''SELECT  un_id, un_nome, unit_type.un_type_name,
+        sql = '''SELECT  un_id, un_name, unit_type.un_type_name,
             un_localidade, un_cp
              FROM unidades, unit_type '''
         tags = str(self.tags_to_searchEdit.text()).replace('\'', '\\\'')
@@ -470,7 +470,7 @@ class MainWindow(QMainWindow):
             names = names.replace(']','')
             names = names.replace('\'','')
             self.filterLabel.setText(names)
-            sql = '''SELECT  un_id, un_nome, unit_type.un_type_name, un_localidade, un_cp , area_name
+            sql = '''SELECT  un_id, un_name, unit_type.un_type_name, un_localidade, un_cp , area_name
                     FROM unidades
                     INNER JOIN unit_type on unit_type.un_type_id = unidades.un_type
                     INNER JOIN areas on areas.area_id=unidades.un_area
@@ -503,29 +503,29 @@ class MainWindow(QMainWindow):
             self.units_seach_inc(tx=search)
     
     def units_seach_inc(self, tx='', client=0):
-        sql = '''SELECT  un_id, un_nome, unit_type.un_type_name,
+        sql = '''SELECT  un_id, un_name, unit_type.un_type_name,
             un_localidade, un_cp, area_name
              FROM unidades,  unit_type, areas
              WHERE un_type=unit_type.un_type_id and un_area=area_id AND
              un_activa = ''' + str(self.unitActiveCkBox.isChecked())
         if not tx == '':
-            sql += ''' AND unaccent(LOWER(un_nome)) LIKE ''' + tx
+            sql += ''' AND unaccent(LOWER(un_name)) LIKE ''' + tx
         if client > 0:
             sql += ''' and un_cliente_id= ''' + str(client)
-        sql += ''' ORDER BY un_nome'''
+        sql += ''' ORDER BY un_name'''
         bc = libpg.query_many(sql, (True,))
         ex_grid.grid_std(self.grid_units, data=bc, f_col=['i', 's', 's', 's', 's','s'])
     
     def units_search_text(self):
         search = '\'%%' + self.unitSearchEdt.text().lower() + '%%\''
-        sql = '''SELECT  un_id, un_nome, unit_type.un_type_name,
+        sql = '''SELECT  un_id, un_name, unit_type.un_type_name,
             un_localidade, un_cp, area_name
              FROM unidades,  unit_type, areas
              WHERE  un_type=unit_type.un_type_id
                 and un_area=area_id
                 AND un_activa = ''' + str(self.unitActiveCkBox.isChecked())
-        sql += ''' AND unaccent(LOWER(un_nome)) LIKE ''' + search
-        sql += ''' ORDER BY un_nome'''
+        sql += ''' AND unaccent(LOWER(un_name)) LIKE ''' + search
+        sql += ''' ORDER BY un_name'''
         bc = libpg.query_many(sql, (True,))
         ex_grid.grid_std(self.grid_units, data=bc, f_col=['i', 's', 's', 's', 's','s'])
         self.grid_units.setHorizontalHeaderLabels(['ID', 'Unidade', 'Tipo', 'Localidade', 'C.P.','Zona'])
@@ -539,7 +539,7 @@ class MainWindow(QMainWindow):
         try:
             b = int(self.grid_units.item(self.grid_units.currentRow(), 0).text())
             un_name = self.grid_units.item(self.grid_units.currentRow(), 1).text()
-            form = hardware.HardwareBrw({'unit_id': b, 'model_id': 0, 'un_nome': un_name})
+            form = hardware.HardwareBrw({'unit_id': b, 'model_id': 0, 'un_name': un_name})
             form.exec_()
         except AttributeError:
             pass
@@ -563,11 +563,11 @@ class MainWindow(QMainWindow):
             form.exec_()
             form.ret['model_id'] = form.ret.get('model_id', 0)
             if form.ret['model_id'] > 0:
-                sql = '''SELECT  un_id, un_nome, unit_type.un_type_name, un_localidade, un_cp
+                sql = '''SELECT  un_id, un_name, unit_type.un_type_name, un_localidade, un_cp
                      FROM unidades, unit_type,hardware
                       where unidades.un_id=hardware.hw_unit_id and un_type=unit_type.un_type_id AND
                       hardware.hw_model_id=%s'''
-                sql += ''' ORDER BY un_nome'''
+                sql += ''' ORDER BY un_name'''
                 bc = libpg.query_many(sql, (form.ret['model_id'],))
                 ex_grid.grid_std(self.grid_units, data=bc, f_col=['i', 's', 's', 's', 's'])
                 self.filterLabel.setText(self.report_dict['report_name'] + ':' + form.ret['brand_name'] + ':' + form.ret['model_name'] + ':' + form.ret['hw_type_name'])
@@ -576,12 +576,12 @@ class MainWindow(QMainWindow):
             form = software.SoftwareBrowser({'un_type': 0})
             form.exec_()
             if form.ret[0]:
-                sql = ''' SELECT  un_id, un_nome, 'n/d',un_localidade, un_cp, area_name
+                sql = ''' SELECT  un_id, un_name, 'n/d',un_localidade, un_cp, area_name
                      FROM unit_settings
                      inner join unidades on unidades.un_id = unit_settings.us_unit_id
                      inner join areas  on areas.area_id = unidades.un_area
                      where unit_settings.us_act_id=1 and lower(us_value1) = %s and lower(us_value2) = %s and  unidades.un_activa = %s'''
-                sql += ''' ORDER BY un_nome '''
+                sql += ''' ORDER BY un_name '''
                 xl = libpg.query_many(sql, (form.ret[1].lower(), form.ret[2].lower(), str(self.unitActiveCkBox.isChecked())))
                 ex_grid.grid_std(self.grid_units, data=xl, f_col=['i', 's', 's', 's', 's','s'])
                 self.filterLabel.setText(self.report_dict['report_name'] + ':' + form.ret[1] + ':' + form.ret[2])
@@ -589,7 +589,7 @@ class MainWindow(QMainWindow):
             form = date_input.DateInput(self.report_dict['report_name'])
             form.exec_()
             if form.ret[0]:
-                sql = '''SELECT cm_unit_id, unidades.un_nome,'N/D',un_localidade,
+                sql = '''SELECT cm_unit_id, unidades.un_name,'N/D',un_localidade,
                          comitments_unit.cm_value,(to_date(comitments_unit.cm_value, 'YYYY-MM-DD') - DATE 'now') as s
                         FROM comitments_unit,unidades
                         WHERE  comitments_unit.cm_act_id=15 and cm_archive = False
@@ -606,7 +606,7 @@ class MainWindow(QMainWindow):
             form = date_input.DateInput(self.report_dict['report_name'])
             form.exec_()
             if form.ret[0] :
-                sql = '''SELECT cm_unit_id, unidades.un_nome,'N/D',un_localidade,
+                sql = '''SELECT cm_unit_id, unidades.un_name,'N/D',un_localidade,
                           comitments_unit.cm_value,(to_date(comitments_unit.cm_value, 'YYYY-MM-DD') - DATE 'now') as s
                          FROM comitments_unit,unidades
                          WHERE  comitments_unit.cm_act_id=14 and cm_archive = False
@@ -622,7 +622,7 @@ class MainWindow(QMainWindow):
             form = date_input.DateInput(self.report_dict['report_name'])
             form.exec_()
             if form.ret[0] :
-                sql = '''SELECT cm_unit_id, unidades.un_nome,'N/D',un_localidade,
+                sql = '''SELECT cm_unit_id, unidades.un_name,'N/D',un_localidade,
                           comitments_unit.cm_value,(to_date(comitments_unit.cm_value, 'YYYY-MM-DD') - DATE 'now') as s
                          FROM comitments_unit,unidades
                          WHERE  comitments_unit.cm_act_id=24 and cm_archive = False
@@ -638,7 +638,7 @@ class MainWindow(QMainWindow):
             form = date_input.DateInput(self.report_dict['report_name'])
             form.exec_()
             if form.ret[0] :
-                sql = '''SELECT cm_unit_id, unidades.un_nome,'N/D',un_localidade,
+                sql = '''SELECT cm_unit_id, unidades.un_name,'N/D',un_localidade,
                           comitments_unit.cm_value,(to_date(comitments_unit.cm_value, 'YYYY-MM-DD') - DATE 'now') as s
                          FROM comitments_unit,unidades
                          WHERE  comitments_unit.cm_act_id=13 and cm_archive = False
@@ -804,7 +804,7 @@ class MainWindow(QMainWindow):
     def scall_open_click(self):
         # stat = ''' and as_status like  \'''' + unicode(self.status.currentText()) + '\''
         unit_id = int(self.grid_units.item(self.grid_units.currentRow(), 0).text())
-        sql = '''SELECT proc_id, to_char(proc_date, 'DD.MM.YYYY') , unidades.un_nome, proc_status,
+        sql = '''SELECT proc_id, to_char(proc_date, 'DD.MM.YYYY') , unidades.un_name, proc_status,
             to_char(EXTRACT(DAY FROM now()-(proc_date)), '9999') AS delay, unidades.un_localidade, proc_unit_id
             from assistencias,unidades
             where proc_pendente = True and proc_unit_id =%s and unidades.un_id= assistencias.proc_unit_id
@@ -815,7 +815,7 @@ class MainWindow(QMainWindow):
     
     def scall_closed_click(self):
         unit_id = int(self.grid_units.item(self.grid_units.currentRow(), 0).text())
-        sql = '''SELECT proc_id, to_char(proc_date, 'DD.MM.YYYY') , unidades.un_nome, proc_status,
+        sql = '''SELECT proc_id, to_char(proc_date, 'DD.MM.YYYY') , unidades.un_name, proc_status,
             to_char(EXTRACT(DAY FROM now()-(proc_date)), '9999') AS delay, unidades.un_localidade, proc_unit_id
             from assistencias,unidades
             where proc_pendente = False and proc_unit_id =%s and unidades.un_id= assistencias.proc_unit_id

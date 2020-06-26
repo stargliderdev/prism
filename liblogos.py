@@ -789,7 +789,7 @@ def msg_to_html(msg_dict):
 
     toto += '''<pre>''' + msg_dict['msg_type_name'] + ' @' + msg_dict['msg_date_time'].strftime("%d-%m-%Y %H:%M") + '''<br></pre>'''
     toto += '<hr style="border: 1px dashed #C0C0C0" color="#FFFFFF" size="4">'
-    toto += '''<pre> Unidade: ''' + msg_dict['un_nome'] + '''</pre>'''
+    toto += '''<pre> Unidade: ''' + msg_dict['un_name'] + '''</pre>'''
     toto += '''<pre>    Para: ''' + msg_dict['msg_to_name'] + ' / ' + msg_dict['msg_to'] + '''</pre>'''
     if msg_dict['msg_type_id'] == 2:
         toto += '''<code> Assunto''' + msg_dict['msg_subject'] + '''<br></code>'''

@@ -122,9 +122,9 @@ class EditClient(QDialog):
             liblogos.log_actions(gl.user_dict, 'view client', 'cliente: ' + str(stdio.write_field(self.cl_nif)) + ' ' + stdio.write_field(self.cl_nome))
         
     def refresh_grid(self):
-        sql = '''select un_id, un_nome, unidades.un_activa
+        sql = '''select un_id, un_name, unidades.un_activa
                 from unidades
-                where un_cliente_id =%s order by un_nome'''
+                where un_cliente_id =%s order by un_name'''
         units_in_client = libpg.query_many(sql, (self.client_id,))
     
         self.unitsInClientGrid.setColumnCount(3)

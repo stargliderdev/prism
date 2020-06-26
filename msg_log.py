@@ -57,7 +57,7 @@ class MsgLogBrowser(QDialog):
     
     def refresh_grid(self):
         sql: str = '''select
-            msg_id, msg_date_time,msg_subject, msg_to_name,msg_to,un_nome ,msg_type_name, msg_who
+            msg_id, msg_date_time,msg_subject, msg_to_name,msg_to,un_name ,msg_type_name, msg_who
             from msg_log
             inner join unidades on un_id = msg_log.msg_unit_id
             inner join msg_types on msg_type_id = msg_log.msg_type '''

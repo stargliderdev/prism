@@ -1,8 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import sys
+import datetime
+
 from PyQt5.QtWidgets import QDialog, QApplication, QVBoxLayout, QLineEdit, QPlainTextEdit, QComboBox, \
-    QPushButton
+    QPushButton, QDateTimeEdit
 
 import data_sets
 import qlib as qc
@@ -10,7 +12,7 @@ import parameters as gl
 
 
 class AddInfo(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, data_dict, parent=None):
         super(AddInfo, self).__init__(parent)
         masterLayout = QVBoxLayout(self)
         self.resize(600, 400)
@@ -23,16 +25,26 @@ class AddInfo(QDialog):
         
         masterLayout.addLayout(qc.addHLayout(['Técnico', self.techCbx]))
         masterLayout.addLayout(qc.addHLayout(['Quem', self.client_name]))
+        self.proc_duracao = QDateTimeEdit()
+        self.proc_duracao.setMaximumWidth(50)
+        self.proc_duracao.setDisplayFormat("hh:mm")
+        date_object = datetime.datetime.strptime('00:04:00', "%H:%M:%S")
+        self.proc_duracao.setDateTime(date_object)
+        masterLayout.addLayout(qc.addVLayout(['Duração', self.proc_duracao]))
         masterLayout.addLayout(qc.addVLayout(['Info Adicional', self.addInfoEdt]))
         masterLayout.addLayout(qc.addHLayout([okBtn, cancelBtn]))
         
         self.techCbx.addItems(gl.ds_tecnicos)
         okBtn.clicked.connect(self.ok_click)
         cancelBtn.clicked.connect(self.cancel_click)
+        self.addInfoEdt.setPlainText(data_dict['proc_reported'])
     
     def ok_click(self):
-        self.ret = (True, {'tech': self.techCbx.currentText(), 'client_name': self.client_name.text(),
-                           'add_info': self.addInfoEdt.toPlainText()})
+        self.ret = (True, {'proc_tecnico': self.techCbx.currentText(), 
+                           'proc_quem': self.client_name.text(),
+                           'proc_reported': self.addInfoEdt.toPlainText(), 
+                           'proc_duracao': str(self.proc_duracao.dateTime().toPyDateTime().hour) + ':' + str(self.proc_duracao.dateTime().toPyDateTime().minute)
+                           })
         self.close()
     
     def cancel_click(self):

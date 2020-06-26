@@ -88,7 +88,7 @@ class HardwareLabel(QDialog):
     def update_label(self):
         label_text : str = ''
         if self.hw_unit_name.checkState():
-            label_text += 'Unidade: ' + self.hardware_dict['un_nome'] + '\n'
+            label_text += 'Unidade: ' + self.hardware_dict['un_name'] + '\n'
         if self.hw_model.checkState():
             label_text += 'Modelo: ' + self.hardware_dict['md_name'] + '\n'
         if self.serial_number.checkState():

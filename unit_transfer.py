@@ -78,13 +78,13 @@ class UnitTransfer(QDialog):
             self.close()
             
     def source_change(self):
-        xl = libpg.query_one('select un_nome from unidades where un_id=%s ', (self.unitSource.text(),))
+        xl = libpg.query_one('select un_name from unidades where un_id=%s ', (self.unitSource.text(),))
         print(xl)
         self.unitSourceLabel.setText(xl[0])
     
     def target_change(self):
         print('return tar')
-        xl = libpg.query_one('select un_nome from unidades where un_id=%s and  un_activa=True', (self.unitTarget.text(),))
+        xl = libpg.query_one('select un_name from unidades where un_id=%s and  un_activa=True', (self.unitTarget.text(),))
         if xl is None:
             self.unitTargetLabel.setText('unidade desactivada')
         else:
@@ -136,7 +136,7 @@ class HardwareTransfer(QDialog):
             self.close()
     
     def target_change(self):
-        xl = libpg.query_one('select un_nome from unidades where un_id=%s and  un_activa=True',
+        xl = libpg.query_one('select un_name from unidades where un_id=%s and  un_activa=True',
                              (self.unitTarget.text(),))
         if xl is None:
             self.unitTargetLabel.setText('unidade desactivada')

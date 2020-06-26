@@ -69,11 +69,11 @@ class ReportTool(QDialog):
             form.exec_()
             form.ret['model_id'] = form.ret.get('model_id', 0)
             if form.ret['model_id'] > 0:
-                sql = '''SELECT  un_id, un_nome, un_localidade, un_cp
+                sql = '''SELECT  un_id, un_name, un_localidade, un_cp
                      FROM unidades
                      inner join hardware on unidades.un_id=hardware.hw_unit_id
                       where  hardware.hw_model_id=%s'''
-                sql += ''' ORDER BY un_nome'''
+                sql += ''' ORDER BY un_name'''
                 bc = libpg.query_many(sql, (form.ret['model_id'],))
                 ex_grid.make_grid(self.gridMain, ['ID', 'Unidade', 'Localidade', 'Código Postal'],
                                   [(0, 50), (1, 320), (2, 200), (3, 260)])
@@ -84,12 +84,12 @@ class ReportTool(QDialog):
             form = software.SoftwareBrowser({'un_type': 0})
             form.exec_()
             if form.ret[0]:
-                sql = ''' SELECT  un_id, un_nome, un_localidade, un_cp, area_name
+                sql = ''' SELECT  un_id, un_name, un_localidade, un_cp, area_name
                      FROM unit_settings
                      inner join unidades on unidades.un_id = unit_settings.us_unit_id
                      inner join areas  on areas.area_id = unidades.un_area
                      where unit_settings.us_act_id=1 and lower(us_value1) = %s and lower(us_value2) = %s and  unidades.un_activa = %s'''
-                sql += ''' ORDER BY un_nome '''
+                sql += ''' ORDER BY un_name '''
                 xl = libpg.query_many(sql,
                                       (form.ret[1].lower(), form.ret[2].lower(), str(self.unitActiveCkBox.isChecked())))
                 ex_grid.make_grid(self.gridMain, ['ID', 'Unidade', 'Localidade', 'Código Postal', 'Zona'],
@@ -101,7 +101,7 @@ class ReportTool(QDialog):
             form = date_input.DateInput(report.upper())
             form.exec_()
             if form.ret[0]:
-                sql = '''SELECT cm_unit_id, unidades.un_nome,un_localidade,
+                sql = '''SELECT cm_unit_id, unidades.un_name,un_localidade,
                           comitments_unit.cm_value,(to_date(comitments_unit.cm_value, 'YYYY-MM-DD') - DATE 'now') as s,
                           areas.area_name
                          FROM comitments_unit
@@ -121,7 +121,7 @@ class ReportTool(QDialog):
             form = date_input.DateInput(report.upper())
             form.exec_()
             if form.ret[0]:
-                sql = '''SELECT cm_unit_id, unidades.un_nome,un_localidade,
+                sql = '''SELECT cm_unit_id, unidades.un_name,un_localidade,
                           comitments_unit.cm_value,(to_date(comitments_unit.cm_value, 'YYYY-MM-DD') - DATE 'now') as s,
                           areas.area_name
                          FROM comitments_unit
@@ -141,7 +141,7 @@ class ReportTool(QDialog):
             form = date_input.DateInput(report.upper())
             form.exec_()
             if form.ret[0]:
-                sql = '''SELECT cm_unit_id, unidades.un_nome,un_localidade,
+                sql = '''SELECT cm_unit_id, unidades.un_name,un_localidade,
                           comitments_unit.cm_value,(to_date(comitments_unit.cm_value, 'YYYY-MM-DD') - DATE 'now') as s,
                           areas.area_name
                          FROM comitments_unit
@@ -161,7 +161,7 @@ class ReportTool(QDialog):
             form = date_input.DateInput(report.upper())
             form.exec_()
             if form.ret[0]:
-                sql = '''SELECT cm_unit_id, unidades.un_nome,un_localidade,
+                sql = '''SELECT cm_unit_id, unidades.un_name,un_localidade,
                           comitments_unit.cm_value,
                           (to_date(comitments_unit.cm_value, 'YYYY-MM-DD') - DATE 'now') as s, 'Zona'
                          FROM comitments_unit,unidades
@@ -176,7 +176,7 @@ class ReportTool(QDialog):
                 ex_grid.grid_std(self.gridMain, data=xl, f_col=['i', 's', 's', 's', 'i','s'])
                 self.setWindowTitle(self.reportTypeCbx.currentText() + ' de' + form.ret[1] + ' a ' + form.ret[2])
         elif report == 'licenças pedidas':
-            sql = '''SELECT  software.sf_id, un_nome, software_lic_status.lic_st_name,
+            sql = '''SELECT  software.sf_id, un_name, software_lic_status.lic_st_name,
                  to_char(software.sf_time_order, 'YYYY-MM-DD HH24:MI') as orde,area_name,
                 TO_CHAR(age('now', sf_time_order), 'DD HH24:MI '), lic_st_id,un_id
                  FROM software
@@ -195,7 +195,7 @@ class ReportTool(QDialog):
             ex_grid.grid_std(self.gridMain, data=xl, f_col=['i', 's', 's', 's', 's','s', 'i','i'])
             self.setWindowTitle(self.reportTypeCbx.currentText())
         elif report == 'unidades em actualização':
-            sql = '''SELECT  software.sf_id, un_nome, software_lic_status.lic_st_name,
+            sql = '''SELECT  software.sf_id, un_name, software_lic_status.lic_st_name,
                  to_char(software.sf_time_order, 'YYYY-MM-DD HH24:MI') as orde,area_name,
                 TO_CHAR(age('now', sf_time_order), 'DD HH24:MI '), lic_st_id,unidades.un_id
                  FROM software
@@ -213,7 +213,7 @@ class ReportTool(QDialog):
             ex_grid.grid_std(self.gridMain, data=xl, f_col=['i', 's', 's', 's', 's','s', 'i','i'])
             self.setWindowTitle(self.reportTypeCbx.currentText())
         elif report == 'unidades actualizadas':
-            sql = '''SELECT  software.sf_id, un_nome, software_lic_status.lic_st_name,
+            sql = '''SELECT  software.sf_id, un_name, software_lic_status.lic_st_name,
                  to_char(software.sf_time_order, 'YYYY-MM-DD HH24:MI') as orde,area_name,
                 TO_CHAR(age('now', sf_time_order), 'DD HH24:MI '), lic_st_id,unidades.un_id
                  FROM software

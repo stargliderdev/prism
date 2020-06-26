@@ -120,11 +120,11 @@ class UnitEdit(QDialog):
         self.client_drill.setToolTip('Consultar Cliente')
         self.client_drill.clicked.connect(self.client_drill_down)
         
-        self.un_nome = QLineEdit()
-        self.un_nome.setFocusPolicy(Qt.NoFocus)
-        self.un_nome.setReadOnly(True)
-        self.un_nome.setStyleSheet("font-weight: bold; background-color: #dbf3ff;")
-        self.un_nome.setMinimumWidth(400)
+        self.un_name = QLineEdit()
+        self.un_name.setFocusPolicy(Qt.NoFocus)
+        self.un_name.setReadOnly(True)
+        self.un_name.setStyleSheet("font-weight: bold; background-color: #dbf3ff;")
+        self.un_name.setMinimumWidth(400)
         
         self.un_uuid = QLineEdit()
         self.un_uuid.setFocusPolicy(Qt.NoFocus)
@@ -160,7 +160,7 @@ class UnitEdit(QDialog):
         unitTypeTBtn.clicked.connect(self.unit_type_drill_down)
         self.un_activa = QCheckBox('Activa')
         
-        mainLayout.addLayout(qc.addHLayout(['Unidade:', self.un_nome, 'Contribuite:', self.cl_nif, True, self.un_id]))
+        mainLayout.addLayout(qc.addHLayout(['Unidade:', self.un_name, 'Contribuite:', self.cl_nif, True, self.un_id]))
         mainLayout.addLayout(qc.addHLayout(['Cliente:', self.un_client_name, self.client_drill, True, 'Tipo:', self.un_type,unitTypeTBtn, 'C.C.', self.cl_cc, True, self.un_client_id]))
         
         self.un_morada = QLineEdit()
@@ -233,11 +233,11 @@ class UnitEdit(QDialog):
         data = ()
         if gl.unit_dict['un_id'] > 0:
             sql = '''UPDATE unidades SET
-                     un_nome=%s,un_morada=%s,un_localidade=%s,un_cp=%s, un_descricao=%s,
+                     un_name=%s,un_morada=%s,un_localidade=%s,un_cp=%s, un_descricao=%s,
                      un_area= (select area_id from areas where lower(area_name) = %s)
                      WHERE un_id = %s '''
             data += (
-                stdio.write_field(self.un_nome), stdio.write_field(self.un_morada),
+                stdio.write_field(self.un_name), stdio.write_field(self.un_morada),
                 stdio.write_field(self.un_localidade),
                 stdio.write_field(self.un_cp))
             data += (stdio.write_field(self.un_descricao),)
@@ -854,7 +854,7 @@ class UnitEdit(QDialog):
     
     def init_fields(self):
         self.un_id.clear()
-        self.un_nome.clear()
+        self.un_name.clear()
         self.un_morada.clear()
         self.un_localidade.clear()
         self.un_cp.clear()
@@ -877,7 +877,7 @@ class UnitEdit(QDialog):
     
     def update_fields(self):
         stdio.read_field(self.un_id, 'un_id', gl.unit_dict)
-        stdio.read_field(self.un_nome, 'un_nome', gl.unit_dict)
+        stdio.read_field(self.un_name, 'un_name', gl.unit_dict)
         stdio.read_field(self.un_type, 'un_type_name', gl.unit_dict)
         stdio.read_field(self.un_morada, 'un_morada', gl.unit_dict)
         stdio.read_field(self.un_localidade, 'un_localidade', gl.unit_dict)
@@ -907,7 +907,7 @@ class UnitEdit(QDialog):
         form.exec_()
     
     def add_old_hw_click(self):
-        form = hardware_edit.HardwareEdit({'hw_id': -1, 'hw_unit_id': gl.unit_dict['un_id'], 'un_nome': gl.unit_dict['un_nome']})
+        form = hardware_edit.HardwareEdit({'hw_id': -1, 'hw_unit_id': gl.unit_dict['un_id'], 'un_name': gl.unit_dict['un_name']})
         form.exec_()
     
     def add_by_serial_number(self):
@@ -930,7 +930,7 @@ class UnitEdit(QDialog):
             form.exec_()
             if form.ret[0]:
                 self.un_tags_txt.setText(self.un_tags_txt.toPlainText() + ',' + form.ret[1])
-                self.un_nome.setText(self.un_nome.text() + datetime.datetime.now().strftime(" [%Y-%m-%d]"))
+                self.un_name.setText(self.un_name.text() + datetime.datetime.now().strftime(" [%Y-%m-%d]"))
                 libpg.execute_query('update unidades set un_activa=%s where un_id=%s', (False, gl.unit_dict['un_id']))
                 libpg.execute_query('update assistencias set proc_pendente=%s where proc_unit_id=%s', (False, gl.unit_dict['un_id']))
                 libpg.execute_query('INSERT INTO unit_settings (us_unit_id, us_act_id, us_value1, us_value2) '
@@ -949,7 +949,7 @@ class UnitEdit(QDialog):
         QMessageBox.information(None, "Código de unidade", hl)
     
     def hardware_unit_process(self):
-        form = hardware.HardwareBrw({'unit_id': gl.unit_dict['un_id'], 'model_id': 0, 'un_nome': gl.unit_dict['un_nome']})
+        form = hardware.HardwareBrw({'unit_id': gl.unit_dict['un_id'], 'model_id': 0, 'un_name': gl.unit_dict['un_name']})
         form.exec_()
     
     def setBtnSizes(self, object, value=60):

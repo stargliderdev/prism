@@ -82,7 +82,7 @@ class HardwareBrw(QDialog):
         if self.settings['unit_id'] > 0 or self.settings['model_id'] > 0:
             self.hw_status.setCurrentIndex(4)
             if self.settings['unit_id'] > 0:
-                self.setWindowTitle('Equipamentos na unidade ' + self.settings['un_nome'])
+                self.setWindowTitle('Equipamentos na unidade ' + self.settings['un_name'])
         search_button.setFocus()
 
     def exit_click(self):
@@ -108,7 +108,7 @@ class HardwareBrw(QDialog):
         else:
             serial_search = ''
         
-        sql = '''SELECT hardware.hw_id, hw_type_name, brands.br_name , models.md_name, hw_sn, hwd_status_name,hw_unit_id, un_nome
+        sql = '''SELECT hardware.hw_id, hw_type_name, brands.br_name , models.md_name, hw_sn, hwd_status_name,hw_unit_id, un_name
                      FROM hardware, models, hw_status, brands, unidades, hardware_types
                      WHERE brands.br_active=TRUE AND ''' + status + unit_drill + model_drill + serial_search +\
               '''    AND unidades.un_id=hardware.hw_unit_id AND
@@ -210,7 +210,7 @@ class HardwareBrw(QDialog):
         form.exec_()
 
     def add_old_hw_click(self):
-        form = hardware_edit.HardwareEdit({'hw_id': -1, 'hw_unit_id': self.settings['unit_id'], 'un_nome': self.settings['un_nome']})
+        form = hardware_edit.HardwareEdit({'hw_id': -1, 'hw_unit_id': self.settings['unit_id'], 'un_name': self.settings['un_name']})
         form.exec_()
         self.hw_status_change()
 

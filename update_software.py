@@ -46,7 +46,7 @@ def software_update():
     
 
 def copy_cl_external():
-    unidades = libpg.query_many('select un_id, un_cliente_id, un_nome from unidades')
+    unidades = libpg.query_many('select un_id, un_cliente_id, un_name from unidades')
     for n in unidades:
         # print('unidade',n)
         insert_debug('''select cl_id, cl_nome from clientes where cl_external_id=%s ''' + str(n[1]))

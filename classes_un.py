@@ -727,13 +727,13 @@ class UnitAdd(QDialog):
         self.un_client_name.setStyleSheet("background-color: #dbf3ff;")
         self.un_client_name.setMinimumWidth(400)
         
-        self.un_nome = QLineEdit()
-        self.un_nome.setReadOnly(False)
-        self.un_nome.setStyleSheet("background-color: #ffffff;")
-        self.un_nome.setMinimumWidth(400)
+        self.un_name = QLineEdit()
+        self.un_name.setReadOnly(False)
+        self.un_name.setStyleSheet("background-color: #ffffff;")
+        self.un_name.setMinimumWidth(400)
         mainLayout.addLayout(qc.addHLayout(['Cliente:', self.un_client_name, True,
                                             self.un_client_id]))  # ,   self.change_cliente_Btn,'Conta:', self.un_conta_id,self.change_conta_Btn]))
-        mainLayout.addLayout(qc.addHLayout(['Unidade:', self.un_nome, True, self.un_id]))
+        mainLayout.addLayout(qc.addHLayout(['Unidade:', self.un_name, True, self.un_id]))
         
         self.un_morada = QLineEdit()
         mainLayout.addLayout(qc.addHLayout(['Morada:', self.un_morada]))
@@ -775,8 +775,8 @@ class UnitAdd(QDialog):
     
     def save_click(self):
         if self.validate_form()[0]:
-            sql = '''INSERT into unidades (un_cliente_id, un_nome,un_morada,un_localidade,un_cp, un_type, un_uuid)  VALUES(%s,%s,%s,%s,%s,%s,%s)'''
-            data = (self.client_id, stdio.write_field(self.un_nome), stdio.write_field(self.un_morada),
+            sql = '''INSERT into unidades (un_cliente_id, un_name,un_morada,un_localidade,un_cp, un_type, un_uuid)  VALUES(%s,%s,%s,%s,%s,%s,%s)'''
+            data = (self.client_id, stdio.write_field(self.un_name), stdio.write_field(self.un_morada),
                     stdio.write_field(self.un_localidade),
                     stdio.write_field(self.un_cp).upper(), self.u_dic[str(self.unit_type.currentText())], str(uuid.uuid4()))
             libpg.execute_query(sql, data)
@@ -785,7 +785,7 @@ class UnitAdd(QDialog):
     
     def validate_form(self):
         b = (True, 'pass')
-        if self.un_nome.text() == '':
+        if self.un_name.text() == '':
             b = (False, 'Sem Nome')
         elif self.un_morada.text() == '':
             b = (False, 'Sem Morada')

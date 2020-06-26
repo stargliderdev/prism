@@ -102,7 +102,7 @@ def send_mail(to, filename, msg_headers):
 
 
 def assistencias_pendentes():
-    sql = '''SELECT proc_id, to_char(proc_date, 'DD.MON.YYYY') , unidades.un_nome, proc_tags,proc_status, proc_unit_id,
+    sql = '''SELECT proc_id, to_char(proc_date, 'DD.MON.YYYY') , unidades.un_name, proc_tags,proc_status, proc_unit_id,
               (date  'today' - assistencias.proc_date::timestamp::date) as days_delay
             from assistencias,unidades
             where assistencias.proc_pendente = True and unidades.un_id= assistencias.proc_unit_id
@@ -147,7 +147,7 @@ def call_center_to_end(days=10,back_days=-10):
 
         <th id="cabecalho" width="300">Valido</th>
         '''
-    sql = '''SELECT cm_unit_id, unidades.un_nome,
+    sql = '''SELECT cm_unit_id, unidades.un_name,
          comitments_unit.cm_value
         ,(to_date(comitments_unit.cm_value, 'YYYY-MM-DD') - DATE 'now') as s
         FROM comitments_unit,unidades
@@ -179,7 +179,7 @@ def software_expire_date(days=30):
         <th id="cabecalho" width="150">Valido</th>
         <th id="cabecalho" width="80">Dias</th>
         '''
-    sql = '''SELECT cm_unit_id, unidades.un_nome,
+    sql = '''SELECT cm_unit_id, unidades.un_name,
          comitments_unit.cm_value
         ,(to_date(comitments_unit.cm_value, 'YYYY-MM-DD') - DATE 'now') as s
         FROM comitments_unit,unidades
@@ -214,7 +214,7 @@ def software_block_date(days=1, back_days=-8):
         <th id="cabecalho" width="150">Bloqueia</th>
         <th id="cabecalho" width="80">Dias</th>
         '''
-    sql = '''SELECT cm_unit_id, unidades.un_nome,
+    sql = '''SELECT cm_unit_id, unidades.un_name,
          comitments_unit.cm_value
         ,(to_date(comitments_unit.cm_value, 'YYYY-MM-DD') - DATE 'now') as s
         FROM comitments_unit,unidades
@@ -262,12 +262,12 @@ def on_invoice_charge():
         '''
     # body_text = '''<!DOCTYPE html><html lang="pt_pt"><head><meta charset="utf-8"></head>'''
     # body_text += '''<pre>    Unidade                    Doc         Fornecedor                       Data        Numero          Lançamento      Atraso doc   Atraso Lan    <br>'''
-    sql = '''SELECT cm_unit_id, unidades.un_nome,
+    sql = '''SELECT cm_unit_id, unidades.un_name,
          comitments_unit.cm_value
         FROM comitments_unit,unidades
         where un_activa=True and cm_act_id=22
         and unidades.un_id= comitments_unit.cm_unit_id
-        order by un_nome asc'''
+        order by un_name asc'''
     dataset = query_many(sql, (True,))
     xl = dataset
     

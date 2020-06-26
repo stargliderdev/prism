@@ -146,10 +146,10 @@ class HardwareEdit(QDialog):
         self.hardware_dict['hw_warranty'] = 0
         self.hardware_dict['hw_supplier'] = 'n/a'
         self.hardware_dict['hw_supplier_warranty'] = 0
-        if 'un_nome' in self.hardware_dict:
+        if 'un_name' in self.hardware_dict:
             pass
         else:
-            self.hardware_dict['un_nome'] = ''
+            self.hardware_dict['un_name'] = ''
         self.hardware_dict['hw_supplier_date'] = datetime.datetime(2012, 0o1, 0o1)  # datetime.datetime.now()
         self.hardware_dict['hw_invoice_supplier'] = 'n/a'
         self.hardware_dict['hw_obs'] = ''
@@ -173,7 +173,7 @@ class HardwareEdit(QDialog):
         except TypeError:
             self.hw_supplier_date.setDate(datetime.datetime.now() - relativedelta(years=10))
         self.hw_invoice_supplier.setText(self.hardware_dict['hw_invoice_supplier'])
-        self.unitNameLb.setText(self.hardware_dict['un_nome'])
+        self.unitNameLb.setText(self.hardware_dict['un_name'])
         self.hw_supplier_warranty.setValue(self.hardware_dict['hw_supplier_warranty'])
         self.hw_obs.setText(self.hardware_dict['hw_obs'])
         self.hwSellAgeLabel.setText(td_format(datetime.datetime.today().date() - self.hw_invoice_date.date().toPyDate()))

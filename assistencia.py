@@ -39,7 +39,7 @@ class Assistencia(QDialog):
         self.unit_dict = data_sets.unit_to_dic(unit_id)
 
         self.as_taberna = QLineEdit()
-        self.as_taberna.setText(self.unit_dict['un_nome'])
+        self.as_taberna.setText(self.unit_dict['un_name'])
         self.as_taberna.setStyleSheet("background-color: #dbf3ff;")
         self.as_taberna.setReadOnly(True)
         
@@ -316,7 +316,7 @@ class Assistencia(QDialog):
                      'proc_report_invoice': self.as_debito.text() + ' ' + self.as_relatorio_factura.toPlainText(),
                      'proc_quem': self.as_quem.text(), 'proc_model': self.as_marcaemodelo.text(),
                      'proc_contacto': self.as_contacto.text(),
-                     'proc_meio': self.as_meio.currentText(), 'proc_unit_name': self.unit_dict['un_nome'],
+                     'proc_meio': self.as_meio.currentText(), 'proc_unit_name': self.unit_dict['un_name'],
                      'proc_reported': self.as_avaria.toPlainText(), 'proc_montante': self.as_anterior,
                      'proc_jusante': self.ass_jusante, 'proc_asterisk': self.as_asterisk.toPlainText(),
                      'proc_status': self.as_status, 'proc_nivel': self.as_nivel.currentText(),

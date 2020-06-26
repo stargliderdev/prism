@@ -129,10 +129,10 @@ def send_mail_lic_order(to, msg_headers):
 
 def upload_lic_mail(order_num, unid_dict):
     """LOAD"""
-    subject = '⏫ LOAD-' + str(order_num).zfill(5) + '-' + unid_dict['cl_nif'] + '-' + unid_dict['un_nome']
+    subject = '⏫ LOAD-' + str(order_num).zfill(5) + '-' + unid_dict['cl_nif'] + '-' + unid_dict['un_name']
     body = '''<!DOCTYPE html><html lang="pt_pt"><head><meta charset="utf-8"></head><pre>'''
     body += 'Origem: ' + str(order_num) + '<br>'
-    body += unid_dict['un_nome'] + '<br>'
+    body += unid_dict['un_name'] + '<br>'
     body += unid_dict['un_morada'] + '<br>'
     body += unid_dict['un_localidade'] + '<br>'
     body += unid_dict['un_cp'] + '<br>'

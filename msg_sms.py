@@ -107,7 +107,7 @@ class MsgSendSMS(QDialog):
             elif xl[0] == 10:
                 """envia BO a funcionar para o cliente"""
                 dum = xl[4]
-                dum = dum.replace('$', self.data_dict['un_nome'])
+                dum = dum.replace('$', self.data_dict['un_name'])
                 self.textMsgTEdt.setText(dum)
     
     def count_size(self):
@@ -134,8 +134,8 @@ class MsgSendSMS(QDialog):
             else:
                 msg_cnt += 1
                 self.log_message({'msg_uuid': msg_uuid, 'type': 1, 'msg_to': str(n[0]), 'msg_to_name': n[1], 'msg_subject': 'SMS','msg_body': self.textMsgTEdt.toPlainText(), 'msg_files': ''})
-                sub = '[SMS] ' + gl.unit_dict['un_nome'] + ' :' + self.textMsgTEdt.toPlainText()
-                body = 'Mensagem para ' + gl.unit_dict['un_nome'] + ' - ' + str(n[0]) + '<br> Nome: ' + n[1] + '<br>Conteudo: ' + self.textMsgTEdt.toPlainText()
+                sub = '[SMS] ' + gl.unit_dict['un_name'] + ' :' + self.textMsgTEdt.toPlainText()
+                body = 'Mensagem para ' + gl.unit_dict['un_name'] + ' - ' + str(n[0]) + '<br> Nome: ' + n[1] + '<br>Conteudo: ' + self.textMsgTEdt.toPlainText()
                 smtpmail.send_sms_mail({'sub': sub, 'body': body})
 
         if msg_cnt > 0:

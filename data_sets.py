@@ -97,7 +97,7 @@ def hardware_to_dict(hw_id):
     dict_cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     sql = '''SELECT hw_unit_id,hw_model_id,hwd_status_id,hw_function,hw_id,hw_invoice,hw_invoice_date,hw_invoice_supplier,hw_sn,hw_supplier,hw_supplier_date,
      hw_supplier_warranty,hw_warranty,md_name,md_id,md_ref_gc,md_ref_oem,br_id,hw_obs, br_name,
-     hwd_status_name as hw_status_name, br_name || ' ' || models.md_name as md_name, un_nome, hw_type_name
+     hwd_status_name as hw_status_name, br_name || ' ' || models.md_name as md_name, un_name, hw_type_name
           FROM hardware, hw_status, models, brands, unidades, hardware_types
           WHERE hw_id = %s AND
           hw_status_id = hw_status.hwd_status_id AND
