@@ -51,37 +51,40 @@ def save_process(data_dict):
            proc_user)
            values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
         data = (
-           data_dict['proc_date'],
-           data_dict['proc_unit_id'],
-           data_dict['proc_reported'],
-           data_dict['proc_report_internal'],
-           data_dict['proc_serial_number'],
-           data_dict['proc_report_invoice'],
-           data_dict['proc_model'],
-           data_dict['proc_contacto'],
-           data_dict['proc_status'],
-           data_dict['proc_meio'],
-           data_dict['proc_duracao'],
-           data_dict['proc_quem'],
-           data_dict['proc_unit_name'],
-           data_dict['proc_tecnico'],
-           data_dict['proc_updated'],
-           data_dict['proc_nivel'],
-           data_dict['proc_montante'],
-           data_dict['proc_jusante'],
-           data_dict['proc_asterisk'],
-           data_dict['proc_pendente'],
-           data_dict['proc_facturar'],
-           data_dict['proc_facturado'],
-           data_dict['proc_data_fim'],
-           data_dict['proc_tags'],
-           data_dict['proc_relatorio_cliente'],
-           data_dict['proc_area'],
-           data_dict['proc_type'],
-           data_dict['proc_user'])
-        
+            data_dict['proc_date'],
+            data_dict['proc_unit_id'],
+            data_dict['proc_reported'],
+            data_dict['proc_report_internal'],
+            data_dict['proc_serial_number'],
+            data_dict['proc_report_invoice'],
+            data_dict['proc_model'],
+            data_dict['proc_contacto'],
+            data_dict['proc_status'],
+            data_dict['proc_meio'],
+            data_dict['proc_duracao'],
+            data_dict['proc_quem'],
+            data_dict['proc_unit_name'],
+            data_dict['proc_tecnico'],
+            data_dict['proc_updated'],
+            data_dict['proc_nivel'],
+            data_dict['proc_montante'],
+            data_dict['proc_jusante'],
+            data_dict['proc_asterisk'],
+            data_dict['proc_pendente'],
+            data_dict['proc_facturar'],
+            data_dict['proc_facturado'],
+            data_dict['proc_data_fim'],
+            data_dict['proc_tags'],
+            data_dict['proc_relatorio_cliente'],
+            data_dict['proc_area'],
+            data_dict['proc_type'],
+            data_dict['proc_user'])
+    
         libpg.execute_query(sql, data)
         process_number = libpg.query_one('select max(proc_id) as max_id from assistencias', (True,))[0]
+        if data_dict['proc_montante'] > 0:
+            libpg.execute_query('''UPDATE assistencias set proc_pendente = False, proc_jusante = %s
+                         where proc_id = %s''', (process_number, data_dict['proc_montante']))
         return True,process_number
     
 

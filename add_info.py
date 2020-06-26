@@ -17,6 +17,7 @@ class AddInfo(QDialog):
         masterLayout = QVBoxLayout(self)
         self.resize(600, 400)
         self.setWindowTitle('Adiciona informação ao Pedido')
+        self.ret = (False,)
         self.client_name = QLineEdit()
         self.addInfoEdt = QPlainTextEdit()
         self.techCbx = QComboBox()
@@ -26,18 +27,21 @@ class AddInfo(QDialog):
         masterLayout.addLayout(qc.addHLayout(['Técnico', self.techCbx]))
         masterLayout.addLayout(qc.addHLayout(['Quem', self.client_name]))
         self.proc_duracao = QDateTimeEdit()
-        self.proc_duracao.setMaximumWidth(50)
+        self.proc_duracao.setMaximumWidth(80)
         self.proc_duracao.setDisplayFormat("hh:mm")
         date_object = datetime.datetime.strptime('00:04:00', "%H:%M:%S")
         self.proc_duracao.setDateTime(date_object)
-        masterLayout.addLayout(qc.addVLayout(['Duração', self.proc_duracao]))
+        masterLayout.addLayout(qc.addHLayout(['Duração', self.proc_duracao, True]))
         masterLayout.addLayout(qc.addVLayout(['Info Adicional', self.addInfoEdt]))
         masterLayout.addLayout(qc.addHLayout([okBtn, cancelBtn]))
         
         self.techCbx.addItems(gl.ds_tecnicos)
         okBtn.clicked.connect(self.ok_click)
         cancelBtn.clicked.connect(self.cancel_click)
+        
+        self.client_name.setText(data_dict['proc_quem'])
         self.addInfoEdt.setPlainText(data_dict['proc_reported'])
+        self.techCbx.setCurrentText(data_dict['proc_tecnico'])
     
     def ok_click(self):
         self.ret = (True, {'proc_tecnico': self.techCbx.currentText(), 

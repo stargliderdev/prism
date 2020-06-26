@@ -95,24 +95,9 @@ class DdnsEdit(QDialog):
             self.ddnsEdt.setText(data[0])
             self.ownerEdt.setText(data[1])
         self.has_pend_p = libpg.query_one(
-            '''select proc_id, proc_date, proc_reported from assistencias where proc_unit_id=%s and proc_type=%s and proc_pendente=True''',
+            '''select proc_id, proc_date, proc_reported, proc_quem, proc_tecnico from assistencias where proc_unit_id=%s and proc_type=%s and proc_pendente=True''',
             (gl.unit_dict['un_id'], 'DDNS'))
-    
-        print('--------Debug---------')
-        print('__init__')
-        print(self.has_pend_p)
-        print('------end debug-------')
-        
-    
-    
-        # if self.has_pend_p is None:
-        #     """sem processo pendente"""
-        #     self.closeProcessBtn.setEnabled(False)
-        #     """ processo pendente só activa de pois de testar"""
-        # else:
-             # self.closeProcessBtn.setEnabled(True)
 
-            
     
     def cancel_btn_click(self):
         self.close()
@@ -160,16 +145,16 @@ class DdnsEdit(QDialog):
                              'proc_reported': self.comm_status,
                              'proc_status': 'Resolvido',
                              'proc_montante': self.has_pend_p[0],
-                             'proc_jusante': -1,
+                             'proc_quem': self.has_pend_p[3],
+                             'proc_jusante': 0,
                              'proc_pendente': False,
                              'proc_facturar': False,
                              'proc_type': 'DDNS',
+                             'proc_tecnico': self.has_pend_p[4]
                              })
         
         form = add_info.AddInfo(gl.proc_dict)
         form.exec_()
-        for key, value in gl.proc_dict.items():
-            print('[' + key + ']', value)
         if form.ret[0]:
             gl.proc_dict.update(form.ret[1])
             process_id: int = process_save.save_process(gl.proc_dict)
@@ -192,7 +177,8 @@ class DdnsEdit(QDialog):
         self.makeProcessBtn.setEnabled(True)
         """ pode ser fechado o mesmo dando erro"""
         if self.has_pend_p is None:
-            self.closeProcessBtn.setEnabled(True)
+            # self.closeProcessBtn.setEnabled(True)
+            pass
         else:
             self.makeProcessBtn.setEnabled(False)
             self.closeProcessBtn.setEnabled(True)
@@ -236,19 +222,22 @@ class DdnsEdit(QDialog):
     
     def info_restware_short(self):
         hl = ''
-        sql = '''SELECT saftname,dbversion, saftnif, validuntil,commercial_name from params;'''
+        sql = '''SELECT saftname,dbversion, saftnif, validuntil,commercial_name, TO_CHAR(age(validuntil,'now'), 'DD ') || 'Dias'  FROM params;'''
         d = query_many(sql)[0]
         hl += "{:>14}".format('D. Social:') + d[0] + '\n'
         hl += "{:>14}".format('D. Comercial:') + d[4] + '\n'
         hl += "{:>14}".format('dbversion:') + d[1] + '\n'
         hl += "{:>14}".format('NIF:') + d[2] + '\n'
-        hl += "{:>14}".format('Validade:') + str(d[3]) + '\n'
+        if d[3].year == 2050:
+            hl += "{:>14}".format('Validade:' + 'Desbloqueado') + '\n'
+        else:
+            hl += "{:>14}".format('Validade:') + d[3].strftime("%Y-%m-%d") + ' [' + d[5] + ']' + '\n'
         return hl
     
     def info_psql(self):
         sql = 'SELECT version();'
         a = query_many(sql, (True,))
-        a = str(a[0])
+        a = str(a[0]).replace('\'','')
         a = a.replace('(', '')
         a = a.split(',')
         tx = 'Server Version:' + str(a[0]) + ' ' + str(a[2]) + '\n'
@@ -257,9 +246,9 @@ class DdnsEdit(QDialog):
         tx += '   Server date: ' + a[0].strftime("%Y-%m-%d %H:%M") + '\n'
         tx += ' Server uptime: ' + str(a[1]) + '\n'
         tx += '  Server start: ' + a[2].strftime("%Y-%m-%d %H:%M") + '\n'
-        b = str(a[3]) + '/' + stdio.pretty_size((a[3] / 100 * 10))
-        b = stdio.pretty_size((a[3] / 100 * 10))
-        tx += '     File size: ' + b + '\n'
+        # b = str(a[3]) + '/' + stdio.pretty_size((a[3] / 100 * 10))
+        # b = stdio.pretty_size((a[3] / 100 * 10))
+        # tx += '     File size: ' + b + '\n'
         return tx
 
 
