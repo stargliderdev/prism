@@ -8,6 +8,7 @@ import datetime
 # from email import Encoders
 # from email.MIMEBase import MIMEBase
 import data_sets
+import html_maker
 import liblogos
 import stdio
 import libpg
@@ -175,7 +176,7 @@ def upload_lic_mail(order_num, unid_dict):
 def send_process_mail(process_id):
     process_dict: int = data_sets.process_to_dict(process_id)
 
-    msg_body = liblogos.process_to_html(process_dict)
+    msg_body = html_maker.process_to_html(process_dict)
     if process_dict['proc_pendente']:
         assunto = '❌ [' + process_dict['proc_type'] + '] ' + process_dict['proc_unit_name']
     else:

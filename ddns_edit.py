@@ -157,6 +157,7 @@ class DdnsEdit(QDialog):
         form.exec_()
         if form.ret[0]:
             gl.proc_dict.update(form.ret[1])
+            # gl.proc_dict['proce_report_internal'] = gl.proc_dict['proc_reported'] + '\n' + gl.proc_dict['proc_report_internal']
             process_id: int = process_save.save_process(gl.proc_dict)
             if process_id[0]:
                 smtpmail.send_process_mail(process_id[1])
@@ -183,15 +184,15 @@ class DdnsEdit(QDialog):
             self.makeProcessBtn.setEnabled(False)
             self.closeProcessBtn.setEnabled(True)
         if a[0]:
-            html = "{:>14}".format('DDNS: ') + self.ddns + '\n'
-            html += '-' * 80 + '\n'
+            html = "{:>14}".format('DDNS:') + self.ddns + '\n'
+            # html += '-' * 80 + '\n'
             html += self.info_restware_short()
             html += '\n'
             html += self.info_psql()
             t1 = time.time()
             html += '\n Respondeu em: ' + str((t1 - t0))[0:4] + ' segundos.'
             self.ddns_error = html
-            self.comm_status = 'A verificado e a funcionar'
+            self.comm_status = 'Verificado e a funcionar'
         else:
             t1 = time.time()
             # if self.has_pend_p is None:
@@ -246,9 +247,6 @@ class DdnsEdit(QDialog):
         tx += '   Server date: ' + a[0].strftime("%Y-%m-%d %H:%M") + '\n'
         tx += ' Server uptime: ' + str(a[1]) + '\n'
         tx += '  Server start: ' + a[2].strftime("%Y-%m-%d %H:%M") + '\n'
-        # b = str(a[3]) + '/' + stdio.pretty_size((a[3] / 100 * 10))
-        # b = stdio.pretty_size((a[3] / 100 * 10))
-        # tx += '     File size: ' + b + '\n'
         return tx
 
 

@@ -18,6 +18,7 @@ class AddInfo(QDialog):
         self.resize(600, 400)
         self.setWindowTitle('Adiciona informação ao Pedido')
         self.ret = (False,)
+        self.ddns_text = data_dict['proc_report_internal']
         self.client_name = QLineEdit()
         self.addInfoEdt = QPlainTextEdit()
         self.techCbx = QComboBox()
@@ -42,11 +43,13 @@ class AddInfo(QDialog):
         self.client_name.setText(data_dict['proc_quem'])
         self.addInfoEdt.setPlainText(data_dict['proc_reported'])
         self.techCbx.setCurrentText(data_dict['proc_tecnico'])
+        
     
     def ok_click(self):
         self.ret = (True, {'proc_tecnico': self.techCbx.currentText(), 
                            'proc_quem': self.client_name.text(),
-                           'proc_reported': self.addInfoEdt.toPlainText(), 
+                     
+                           'proc_report_internal': self.addInfoEdt.toPlainText() + '\n' + self.ddns_text,
                            'proc_duracao': str(self.proc_duracao.dateTime().toPyDateTime().hour) + ':' + str(self.proc_duracao.dateTime().toPyDateTime().minute)
                            })
         self.close()

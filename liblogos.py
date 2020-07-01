@@ -701,81 +701,85 @@ def software_update_settings(unit_id):
                             (dt, gl.user_dict['user_name'], setting_id[0]))
 
 
-def process_to_html(ass_dict):
-    # LF = '\n'
-    div_title = '''<div style="margin-bottom: 10px; margin-left: 10px;"><h3 class='round_title'>'''
-    div_end = '''</h3></div>\n'''
-    
-    # div_label = '''<div style="margin-bottom: 10px; margin-left: 10px;"><h3 class='round_conner'>'''
-    # div_value = '''<h3 class="round_small">'''
-    toto: str = '''<!DOCTYPE html><html lang="pt_pt"><head><meta charset="utf-8">
-                <style> .round_conner {color:#000000; font:14px verdana,sans-serif; display: inline;
-                background:#56C5EA; height: 25px; border-radius: 7px; padding-left:10px; padding-right:10px;
-                padding-bottom:3px; padding-top:2px; text-align:right; } .round_title {color:#000000;
-                font:19px verdana,sans-serif; background:#56C5EA; height: 25px; border-radius: 7px;
-                padding-left:10px; padding-right:10px; padding-bottom:3px; padding-top:2px; text-align:center;
-                } .round_small {color:#FFDF00; font:14px verdana,sans-serif; display: inline; background:#6F4E37;6F4E37
-                height: 25px; border-radius: 4px; padding-left:10px; padding-right:10px; padding-bottom:3px; padding-top:2px;
-                text-align:right; } .round_tags {color:#ffffff; font:10px verdana,sans-serif; display: inline; background:#6FD000;
-                height: 25px; border-radius: 4px; padding-left:10px; padding-right:10px; padding-bottom:3px; padding-top:2px;
-                text-align:right; } .terminal {color:#00DD00; font:14px verdana,sans-serif; background-color:#000000; border-radius: 6px;
-                padding-left:10px; padding-right:10px; padding-bottom:4px; padding-top:2px; text-align:left; } 
-                #label {border: solid #CCC 1.0pt;
-                text-align: right; font-family: Verdana; font-size: 10px; color: #333; font-weight: bold; vertical-align: middle;
-                height: 20px; width:100px  } </style> </head>'''
-    td_caixa = '<tr><td id="label">'
-    td_data = '<td style="color: #000080 ; font-family:Verdana; font-size:14px">'
-    td_end = '</td></tr>\n'
-    toto += ''' <table>'''
-    toto += div_title + ass_dict['proc_type'] + ' #' + str(ass_dict['proc_id']) + '/' + ass_dict['proc_date'].strftime("%d-%m-%Y %H:%M") + div_end  #' Assistencia Técnica<td> ' + div_end
-    toto += td_caixa + 'Unidade:</td>' + td_data + ass_dict['proc_unit_name'] + td_end
-    toto += td_caixa + 'Problema:' + td_data + ass_dict['proc_reported'] + td_end
-    toto += td_caixa + 'Relatório:' + td_data + ass_dict['proc_report_internal'].replace('\n', '<br>') + td_end
-    toto += td_caixa + 'Meio:</h3>' + td_data + ass_dict['proc_meio'] + td_end
-    if not ass_dict['proc_quem'] == '':
-        toto += td_caixa + 'Contacto:</h3>' + td_data + ass_dict['proc_quem'] + ' ' + ass_dict['proc_contacto'] + td_end
-    toto += '</table>\n'
-    toto += '<hr style="border: 1px dashed #C0C0C0" color="#FFFFFF" size="6">'
-    toto += ''' <table>'''
-    # toto += td_caixa + 'Data e hora:</td>' + td_data + ass_dict['proc_date'].strftime("%d-%m-%Y %H:%M") + td_end
-    if ass_dict['proc_duracao'].second == 00:
-        toto += td_caixa + 'Duração:</td>' + td_data + ass_dict['proc_duracao'].strftime("%H:%M") + td_end
-    else:
-        toto += td_caixa + 'Duração:DEBUG</td>' + td_data + ass_dict['proc_duracao'].strftime("%H:%M") + td_end
-    toto += td_caixa + 'Morada:</td>' + td_data + ass_dict['un_morada'] + td_end
-    toto += td_caixa + 'Localidade:</td>' + td_data + ass_dict['un_localidade'] + td_end
-    toto += td_caixa + 'C.P.:</td>' + td_data + ass_dict['un_cp'] + td_end
-    toto += '</table>\n'
-    toto += '<hr style="border: 1px dashed #C0C0C0" color="#FFFFFF" size="6">'
-    toto += ''' <table>'''
-    toto += td_caixa + 'Proprietário:</td>' + td_data + ass_dict['cl_nome'] + td_end
-    toto += td_caixa + 'N.I.F.:</td>' + td_data + ass_dict['cl_nif'] + td_end
-    toto += td_caixa + 'Morada:</td>' + td_data + ass_dict['cl_morada'] + td_end
-    toto += td_caixa + 'Sede C.P.:</td>' + td_data + ass_dict['cl_cp'] + td_end
-    toto += td_caixa + 'C. Corrente:</td>' + td_data + '{0:.2f}'.format(ass_dict['cl_cc']) + td_end
-    
-    try:
-        toto += td_caixa + 'Modelo:' + td_data + ass_dict['proc_model']
-    except TypeError:
-        pass
-    try:
-        toto += '<td id="label">' + 'Num. de Série:' + td_data + ass_dict['proc_serial_number'] + td_end
-    except TypeError:
-        pass
-    try:
-        toto += td_caixa + 'Relatório p/ Fac.:\n' + td_data + ass_dict['proc_report_invoice']
-    except (TypeError, AttributeError):
-        pass
-    if not ass_dict['proc_tecnico'] == '':
-        toto += td_caixa + 'Técnico:</h3>' + td_data + ass_dict['proc_tecnico'] + td_end
-    else:
-        toto += td_caixa + 'Técnico:</h3>' + td_data + ass_dict['proc_user'].upper() + td_end
-    toto += td_caixa + 'Recebido:</h3>' + td_data + ass_dict['proc_user'] + td_end
-    toto += td_caixa + 'Estado:</h3>' + td_data + ass_dict['proc_status'] + td_end
-    toto += '</table>\n'
-    toto += '</html>'
-    # print(toto, file=open("output.html", "a"))
-    return toto
+# def process_to_html(ass_dict):
+#     # LF = '\n'
+#     div_title = '''<div style="margin-bottom: 10px; margin-left: 10px;"><h3 class='round_title'>'''
+#     div_end = '''</h3></div>\n'''
+#
+#     # div_label = '''<div style="margin-bottom: 10px; margin-left: 10px;"><h3 class='round_conner'>'''
+#     # div_value = '''<h3 class="round_small">'''
+#     toto: str = '''<!DOCTYPE html><html lang="pt_pt"><head><meta charset="utf-8">
+#                 <style> .round_conner {color:#000000; font:14px verdana,sans-serif; display: inline;
+#                 background:#56C5EA; height: 25px; border-radius: 7px; padding-left:10px; padding-right:10px;
+#                 padding-bottom:3px; padding-top:2px; text-align:right; } .round_title {color:#000000;
+#                 font:19px verdana,sans-serif; background:#56C5EA; height: 25px; border-radius: 7px;
+#                 padding-left:10px; padding-right:10px; padding-bottom:3px; padding-top:2px; text-align:center;
+#                 } .round_small {color:#FFDF00; font:14px verdana,sans-serif; display: inline; background:#6F4E37;6F4E37
+#                 height: 25px; border-radius: 4px; padding-left:10px; padding-right:10px; padding-bottom:3px; padding-top:2px;
+#                 text-align:right; } .round_tags {color:#ffffff; font:10px verdana,sans-serif; display: inline; background:#6FD000;
+#                 height: 25px; border-radius: 4px; padding-left:10px; padding-right:10px; padding-bottom:3px; padding-top:2px;
+#                 text-align:right; } .terminal {color:#00DD00; font:14px verdana,sans-serif; background-color:#000000; border-radius: 6px;
+#                 padding-left:10px; padding-right:10px; padding-bottom:4px; padding-top:2px; text-align:left; }
+#                 #label {border: solid #CCC 1.0pt;
+#                 text-align: right; font-family: Verdana; font-size: 10px; color: #333; font-weight: bold; vertical-align: middle;
+#                 height: 20px; width:100px  } </style> </head>'''
+#     td_caixa = '<tr><td id="label">'
+#     td_data = '<td style="color: #000080 ; font-family:Verdana; font-size:14px">'
+#     td_data_mono = '<td style="font-family: Menlo, Consolas, Monaco, monospace;">'
+#     td_end = '</td></tr>\n'
+#     toto += ''' <table>'''
+#     toto += div_title + ass_dict['proc_type'] + ' #' + str(ass_dict['proc_id']) + '/' + ass_dict['proc_date'].strftime("%d-%m-%Y %H:%M") + div_end  #' Assistencia Técnica<td> ' + div_end
+#     toto += td_caixa + 'Unidade:</td>' + td_data + ass_dict['proc_unit_name'] + td_end
+#     toto += td_caixa + 'Problema:' + td_data + ass_dict['proc_reported'] + td_end
+#     toto += td_caixa + 'Relatório:' + td_data_mono + ass_dict['proc_report_internal'].replace('\n', '<br>') + td_end
+#     toto += td_caixa + 'Meio:</h3>' + td_data + ass_dict['proc_meio'] + td_end
+#     if not ass_dict['proc_quem'] == '':
+#         toto += td_caixa + 'Contacto:</h3>' + td_data + ass_dict['proc_quem'] + ' ' + ass_dict['proc_contacto'] + td_end
+#     toto += '</table>\n'
+#     toto += '<hr style="border: 1px dashed #C0C0C0" color="#FFFFFF" size="6">'
+#     toto += ''' <table>'''
+#     # toto += td_caixa + 'Data e hora:</td>' + td_data + ass_dict['proc_date'].strftime("%d-%m-%Y %H:%M") + td_end
+#     if ass_dict['proc_duracao'].second == 00:
+#         toto += td_caixa + 'Duração:</td>' + td_data + ass_dict['proc_duracao'].strftime("%H:%M") + td_end
+#     else:
+#         toto += td_caixa + 'Duração:DEBUG</td>' + td_data + ass_dict['proc_duracao'].strftime("%H:%M") + td_end
+#     toto += td_caixa + 'Morada:</td>' + td_data + ass_dict['un_morada'] + td_end
+#     toto += td_caixa + 'Localidade:</td>' + td_data + ass_dict['un_localidade'] + td_end
+#     toto += td_caixa + 'C.P.:</td>' + td_data + ass_dict['un_cp'] + td_end
+#     toto += '</table>\n'
+#     toto += '<hr style="border: 1px dashed #C0C0C0" color="#FFFFFF" size="6">'
+#     toto += ''' <table>'''
+#     toto += td_caixa + 'Proprietário:</td>' + td_data + ass_dict['cl_nome'] + td_end
+#     toto += td_caixa + 'N.I.F.:</td>' + td_data + ass_dict['cl_nif'] + td_end
+#     toto += td_caixa + 'Morada:</td>' + td_data + ass_dict['cl_morada'] + td_end
+#     toto += td_caixa + 'Sede C.P.:</td>' + td_data + ass_dict['cl_cp'] + td_end
+#     toto += td_caixa + 'C. Corrente:</td>' + td_data + '{0:.2f}'.format(ass_dict['cl_cc']) + td_end
+#
+#     try:
+#         toto += td_caixa + 'Modelo:' + td_data + ass_dict['proc_model']
+#     except TypeError:
+#         pass
+#     try:
+#         toto += '<td id="label">' + 'Num. de Série:' + td_data + ass_dict['proc_serial_number'] + td_end
+#     except TypeError:
+#         pass
+#     try:
+#         toto += td_caixa + 'Relatório p/ Fac.:\n' + td_data + ass_dict['proc_report_invoice']
+#     except (TypeError, AttributeError):
+#         pass
+#     if not ass_dict['proc_tecnico'] == '':
+#         toto += td_caixa + 'Técnico:</h3>' + td_data + ass_dict['proc_tecnico'] + td_end
+#     else:
+#         toto += td_caixa + 'Técnico:</h3>' + td_data + ass_dict['proc_user'].upper() + td_end
+#     toto += td_caixa + 'Recebido:</h3>' + td_data + ass_dict['proc_user'] + td_end
+#     toto += td_caixa + 'Estado:</h3>' + td_data + ass_dict['proc_status'] + td_end
+#     toto += '</table>\n'
+#     toto += '</html>'
+#     # print(toto, file=open("output.html", "a"))
+#     return toto
+
+
+
 
 
 def msg_to_html(msg_dict):
