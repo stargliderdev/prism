@@ -123,29 +123,32 @@ class MsgSendSMS(QDialog):
         for n in range(0, self.gridContacts.rowCount()):
             if self.gridContacts.cellWidget(n, 0).layout().itemAt(1).widget().isChecked():
                 send_to.append((self.gridContacts.item(n, 3).text(), self.gridContacts.item(n, 2).text()))
-        for n in send_to:
-            send_to_mobile = msg_sender.send_sms(self.textMsgTEdt.toPlainText(), n[0])
-            if send_to_mobile['status'] != 0:
-                sms_error = 'Estado: ' + str(send_to_mobile['status']) + ' Erro: ' + send_to_mobile['return_msg']
-                void = QMessageBox.critical(self, "Erro", 'Mensagem não enviada\n' + sms_error,
-                                            QMessageBox.StandardButtons(QMessageBox.Ok))
-                msg_cnt = -1
-                break
-            else:
-                msg_cnt += 1
-                self.log_message({'msg_uuid': msg_uuid, 'type': 1, 'msg_to': str(n[0]), 'msg_to_name': n[1], 'msg_subject': 'SMS','msg_body': self.textMsgTEdt.toPlainText(), 'msg_files': ''})
-                sub = '[SMS] ' + gl.unit_dict['un_name'] + ' :' + self.textMsgTEdt.toPlainText()
-                body = 'Mensagem para ' + gl.unit_dict['un_name'] + ' - ' + str(n[0]) + '<br> Nome: ' + n[1] + '<br>Conteudo: ' + self.textMsgTEdt.toPlainText()
-                smtpmail.send_sms_mail({'sub': sub, 'body': body})
-
-        if msg_cnt > 0:
-            sms_error = 'Saldo: ' + send_to_mobile['saldo']
-            void = QMessageBox.information(self, "Info", 'Mensagen(s) enviada(s) ' + str(msg_cnt) + '\n' + sms_error,
-                                           QMessageBox.StandardButtons(QMessageBox.Ok))
-            self.sendBtn.setText('Enviada! Re-enviar')
+        if msg_cnt == 0:
+            void = QMessageBox.critical(self, "Erro", 'Sem Destinatarios ', QMessageBox.StandardButtons(QMessageBox.Ok))
         else:
-            smtpmail.send_sms_mail({'sub': 'Erro ao enviar SMS', 'body': 'Erro ao enviar SMS <br> ' + sms_error})
+            for n in send_to:
+                send_to_mobile = msg_sender.send_sms(self.textMsgTEdt.toPlainText(), n[0])
+                if send_to_mobile['status'] != 0:
+                    sms_error = 'Estado: ' + str(send_to_mobile['status']) + ' Erro: ' + send_to_mobile['return_msg']
+                    void = QMessageBox.critical(self, "Erro", 'Mensagem não enviada\n' + sms_error,
+                                                QMessageBox.StandardButtons(QMessageBox.Ok))
+                    msg_cnt = -1
+                    break
+                else:
+                    msg_cnt += 1
+                    self.log_message({'msg_uuid': msg_uuid, 'type': 1, 'msg_to': str(n[0]), 'msg_to_name': n[1], 'msg_subject': 'SMS','msg_body': self.textMsgTEdt.toPlainText(), 'msg_files': ''})
+                    sub = '[SMS] ' + gl.unit_dict['un_name'] + ' :' + self.textMsgTEdt.toPlainText()
+                    body = 'Mensagem para ' + gl.unit_dict['un_name'] + ' - ' + str(n[0]) + '<br> Nome: ' + n[1] + '<br>Conteudo: ' + self.textMsgTEdt.toPlainText()
+                    smtpmail.send_sms_mail({'sub': sub, 'body': body})
     
+            if msg_cnt > 0:
+                sms_error = 'Saldo: ' + send_to_mobile['saldo']
+                void = QMessageBox.information(self, "Info", 'Mensagen(s) enviada(s) ' + str(msg_cnt) + '\n' + sms_error,
+                                               QMessageBox.StandardButtons(QMessageBox.Ok))
+                self.sendBtn.setText('Enviada! Re-enviar')
+            else:
+                smtpmail.send_sms_mail({'sub': 'Erro ao enviar SMS', 'body': 'Erro ao enviar SMS <br> ' + sms_error})
+        
     def validate(self):
         flag = True
         self.canned_data = data_sets.canned_msg_to_dict(self.cannedCbx.currentText())

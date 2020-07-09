@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QDialog, QLabel, QCheckBox, QVBoxLayout, QLineEdit, 
     QWidget, \
     QToolButton, QTabWidget, QTextEdit, QMessageBox, QFileDialog, QErrorMessage, QHBoxLayout, QInputDialog, QComboBox
 
+import block_edit
 import client_edit
 import hardware
 import hardware_edit
@@ -52,6 +53,8 @@ class UnitEdit(QDialog):
         gl.unit_dict = data_sets.unit_to_dic(unit_id)
         
         mainLayout = QVBoxLayout(self)
+        self.unlockLicBtn = QPushButton('Desbloqueiar')
+        self.unlockLicBtn.clicked.connect(self.unlock_licence)
         self.saveBtn = QPushButton('Grava')
         self.saveBtn.clicked.connect(self.save_click)
         self.cancelBtn = QPushButton('Sair')
@@ -91,7 +94,7 @@ class UnitEdit(QDialog):
         self.hamburguerMenuLabel.addAction(deactivate)
         
         self.hamburguerMenuLabel.setContextMenuPolicy(Qt.ActionsContextMenu)
-        mainLayout.addLayout(qc.addHLayout([self.hamburguerMenuLabel, self.saveBtn, True, self.cancelBtn]))
+        mainLayout.addLayout(qc.addHLayout([self.hamburguerMenuLabel,self.saveBtn, self.unlockLicBtn, True, self.cancelBtn]))
         self.un_id = QLineEdit()
         self.un_id.setFocusPolicy(Qt.NoFocus)
         self.un_id.setAlignment(Qt.AlignRight)
@@ -247,6 +250,10 @@ class UnitEdit(QDialog):
                 liblogos.update_unit_tags(gl.unit_dict['un_id'], self.un_tags_txt.toPlainText())
             self.close()
     
+    def unlock_licence(self):
+        form = block_edit.BlockSoftware()
+        form.exec_()
+        
     def check_mandatory(self):
         toto = True
         if self.un_responsavel.text() == '':
@@ -759,14 +766,15 @@ class UnitEdit(QDialog):
                     except KeyError:
                         """ nome antigo"""
                         liblogos.set_unit_settings(gl.unit_dict['un_id'], 28, lic_dict['commercial_version'], '')
-                    try:
-                        liblogos.set_unit_settings(gl.unit_dict['un_id'], 7, lic_dict['rdp'], '')
-                    except KeyError:
-                        libpg.execute_query('delete from unit_settings where us_unit_id = %s and us_act_id=%s', (gl.unit_dict['un_id'], 7))
-                    try:
-                        liblogos.set_unit_settings(gl.unit_dict['un_id'], 29, lic_dict['printon'], '')
-                    except KeyError:
-                        libpg.execute_query('delete from unit_settings where us_unit_id = %s and us_act_id=%s', (gl.unit_dict['un_id'], 29))
+                    """já não mexe nos settings, deixa estar como está"""
+                    # try:
+                    #     liblogos.set_unit_settings(gl.unit_dict['un_id'], 7, lic_dict['rdp'], '')
+                    # except KeyError:
+                    #     libpg.execute_query('delete from unit_settings where us_unit_id = %s and us_act_id=%s', (gl.unit_dict['un_id'], 7))
+                    # try:
+                    #     liblogos.set_unit_settings(gl.unit_dict['un_id'], 29, lic_dict['printon'], '')
+                    # except KeyError:
+                    #     libpg.execute_query('delete from unit_settings where us_unit_id = %s and us_act_id=%s', (gl.unit_dict['un_id'], 29))
                         
                     '''actualiza as grelhas'''
                     self.refresh_cmt_restware()

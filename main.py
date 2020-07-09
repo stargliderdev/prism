@@ -65,6 +65,7 @@ class MainWindow(QMainWindow):
             data_sets.get_hardware_types()
             data_sets.get_ds_areas()
             data_sets.get_canned_messages_sms()
+            data_sets.get_motif_block()
             
         else:
             QMessageBox.critical(None,"Erro", "Erro na ligação à Base de Dados")
@@ -254,11 +255,11 @@ class MainWindow(QMainWindow):
             pending.exec_()
             # pprint.pprint(pending.ret_dict)
             if pending.ret_dict['flag'] == 2: # de outro processo
-                print('de pendente')
+                # print('de pendente')
                 form = ass.Assistencia(pending.ret_dict, unit_id)
                 form.exec_()
             elif pending.ret_dict['flag'] == 1: # nova
-                print('nova com pendentes')
+                # print('nova com pendentes')
                 form = ass.Assistencia(pending.ret_dict, unit_id)
                 form.exec_()
         else:  # not pending
@@ -345,7 +346,7 @@ class MainWindow(QMainWindow):
         self.grid_units.setEditTriggers(QTableWidget.NoEditTriggers)
         self.grid_units.verticalHeader().setDefaultSectionSize(20)
         self.grid_units.setAlternatingRowColors(True)
-        self.grid_units.setStyleSheet("alternate-background-color: #fff9e6;")
+        self.grid_units.setStyleSheet("alternate-background-color: #e6ffcc;")
         self.grid_units.verticalHeader().setVisible(False)
         self.grid_units.resizeColumnsToContents()
         ex_grid.make_grid(self.grid_units, headers=['ID', 'Unidade', 'Tipo', 'Localidade', 'C.P.', 'Zona'],

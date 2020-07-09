@@ -64,6 +64,7 @@ user_dict = {}
 PRODUCTION_VERSION = '2020.1'
 file1 = ('espiridiao@infornash.pt', 'O&!y7A?HZr6q$tZX', 'ftp.infornash.pt')
 unit_dict = {}
+motif_block = []
 insoft_comercial_version = []
 proc_dict = {'proc_date': datetime.datetime.now(),
              'proc_reported': '',

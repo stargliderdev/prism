@@ -83,7 +83,7 @@ def process_to_dict(index):
              from assistencias
              inner join unidades on un_id=proc_unit_id
              inner join clientes on cl_id=unidades.un_cliente_id
-             inner join proc_types on proc_type = proc_type_key
+            -- inner join proc_types on proc_type = proc_type_key
              where proc_id =  %s;'''
     dict_cur.execute(sql, (index,))
     rec = dict_cur.fetchone()
@@ -357,6 +357,12 @@ def get_dbms(unit_type):
         gl.dbms.append(n[1])
 
 
+def get_motif_block():
+    a = libpg.query_many('''SELECT motif_text from motif_block order by motif_id''')
+    gl.motif_block = []
+    for n in a:
+        gl.motif_block.append(n[0])
+
 def get_unit_files_types():
     a = libpg.query_many('SELECT un_ftype_id, un_ftype_name from unit_files_types order by un_ftype_order')
     gl.un_ftypes = []
@@ -364,7 +370,6 @@ def get_unit_files_types():
     for n in a:
         gl.un_ftypes.append(n[1])
         gl.un_ftypes_dic[n[1].lower()] = n[0]
-
 
 def get_model_data(a):
     sql = ('select md_id,\n'
@@ -378,7 +383,6 @@ def get_model_data(a):
 def log_entry(unit, entry):
     sql = 'UPDATE unidades set un_log =%s' + ' || un_log where un_id=%s'
     libpg.execute_query(sql, (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' : ' + entry + '\n', unit))
-
 
 def get_user_data(u_name, u_pin):
     sql = 'select * from users where user_name=%s and user_pin=%s'
@@ -398,6 +402,10 @@ def get_comercial_version(com_key):
     
 def get_settings_data(set_type_id):
     return libpg.get_record_dic('''select * from unit_set_types where unit_set_id = %s''', (set_type_id,))
+
+
+def get_setting_unit(unit_id, set_type_id):
+    return libpg.get_record_dic('''select * from unit_settings where us_unit_id=%s and  us_act_id = %s''', (unit_id,set_type_id))
 
 
 if __name__ == "__main__":

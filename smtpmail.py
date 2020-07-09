@@ -173,9 +173,8 @@ def upload_lic_mail(order_num, unid_dict):
         return True, 'OK'
   
 
-def send_process_mail(process_id):
-    process_dict: int = data_sets.process_to_dict(process_id)
-
+def send_process_mail(process_id):   
+    process_dict = data_sets.process_to_dict(process_id)
     msg_body = html_maker.process_to_html(process_dict)
     if process_dict['proc_pendente']:
         assunto = '❌ [' + process_dict['proc_type'] + '] ' + process_dict['proc_unit_name']
@@ -192,6 +191,32 @@ def send_process_mail(process_id):
         mailing_list.append(hl[2])
     msg_dic = {'sub': assunto,'body': msg_body}
     send_mail_html(mailing_list, msg_dic)
+
+
+def SEND_BLOCK_MAIL(process_id, order_id, data):
+    process_dict = data_sets.process_to_dict(process_id)
+    msg_body = html_maker.block_to_html(process_dict)
+    
+    if order_id == 1:
+        assunto = 'BLOQUEADO ' + process_dict['proc_unit_name'] + ' até ' + data
+    elif order_id == 2:
+        assunto = 'DESBLOQUEADO ' + process_dict['proc_unit_name'] + ' Pago'
+    elif order_id == 3:
+        assunto = '🔴 BLOQUEAR ' + process_dict['proc_unit_name'] + ' para ' + data
+    elif order_id == 4:
+        assunto = 'DESBLOQUEAR ' + process_dict['proc_unit_name'] + ' Tudo pago'
+    """ envia internamente """
+    if pa.DEVELOP:
+        mailing_list = ['xeo@net.vodafone.pt']
+    else:
+        mailing_list = ['assistencias@espiridiao.net']
+    
+    hl = liblogos.get_sys_admin(process_dict['proc_unit_id'])
+    if hl[0]:
+        mailing_list.append(hl[2])
+    msg_dic = {'sub': assunto, 'body': msg_body}
+    send_mail_html(mailing_list, msg_dic)
+
   
   
 if __name__ == '__main__':
