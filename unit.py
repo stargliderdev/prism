@@ -253,6 +253,9 @@ class UnitEdit(QDialog):
     def unlock_licence(self):
         form = block_edit.BlockSoftware()
         form.exec_()
+        self.refresh_comitments()
+        
+        
         
     def check_mandatory(self):
         toto = True

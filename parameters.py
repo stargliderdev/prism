@@ -46,9 +46,9 @@ db_host = '192.168.0.98'
 db_port = '5432'
 db_user = 'root'
 db_password = 'masterkey'
-DEVELOP = True
-VERSION = '2020.06.18'
-version = 14
+DEVELOP = False
+VERSION = '2020.07.14'
+version = 15
 if DEVELOP:
     db_host = '192.168.0.250'
 db_database = 'prism'

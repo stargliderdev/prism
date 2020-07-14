@@ -204,7 +204,7 @@ def SEND_BLOCK_MAIL(process_id, order_id, data):
     elif order_id == 3:
         assunto = '🔴 BLOQUEAR ' + process_dict['proc_unit_name'] + ' para ' + data
     elif order_id == 4:
-        assunto = 'DESBLOQUEAR ' + process_dict['proc_unit_name'] + ' Tudo pago'
+        assunto = '🔴 DESBLOQUEAR ' + process_dict['proc_unit_name'] + ' Tudo pago'
     """ envia internamente """
     if pa.DEVELOP:
         mailing_list = ['xeo@net.vodafone.pt']

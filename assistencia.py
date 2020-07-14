@@ -383,8 +383,8 @@ class Assistencia(QDialog):
 
 
     def last_scall_paste(self):
-        self.as_relatorio_interno.setPlainText('\n—^—^—^—^—^—^—^—^— \n[' + str(pa.assistencia_montanteDic['proc_id']) + '] de ' +
-                pa.assistencia_montanteDic['proc_data'].strftime('%d.%b.%Y %H:%M') + '\n' + self.as_relatorio_interno_montante.toPlainText())
+        self.as_relatorio_interno.setPlainText('\n—^—^—^—^—^—^—^—^— \n[' + str(self.last_proc['proc_id']) + '] de ' +
+                self.last_proc['proc_date'].strftime('%d.%b.%Y %H:%M') + '\n' + self.as_relatorio_interno_montante.toPlainText())
 
     def analisa_click(self):
         form = asterisk_interface.AsteriskInterface()

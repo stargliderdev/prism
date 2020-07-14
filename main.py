@@ -682,47 +682,47 @@ class MainWindow(QMainWindow):
         search_customers.setIcon(QIcon('.//img//all.png'))
         search_customers.clicked.connect(self.customer_refresh)
         mainTabLayout.addLayout(qc.addHLayout(['Nome', self.cl_name, 'NIF', self.cl_nif, 'Activos', self.cl_active, search_customers, True]))
-        self.grid_customers = QTableWidget()
-        self.grid_customers.setSelectionBehavior(QTableWidget.SelectRows)
-        self.grid_customers.setSelectionMode(QTableWidget.SingleSelection)
-        self.grid_customers.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.grid_customers.verticalHeader().setDefaultSectionSize(20)
-        self.grid_customers.setAlternatingRowColors(True)
-        self.grid_customers.setStyleSheet("alternate-background-color: #e6e6ff;")
-        self.grid_customers.verticalHeader().setVisible(False)
-        self.grid_customers.resizeColumnsToContents()
+        self.gridCustomers = QTableWidget()
+        self.gridCustomers.setSelectionBehavior(QTableWidget.SelectRows)
+        self.gridCustomers.setSelectionMode(QTableWidget.SingleSelection)
+        self.gridCustomers.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.gridCustomers.verticalHeader().setDefaultSectionSize(20)
+        self.gridCustomers.setAlternatingRowColors(True)
+        self.gridCustomers.setStyleSheet("alternate-background-color: #e6e6ff;")
+        self.gridCustomers.verticalHeader().setVisible(False)
+        self.gridCustomers.resizeColumnsToContents()
         
-        self.grid_customers.itemDoubleClicked.connect(self.customer_click)
+        self.gridCustomers.itemDoubleClicked.connect(self.customer_click)
         
-        mainTabLayout.addWidget(self.grid_customers)
-        ex_grid.make_grid(self.grid_customers, headers=['ID', 'Nome', 'Localidade', 'NIF','C.P.','C.C.'], col_width=[(0, 88), (1, 378), (2, 200), (3, 100),(4,220),(5,70)])
+        mainTabLayout.addWidget(self.gridCustomers)
+        ex_grid.make_grid(self.gridCustomers, headers=['ID', 'Nome', 'Localidade', 'NIF', 'C.P.', 'C.C.'], col_width=[(0, 88), (1, 378), (2, 200), (3, 100), (4, 220), (5, 70)])
         # self.customer_refresh()
         add_customer = QAction("Adiciona Cliente", self)
         add_customer.setIcon(QIcon('.//img//mk_request.png'))
         add_customer.triggered.connect(self.add_customer_click)
-        self.grid_customers.addAction(add_customer)
+        self.gridCustomers.addAction(add_customer)
         
         sp1 = QAction(self)
         sp1.setSeparator(True)
-        self.grid_customers.addAction(sp1)
+        self.gridCustomers.addAction(sp1)
         
         add_unit = QAction("Adiciona Unidade", self)
         add_unit.setIcon(QIcon('.//img//mk_request.png'))
         add_unit.triggered.connect(self.add_unit_click)
         
-        self.grid_customers.addAction(add_unit)
+        self.gridCustomers.addAction(add_unit)
         show_units = QAction("Mostra Unidades", self)
         show_units.setIcon(QIcon('.//img//mk_request.png'))
         show_units.triggered.connect(self.show_units_click)
         
-        self.grid_customers.addAction(show_units)
-        self.grid_customers.setContextMenuPolicy(Qt.ActionsContextMenu)
+        self.gridCustomers.addAction(show_units)
+        self.gridCustomers.setContextMenuPolicy(Qt.ActionsContextMenu)
     
     def customer_refresh(self):
         sql = '''SELECT cl_id , cl_nome, cl_localidade, cl_nif, cl_cp, cl_cc
                 FROM clientes where cl_active = %s order by cl_nome'''
         hl = libpg.query_many(sql, (self.cl_active.isChecked(),))
-        ex_grid.grid_std(self.grid_customers, data=hl, f_col=['i', 's', 's', 'i','s','d2'])
+        ex_grid.grid_std(self.gridCustomers, data=hl, f_col=['i', 's', 's', 'i', 's', 'd2'])
     
     def customer_name_change(self):
         tx = self.cl_name.text().lower()
@@ -732,7 +732,7 @@ class MainWindow(QMainWindow):
                       FROM clientes where unaccent(LOWER(cl_nome)) LIKE ''' + search + ' and cl_active = ' + str(
                 self.cl_active.isChecked()) + ' order by cl_nome'
             bc = libpg.sql_query(sql)
-            ex_grid.grid_std(self.grid_customers, data=bc, f_col=['i', 's', 's', 'i','d2'])
+            ex_grid.grid_std(self.gridCustomers, data=bc, f_col=['i', 's', 's', 'i', 'd2'])
     
     def customer_nif_change(self):
         tx = self.cl_nif.text().lower()
@@ -742,10 +742,10 @@ class MainWindow(QMainWindow):
                       FROM clientes where cl_nif LIKE ''' + search + ' and cl_active = ' + str(
                 self.cl_active.isChecked()) + ' order by cl_nome'
             bc = libpg.sql_query(sql)
-            ex_grid.grid_std(self.grid_customers, data=bc, f_col=['i', 's', 's', 'i','d2'])
+            ex_grid.grid_std(self.gridCustomers, data=bc, f_col=['i', 's', 's', 'i', 'd2'])
     
     def customer_click(self):
-        b = int(self.grid_customers.item(self.grid_customers.currentRow(), 0).text())
+        b = int(self.gridCustomers.item(self.gridCustomers.currentRow(), 0).text())
         form = client_edit.EditClient(b)
         form.exec_()
         if form.ret[0]:
@@ -757,12 +757,12 @@ class MainWindow(QMainWindow):
         form.exec_()
     
     def add_unit_click(self):
-        b = int(self.grid_customers.item(self.grid_customers.currentRow(), 0).text())
+        b = int(self.gridCustomers.item(self.gridCustomers.currentRow(), 0).text())
         form = classes_un.UnitAdd(b)
         form.exec_()
     
     def show_units_click(self):
-        b = int(self.grid_customers.item(self.grid_customers.currentRow(), 0).text())
+        b = int(self.gridCustomers.item(self.gridCustomers.currentRow(), 0).text())
         self.units_seach_inc(client=b)
         self.tabuladorTabWidget.setCurrentIndex(0)
        

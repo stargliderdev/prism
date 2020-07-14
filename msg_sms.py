@@ -123,7 +123,7 @@ class MsgSendSMS(QDialog):
         for n in range(0, self.gridContacts.rowCount()):
             if self.gridContacts.cellWidget(n, 0).layout().itemAt(1).widget().isChecked():
                 send_to.append((self.gridContacts.item(n, 3).text(), self.gridContacts.item(n, 2).text()))
-        if msg_cnt == 0:
+        if len(send_to) == 0:
             void = QMessageBox.critical(self, "Erro", 'Sem Destinatarios ', QMessageBox.StandardButtons(QMessageBox.Ok))
         else:
             for n in send_to:

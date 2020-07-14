@@ -42,15 +42,16 @@ def process_to_html(ass_dict):
     if not ass_dict['proc_serial_number'] == '':
         toto += '<td id="label">' + 'Num. de Série:' + td_data + ass_dict['proc_serial_number'] + td_end
     toto += td_caixa + 'Problema:' + td_data + ass_dict['proc_reported'] + td_end
-    toto += td_caixa + 'Relatório:' + td_data_mono + ass_dict['proc_report_internal'].replace('\n', '<br>') + td_end
-    toto += td_caixa + 'Meio:</h3>' + td_data + ass_dict['proc_meio'] + td_end
+    toto += td_caixa + 'Relatório:' + td_data + ass_dict['proc_report_internal'].replace('\n', '<br>') + td_end
+    toto += td_caixa + 'Meio:' + td_data + ass_dict['proc_meio'] + td_end
+    toto += td_caixa + 'Origem:' + td_data + ass_dict['proc_meio'] + td_end
     if not ass_dict['proc_quem'] == '':
-        toto += td_caixa + 'Contacto:</h3>' + td_data + ass_dict['proc_quem'] + ' ' + ass_dict['proc_contacto'] + td_end
+        toto += td_caixa + 'Contacto:' + td_data + ass_dict['proc_quem'] + ' ' + ass_dict['proc_contacto'] + td_end
     if not ass_dict['proc_report_invoice'] == '':
         toto += td_caixa + 'Relatório p/ Fac.:\n' + td_data + ass_dict['proc_report_invoice']
-    toto += td_caixa + 'Duração:</td>' + td_data + ass_dict['proc_duracao'].strftime("%H:%M") + td_end
-    toto += td_caixa + 'Técnico:</h3>' + td_data + ass_dict['proc_tecnico'] + td_end
-    toto += td_caixa + 'Estado:</h3>' + td_data + ass_dict['proc_status'] + td_end
+    toto += td_caixa + 'Duração:' + td_data + ass_dict['proc_duracao'].strftime("%H:%M") + td_end
+    toto += td_caixa + 'Técnico:' + td_data + ass_dict['proc_tecnico'] + td_end
+    toto += td_caixa + 'Estado:' + td_data + ass_dict['proc_status'] + td_end
     toto += ''' </table>'''
     toto += '''<pre>'''
     toto += '<b> Proprietário:</b>' + ass_dict['cl_nome'] + '<br>'

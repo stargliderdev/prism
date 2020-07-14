@@ -8,6 +8,7 @@ import psycopg2
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLineEdit, QPushButton, QTextEdit, QDesktopWidget, QMessageBox, \
     QApplication, QCalendarWidget, QComboBox
 import data_sets
+import libpg
 import parameters as gl
 import process_save
 import qlib as qc
@@ -50,7 +51,10 @@ class BlockSoftware(QDialog):
         self.daysToLock.currentIndexChanged.connect(self.days_change)
         self.daysToLock.setCurrentIndex(3)
         self.balanceEdt.setText('{0:.2f}'.format(gl.unit_dict['cl_cc']))
-    
+        self.ddns = data_sets.get_one_setting(gl.unit_dict['un_id'], 13)[0]
+        if self.ddns == '':
+            self.remoteLockBtn.setEnabled(False)
+        
     
     def cancel_btn_click(self):
         self.close()
@@ -65,14 +69,6 @@ class BlockSoftware(QDialog):
             rd = random.randint(1,3)
             good_day = last_monday(datetime.datetime.now() + datetime.timedelta(days=int(a[0]))) + datetime.timedelta(days=rd)
             self.calendar_QCalendarWidget.setSelectedDate(good_day)
-        
-    
-    def local_request(self):
-        if self.daysToLock.currentIndex() == 0:
-            self.order_id = 4
-        else:
-            self.order_id = 3
-        self.make_block_request()
     
     def make_block_request(self):
         gl.proc_dict['proc_report_internal'] = '    Duração:' + self.daysToLock.currentText() + '\n' +\
@@ -93,16 +89,27 @@ class BlockSoftware(QDialog):
                              'proc_tecnico': gl.user_dict['user_name']
                              })
         process_id: int = process_save.save_process(gl.proc_dict)
+        
         if process_id[0]:
             smtpmail.SEND_BLOCK_MAIL(process_id[1], self.order_id,self.calendar_QCalendarWidget.selectedDate().toPyDate().strftime('%d-%m-%Y'))
-            # QMessageBox.information(None, "Info", "Processo criado " + str(process_id[1]))
+            libpg.execute_query('update comitments_unit set cm_value=%s where cm_unit_id=%s and cm_act_id=13 ',
+                                (self.calendar_QCalendarWidget.selectedDate().toPyDate().strftime('%Y-%m-%d'), gl.unit_dict['un_id']))
             self.close()
         else:
             QMessageBox.critical(None, "Erro", "Não foi possivel criar um processo")
+  
+  
+    def local_request(self):
+        if self.daysToLock.currentIndex() == 0:
+            self.order_id = 4
+            self.calendar_QCalendarWidget.setSelectedDate(datetime.date(2050, 1, 1))
+        else:
+            self.order_id = 3
+        self.make_block_request()
     
     def remote_request(self):
-        ddns = data_sets.get_one_setting(gl.unit_dict['un_id'], 13)[0]
-        gl.c = "host=" + ddns + ''' dbname=insoft port=5432 user=root password='1n_0rn45+mmiVE591r1_140mmXiii' connect_timeout=3'''
+        self.ddns = data_sets.get_one_setting(gl.unit_dict['un_id'], 13)[0]
+        gl.c = "host=" + self.ddns + ''' dbname=insoft port=5432 user=root password='1n_0rn45+mmiVE591r1_140mmXiii' connect_timeout=3'''
         time.sleep(0.23)
         a = psql_listen()
         if a[0]:
