@@ -98,7 +98,7 @@ class Assistencia(QDialog):
         self.as_origem.addItems(['Call Center', 'Escritório', 'mail', 'Pessoal'])
         self.as_nivel = QComboBox()
         self.as_nivel.addItems(['Normal', 'Urgente'])
-        mainTabLayout.addLayout(qc.addHLayout(['Quem:', self.as_quem,'Contacto:',self.as_contacto, 'Nivel', self.as_nivel, 'Origem:', self.as_origem, True]))
+        mainTabLayout.addLayout(qc.addHLayout(['Quem:', self.as_quem,'Contacto:',self.as_contacto, 'Nivel', self.as_nivel, 'Origem:',  True]))
         self.as_data = QDateTimeEdit()
         self.as_data.setCalendarPopup(True)
         self.as_data.setDisplayFormat("dd.MMM.yyyy hh:mm")

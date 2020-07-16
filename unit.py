@@ -265,13 +265,13 @@ class UnitEdit(QDialog):
             toto = False
         return toto
     
-    def activa_click(self):
-        gl.unit_dict['un_activa'] = not gl.unit_dict['un_activa']
-        if gl.unit_dict['un_activa']:
-            self.un_activa.setText('Activa')
-        else:
-            self.un_activa.setText('Inactiva')
-        update_activa = libpg.execute_query('UPDATE unidades set un_activa = %s where un_id=%s',(gl.unit_dict['un_activa'], gl.unit_dict['un_id']))
+    # def activa_click(self):
+    #     gl.unit_dict['un_activa'] = not gl.unit_dict['un_activa']
+    #     if gl.unit_dict['un_activa']:
+    #         self.un_activa.setText('Activa')
+    #     else:
+    #         self.un_activa.setText('Inactiva')
+    #     update_activa = libpg.execute_query('UPDATE unidades set un_activa = %s where un_id=%s',(gl.unit_dict['un_activa'], gl.unit_dict['un_id']))
     
     def make_tab_contacts(self):
         # contactos
@@ -746,9 +746,10 @@ class UnitEdit(QDialog):
                         lic_dict['terminals'] = lic_dict['units']
                     except KeyError:
                         lic_dict['terminals'] = '1'
-                    liblogos.set_unit_comitments(gl.unit_dict['un_id'], 2, lic_dict['terminals'])
+                    """ os terminais são colocados nos settings"""
+                    # liblogos.set_unit_comitments(gl.unit_dict['un_id'], 2, lic_dict['terminals'])
                     lic_dict['version'] = lic_dict.get('version',gl.PRODUCTION_VERSION)
-                    lic_dict['terminals'] = lic_dict.get('terminals','1')
+                    lic_dict['terminals'] = lic_dict.get('terminals', '1')
                     try:
                         lic_dict['clockin'] = lic_dict['clockin']
                     except KeyError:
@@ -759,8 +760,8 @@ class UnitEdit(QDialog):
                     liblogos.set_unit_comitments(gl.unit_dict['un_id'], 12, lic_dict['date_contract'])
                     ''' update settings '''
                     liblogos.set_unit_settings(gl.unit_dict['un_id'], 1, lic_dict['software'], lic_dict['version'])
-                    if lic_dict['terminals'] == '':
-                        lic_dict['terminals'] = '1'
+                    # if lic_dict['terminals'] == '':
+                    #     lic_dict['terminals'] = '1'
                     # liblogos.set_unit_settings(gl.unit_dict['un_id'], 2, lic_dict['terminals'])
                     liblogos.set_unit_settings(gl.unit_dict['un_id'], 26, datetime.datetime.now().strftime("%Y-%m-%d"), gl.user_dict['user_name'])
                     try:

@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import datetime
 import sys
 import uuid
 
@@ -72,18 +73,19 @@ class MsgSendSMS(QDialog):
         for n in hl:
             self.gridContacts.setCellWidget(line, 0, checkBoxGrid())
             item = QTableWidgetItem()
-            item.setText(n[0])
+            item.setText(n[2])
             self.gridContacts.setItem(line, 1, item)
             item = QTableWidgetItem()
             item.setText(n[1])
             self.gridContacts.setItem(line, 2, item)
             item = QTableWidgetItem()
-            item.setText(n[2])
+            item.setText(n[0])
             self.gridContacts.setItem(line, 3, item)
             line += 1
         self.gridContacts.setColumnWidth(0, 10)
         self.gridContacts.setColumnWidth(1, 180)
         self.gridContacts.setColumnWidth(2, 180)
+        self.gridContacts.setColumnWidth(3, 280)
     
     def refresh_label(self):
         xl = libpg.query_one('SELECT * FROM msg_canned WHERE LOWER(canned_name) = %s and canned_type = %s ',
@@ -122,7 +124,7 @@ class MsgSendSMS(QDialog):
         msg_cnt = 0
         for n in range(0, self.gridContacts.rowCount()):
             if self.gridContacts.cellWidget(n, 0).layout().itemAt(1).widget().isChecked():
-                send_to.append((self.gridContacts.item(n, 3).text(), self.gridContacts.item(n, 2).text()))
+                send_to.append((self.gridContacts.item(n, 1).text(), self.gridContacts.item(n, 2).text()))
         if len(send_to) == 0:
             void = QMessageBox.critical(self, "Erro", 'Sem Destinatarios ', QMessageBox.StandardButtons(QMessageBox.Ok))
         else:
@@ -138,7 +140,9 @@ class MsgSendSMS(QDialog):
                     msg_cnt += 1
                     self.log_message({'msg_uuid': msg_uuid, 'type': 1, 'msg_to': str(n[0]), 'msg_to_name': n[1], 'msg_subject': 'SMS','msg_body': self.textMsgTEdt.toPlainText(), 'msg_files': ''})
                     sub = '[SMS] ' + gl.unit_dict['un_name'] + ' :' + self.textMsgTEdt.toPlainText()
-                    body = 'Mensagem para ' + gl.unit_dict['un_name'] + ' - ' + str(n[0]) + '<br> Nome: ' + n[1] + '<br>Conteudo: ' + self.textMsgTEdt.toPlainText()
+                    body = 'Unidade: ' + gl.unit_dict['un_name'] + '<br> Para: ' + n[1] + '[' + str(n[0]) + ']' + '<br>Conteudo: <hr><pre>' + self.textMsgTEdt.toPlainText().replace('\n', '<br>')
+                    body += '<hr></pre>'
+                    body += 'quem:' + gl.user_dict['user_name'] + '<br>' + datetime.datetime.now().strftime("%d-%m-%Y %H:%M")
                     smtpmail.send_sms_mail({'sub': sub, 'body': body})
     
             if msg_cnt > 0:

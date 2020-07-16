@@ -125,7 +125,7 @@ class BlockSoftware(QDialog):
         else:
             """deu erro o DDNS está errado não funciona"""
             # self.order_id = 1
-            QMessageBox.critical(None, "Erro", "Não foi possivel ligar ao servidor \n" + ddns)
+            QMessageBox.critical(None, "Erro", "Não foi possivel ligar ao servidor \n" + self.ddns)
 
     
     def center(self):

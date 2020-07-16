@@ -11,6 +11,7 @@ import psycopg2
 
 import area_filter
 import date_input
+import html_maker
 import label_process
 import parameters as gl
 import report_lib
@@ -81,6 +82,7 @@ class MainWindow(QMainWindow):
             if gl.user_dict['user_id'] == 0:
                 sys.exit(1)
         # layouts
+        self.setWindowTitle('Prism @' + gl.user_dict['user_name'])
         self.mainLayout = QVBoxLayout()
         self.make_tab_units()
         self.tabuladorTabWidget.addTab(self.tab2, 'Unidades')
@@ -201,7 +203,7 @@ class MainWindow(QMainWindow):
     def view_proc_click(self):
         proc_id = int(self.gridProcess.item(self.gridProcess.currentRow(), 0).text())
         proc_dict = data_sets.process_to_dict(proc_id)
-        proc_html = liblogos.process_to_html(proc_dict)
+        proc_html = html_maker.process_to_html(proc_dict)
         form = report_display.DisplayReport(proc_html)
         form.exec_()
     
@@ -673,7 +675,6 @@ class MainWindow(QMainWindow):
         
         self.cl_nif = QLineEdit()
         self.cl_nif.setMaximumWidth(100)
-        self.cl_nif.setMaxLength(9)
         self.cl_nif.textChanged.connect(self.customer_nif_change)
         
         self.cl_active = QCheckBox()

@@ -399,7 +399,7 @@ print('version: 2020-06-02')
 # develop
 # show_vendas()
 print(datetime.datetime.now())
+print(sync_clientes_cc())
 add_new_products()
 add_new_hardware()
 sales_update()
-print(sync_clientes_cc())

@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from PyQt5.QtWidgets import QDialog, QLabel, QPushButton, \
-    QTableWidgetItem, QHBoxLayout, QVBoxLayout, QTableWidget
+    QTableWidgetItem, QVBoxLayout, QTableWidget
+from PyQt5.Qt import Qt
 import parameters as pa
 import data_sets
 import qlib as qc
@@ -27,7 +28,8 @@ class PendingProcess(QDialog):
         self.pendingGrid.setEditTriggers(QTableWidget.NoEditTriggers)
         self.pendingGrid.verticalHeader().setDefaultSectionSize(20)
         self.pendingGrid.setAlternatingRowColors(True)
-        self.pendingGrid.verticalHeader().setVisible(False)
+        self.pendingGrid.setStyleSheet("alternate-background-color: #e6ffee;")
+        # self.pendingGrid.verticalHeader().setVisible(False)
         self.pendingGrid.resizeRowToContents(1)
         # self.pendingGrid.resiz()
         self.pendingGrid.itemDoubleClicked.connect(self.grid_click)
@@ -69,6 +71,7 @@ class PendingProcess(QDialog):
             col = 0
             item = QTableWidgetItem()
             self.pendingGrid.setItem(self.linha, col, item)
+            item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
             item.setText(str(n[0]))
             
             col += 1
@@ -78,6 +81,7 @@ class PendingProcess(QDialog):
             
             col += 1
             item = QTableWidgetItem()
+            item.setTextAlignment(Qt.AlignLeft | Qt.AlignTop)
             self.pendingGrid.setItem(self.linha, col, item)
             item.setText(n[2])
             
@@ -87,7 +91,10 @@ class PendingProcess(QDialog):
             item.setText(n[3])
             self.linha += 1
         self.pendingGrid.resizeColumnsToContents()
-        self.pendingGrid.setColumnWidth(2, 320)
+        self.pendingGrid.setColumnWidth(2, 420)
+        self.pendingGrid.setColumnWidth(0, 70)
+        for n in range(0,self.pendingGrid.rowCount()):
+            self.pendingGrid.setRowHeight(n,90)
     
    
 
