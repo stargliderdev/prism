@@ -5,8 +5,9 @@ import datetime
 
 import psycopg2
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QBrush, QColor, QPalette, QFont
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLineEdit, QPushButton, QTextEdit, QDesktopWidget, QMessageBox
+from PyQt5.QtGui import QBrush, QColor, QPalette, QFont, QIcon
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLineEdit, QPushButton, QTextEdit, QDesktopWidget, QMessageBox, \
+    QToolButton, QApplication
 
 import add_info
 import liblogos
@@ -31,6 +32,7 @@ class DdnsEdit(QDialog):
         #     self.owner: str = data[1]
         self.ddns_error: str
         self.data = data
+        self.clipboard = QApplication.clipboard()
         self.setWindowTitle('Edita/Testa DDNS')
         masterLayout = QVBoxLayout(self)
         self.ddnsEdt = QLineEdit()
@@ -40,6 +42,9 @@ class DdnsEdit(QDialog):
         self.time_out = QLineEdit()
         self.time_out.setText('3')
         self.time_out.setMaximumWidth(30)
+        self.copyAddTbtn = QToolButton()
+        self.copyAddTbtn.clicked.connect(self.copy_to_clipboard)
+        self.copyAddTbtn.setIcon(QIcon('.//img//copy.png'))
         smsInternalBtn = QPushButton('SMS interna')
         smsInternalBtn.clicked.connect(self.send_sms_internal)
         self.makeProcessBtn = QPushButton('Cria Pedido')
@@ -52,7 +57,7 @@ class DdnsEdit(QDialog):
         smsClientBtn.clicked.connect(self.send_sms_client)
         
         masterLayout.addLayout(qc.addHLayout(
-            ['DDNS:', self.ddnsEdt, 'Time out (s)', self.time_out, self.makeProcessBtn, self.closeProcessBtn]))
+            ['DDNS:', self.ddnsEdt, self.copyAddTbtn, 'Time out (s)', self.time_out, self.makeProcessBtn, self.closeProcessBtn]))
         masterLayout.addLayout(qc.addHLayout(['Proprietário', self.ownerEdt, smsInternalBtn, smsClientBtn]))
         self.outputPlainText = QTextEdit()
         palette = QPalette()
@@ -97,7 +102,10 @@ class DdnsEdit(QDialog):
         self.has_pend_p = libpg.query_one(
             '''select proc_id, proc_date, proc_reported, proc_quem, proc_tecnico from assistencias where proc_unit_id=%s and proc_type=%s and proc_pendente=True''',
             (gl.unit_dict['un_id'], 'DDNS'))
+        gl.date_time_stack = datetime.datetime.now()
 
+    def copy_to_clipboard(self):
+        self.clipboard.setText(self.ddnsEdt.text())
     
     def cancel_btn_click(self):
         self.close()
@@ -132,10 +140,10 @@ class DdnsEdit(QDialog):
             process_id: int = process_save.save_process(gl.proc_dict)
             if process_id[0]:
                 smtpmail.send_process_mail(process_id[1])
-                QMessageBox.information(None, "Info", "Processo criado " + str(process_id[1]))
+                # QMessageBox.information(None, "Info", "Processo criado " + str(process_id[1]))
                 self.close()
             else:
-                QMessageBox.critical(None, "Erro", "Não possivel criar um processo")
+                QMessageBox.critical(None, "Erro", "Não foi possivel criar um processo")
     
     def close_process_click(self):
         gl.proc_dict.update({'proc_report_internal': self.ddns_error,
@@ -161,10 +169,10 @@ class DdnsEdit(QDialog):
             process_id: int = process_save.save_process(gl.proc_dict)
             if process_id[0]:
                 smtpmail.send_process_mail(process_id[1])
-                QMessageBox.information(None, "Info", "Processo criado " + str(process_id[1]))
+                # QMessageBox.information(None, "Info", "Processo criado " + str(process_id[1]))
                 self.close()
             else:
-                QMessageBox.critical(None, "Erro", "Não possivel criar um processo")
+                QMessageBox.critical(None, "Erro", "Não foi possivel criar um processo")
     
     def ddns_test_click(self):
         self.ddns = self.ddnsEdt.text()

@@ -61,11 +61,12 @@ class MsgSendSMS(QDialog):
         self.refresh_grid()
     
     def refresh_grid(self):
+        """ todos os contactos menos os horarios e folga incluindo todos os da unidade 0"""
         hl = libpg.query_many('''select contact_types.ctt_name, contacts.ct_value1, contacts.ct_value2
                 from unidades
                 inner join contacts on ct_unit = un_id
                 inner join contact_types on ctt_id = ct_ctt_id
-                where un_id = %s  and ctt_way=%s''', (self.data_dict['un_id'], self.data_dict['type']))
+                where (un_id = %s or un_id=0) and ctt_way= %s order by ctt_group, ctt_order''', (self.data_dict['un_id'], self.data_dict['type']))
         self.gridContacts.setColumnCount(4)
         # self.gridContacts.setHorizontalHeaderLabels(headers)
         self.gridContacts.setRowCount(len(hl))

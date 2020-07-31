@@ -104,7 +104,7 @@ class EditContact(QDialog):
         # else:
         self.text_2.setMaxLength(100)
         self.text_2.setMinimumWidth(270)
-        masterLayout.addLayout(qc.addHLayout([l1, self.text_1, True], lw=120))
+        masterLayout.addLayout(qc.addHLayout([l1, self.text_1], lw=120))
         masterLayout.addLayout(qc.addHLayout([l2, self.text_2, True], lw=120))
         okBtn = QPushButton('Valida')
         okBtn.clicked.connect(self.save_click)
@@ -151,6 +151,7 @@ class AddContactsBrowser(QDialog):
         masterLayout.addWidget(self.contacts_grid)
         hl = libpg.query_many('''SELECT ctt_id, ctt_name, ctt_multi, ctt_way
             FROM contact_types
+            WHERE ctt_visible=True
               ORDER BY ctt_group, ctt_order''', (True,))
         ex_grid.grid_std(self.contacts_grid, data=hl, f_col=['i', 's', 'i', 'i'])
     
@@ -450,7 +451,7 @@ class InputTwoString(QDialog):
         self.rprinter_cnt = QLineEdit()
         masterLayout.addLayout(qc.addHLayout([form_string[0], self.rprinter_cnt, True], lw=180))
         self.rPrinterEdt = QLineEdit()
-        self.rPrinterEdt.setMinimumWidth(200)
+        # self.rPrinterEdt.setMinimumWidth(200)
         masterLayout.addLayout(qc.addHLayout([form_string[1], self.rPrinterEdt, True], lw=180))
         okBtn = QPushButton('Valida')
         okBtn.clicked.connect(self.save_click)

@@ -173,9 +173,12 @@ class HardwareBrw(QDialog):
             self.make_inventory_report()
       
     def make_label_click(self):
-        hw_id = self.grid_hardware.item(self.grid_hardware.currentRow(), 0).text().upper()
-        form = label_hardware.HardwareLabel(hw_id)
-        form.exec_()
+        try:
+            hw_id = self.grid_hardware.item(self.grid_hardware.currentRow(), 0).text().upper()
+            form = label_hardware.HardwareLabel(hw_id)
+            form.exec_()
+        except AttributeError:
+            pass
     
     def make_ages_report(self):
         sql = '''SELECT hardware.hw_id, brands.br_name , models.md_name, hardware.hw_sn,

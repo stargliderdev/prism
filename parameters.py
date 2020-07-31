@@ -46,9 +46,9 @@ db_host = '192.168.0.98'
 db_port = '5432'
 db_user = 'root'
 db_password = 'masterkey'
-DEVELOP = False
-VERSION = '2020.07.16'
-version = 15
+DEVELOP = True
+VERSION = '2020.07.31'
+version = 16
 if DEVELOP:
     db_host = '192.168.0.250'
 db_database = 'prism'
@@ -93,3 +93,4 @@ proc_dict = {'proc_date': datetime.datetime.now(),
              'proc_area': '',
              'proc_type': '0000',
              'proc_user': ''}
+date_time_stack=''

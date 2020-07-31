@@ -8,4 +8,4 @@ pass
 # TODO dividir em modulo assistencias.py
 # TODO criar preferencias com passwords: jasmin, e-mail
 # TODO data de inicio da jasmin: compromisso
-# TODO copiar campos directamente para o clipboard
+

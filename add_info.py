@@ -22,38 +22,51 @@ class AddInfo(QDialog):
         self.client_name = QLineEdit()
         self.addInfoEdt = QPlainTextEdit()
         self.techCbx = QComboBox()
-        okBtn = QPushButton('Continua')
+        closeBtn = QPushButton('Fecha')
+        closeBtn.clicked.connect(self.close_click)
+        pendingBtn = QPushButton('Pendente')
+        pendingBtn.clicked.connect(self.pending_click)
         cancelBtn = QPushButton('Cancela')
+        cancelBtn.clicked.connect(self.cancel_click)
         
         masterLayout.addLayout(qc.addHLayout(['Técnico', self.techCbx]))
         masterLayout.addLayout(qc.addHLayout(['Quem', self.client_name]))
         self.proc_duracao = QDateTimeEdit()
         self.proc_duracao.setMaximumWidth(80)
         self.proc_duracao.setDisplayFormat("hh:mm")
-        date_object = datetime.datetime.strptime('00:04:00', "%H:%M:%S")
-        self.proc_duracao.setDateTime(date_object)
+        # date_object = datetime.datetime.strptime('00:04:00', "%H:%M:%S")
+        duration = (datetime.datetime.now() - gl.date_time_stack) + datetime.timedelta(seconds=220)
+        a = str(duration).split(':')
+        dd = datetime.datetime(1900,1,1,int(a[0]),int(a[1]), int(a[2][:2]))
+        self.proc_duracao.setDateTime(dd)
         masterLayout.addLayout(qc.addHLayout(['Duração', self.proc_duracao, True]))
         masterLayout.addLayout(qc.addVLayout(['Info Adicional', self.addInfoEdt]))
-        masterLayout.addLayout(qc.addHLayout([okBtn, cancelBtn]))
+        masterLayout.addLayout(qc.addHLayout([pendingBtn, closeBtn, cancelBtn]))
         
         self.techCbx.addItems(gl.ds_tecnicos)
-        okBtn.clicked.connect(self.ok_click)
-        cancelBtn.clicked.connect(self.cancel_click)
         
         self.client_name.setText(data_dict['proc_quem'])
         self.addInfoEdt.setPlainText(data_dict['proc_reported'])
         self.techCbx.setCurrentText(data_dict['proc_tecnico'])
-        
     
-    def ok_click(self):
+    def close_click(self):
         self.ret = (True, {'proc_tecnico': self.techCbx.currentText(), 
                            'proc_quem': self.client_name.text(),
-                     
                            'proc_report_internal': self.addInfoEdt.toPlainText() + '\n' + self.ddns_text,
                            'proc_duracao': str(self.proc_duracao.dateTime().toPyDateTime().hour) + ':' + str(self.proc_duracao.dateTime().toPyDateTime().minute)
                            })
         self.close()
     
+    def pending_click(self):
+        self.ret = (True, {'proc_tecnico': self.techCbx.currentText(),
+                           'proc_quem': self.client_name.text(),
+                           'proc_report_internal': self.addInfoEdt.toPlainText() + '\n' + self.ddns_text,
+                           'proc_duracao': str(self.proc_duracao.dateTime().toPyDateTime().hour) + ':' + str(self.proc_duracao.dateTime().toPyDateTime().minute),
+                           'proc_pendente': True,
+                           'proc_status': 'Pendente de Intervenção'
+                           })
+        self.close()
+        
     def cancel_click(self):
         self. ret = (False,)
         self.close()

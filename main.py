@@ -72,7 +72,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(None,"Erro", "Erro na ligação à Base de Dados")
             sys.exit()
         if int(gl.ds_params['version']) != gl.version:
-            QMessageBox.critical(None, "Versão antiga", "Versão da aplicação desactualizada\naperta com o Jorge! ")
+            QMessageBox.critical(None, "Versão Desactualizada", "Versão da aplicação desactualizada\naperta com o Jorge! ")
             sys.exit()
         if gl.DEVELOP:
             gl.user_dict = data_sets.get_user_data('jorge', '1697')
@@ -351,8 +351,8 @@ class MainWindow(QMainWindow):
         self.grid_units.setStyleSheet("alternate-background-color: #e6ffcc;")
         self.grid_units.verticalHeader().setVisible(False)
         self.grid_units.resizeColumnsToContents()
-        ex_grid.make_grid(self.grid_units, headers=['ID', 'Unidade', 'Tipo', 'Localidade', 'C.P.', 'Zona'],
-                          col_width=[(0, 54), (1, 300), (2, 100), (3, 200), (4, 280),(5,220)])
+        ex_grid.make_grid(self.grid_units, headers=['ID', 'Unidade', 'Tipo', 'Localidade', 'C.P.', 'Zona','NIF'],
+                          col_width=[(0, 54), (1, 300), (2, 100), (3, 200), (4, 280),(5,220),(6,100)])
         self.grid_units.itemDoubleClicked.connect(self.show_unit)
         mTabLay.addWidget(self.grid_units)
         
@@ -363,7 +363,7 @@ class MainWindow(QMainWindow):
         self.grid_units.addAction(mk_request)
         open_scall = QAction("Pedidos em aberto", self)
         open_scall.setIcon(QIcon('.//img//prc_open.png'))
-        open_scall.triggered.connect(self.scall_closed_click)
+        open_scall.triggered.connect(self.scall_open_click)
         self.grid_units.addAction(open_scall)
         closed_scall = QAction("Pedidos terminados", self)
         closed_scall.setIcon(QIcon('.//img//prc_end.png'))
@@ -472,7 +472,7 @@ class MainWindow(QMainWindow):
             names = names.replace('[','')
             names = names.replace(']','')
             names = names.replace('\'','')
-            self.filterLabel.setText(names)
+            # self.filterLabel.setText(names)
             sql = '''SELECT  un_id, un_name, unit_type.un_type_name, un_localidade, un_cp , area_name
                     FROM unidades
                     INNER JOIN unit_type on unit_type.un_type_id = unidades.un_type
@@ -507,9 +507,9 @@ class MainWindow(QMainWindow):
     
     def units_seach_inc(self, tx='', client=0):
         sql = '''SELECT  un_id, un_name, unit_type.un_type_name,
-            un_localidade, un_cp, area_name
-             FROM unidades,  unit_type, areas
-             WHERE un_type=unit_type.un_type_id and un_area=area_id AND
+            un_localidade, un_cp, area_name, cl_nif
+             FROM unidades,  unit_type, areas, clientes
+             WHERE un_type=unit_type.un_type_id and un_area=area_id AND cl_id=un_cliente_id and
              un_activa = ''' + str(self.unitActiveCkBox.isChecked())
         if not tx == '':
             sql += ''' AND unaccent(LOWER(un_name)) LIKE ''' + tx
@@ -517,20 +517,20 @@ class MainWindow(QMainWindow):
             sql += ''' and un_cliente_id= ''' + str(client)
         sql += ''' ORDER BY un_name'''
         bc = libpg.query_many(sql, (True,))
-        ex_grid.grid_std(self.grid_units, data=bc, f_col=['i', 's', 's', 's', 's','s'])
+        ex_grid.grid_std(self.grid_units, data=bc, f_col=['i', 's', 's', 's', 's','s','s'])
     
     def units_search_text(self):
         search = '\'%%' + self.unitSearchEdt.text().lower() + '%%\''
-        sql = '''SELECT  un_id, un_name, unit_type.un_type_name,
+        sql = '''SELECT  un_id, un_name, unit_type.un_type_name,cl_nif
             un_localidade, un_cp, area_name
-             FROM unidades,  unit_type, areas
+             FROM unidades,  unit_type, areas, clientes
              WHERE  un_type=unit_type.un_type_id
-                and un_area=area_id
+                and un_area=area_id AND cl_id=un_cliente_id
                 AND un_activa = ''' + str(self.unitActiveCkBox.isChecked())
         sql += ''' AND unaccent(LOWER(un_name)) LIKE ''' + search
         sql += ''' ORDER BY un_name'''
         bc = libpg.query_many(sql, (True,))
-        ex_grid.grid_std(self.grid_units, data=bc, f_col=['i', 's', 's', 's', 's','s'])
+        ex_grid.grid_std(self.grid_units, data=bc, f_col=['i', 's', 's', 's', 's','s','s'])
         self.grid_units.setHorizontalHeaderLabels(['ID', 'Unidade', 'Tipo', 'Localidade', 'C.P.','Zona'])
         
     def show_unit(self):
