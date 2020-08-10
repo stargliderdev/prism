@@ -363,6 +363,20 @@ def get_motif_block():
     for n in a:
         gl.motif_block.append(n[0])
 
+
+def get_proc_close_action():
+    a = libpg.query_many('''select st_id, st_descricao, st_action from status  order by st_sort       ''', (True,))
+    gl.proc_action = []
+    for n in a:
+        gl.proc_action.append(n[1])
+        
+def get_proc_types():
+    a = libpg.query_many('''SELECT proc_type_key from proc_types order by proc_type_key''')
+    gl.proc_type = ['Todos']
+    for n in a:
+        gl.proc_type.append(n[0])
+
+
 def get_unit_files_types():
     a = libpg.query_many('SELECT un_ftype_id, un_ftype_name from unit_files_types order by un_ftype_order')
     gl.un_ftypes = []

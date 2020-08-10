@@ -411,6 +411,46 @@ def grid_std(grid_ctrl,**kwargs):
     return (True,)
 
 
+def grid_process_make_grid(ctrl_grid):
+    ctrl_grid.setColumnCount(4)
+    ctrl_grid.setHorizontalHeaderLabels(['ID', 'Data', 'Avaria', 'Técnico'])
+    ctrl_grid.setRowCount(0)
+
+
+def update_grid(ctrl_grid, data_set):
+    ctrl_grid.setRowCount(len(data_set))
+    linha = 0
+    for n in data_set:
+        col = 0
+        item = QTableWidgetItem()
+        ctrl_grid.setItem(linha, col, item)
+        item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        item.setText(str(n[0]))
+        
+        col += 1
+        item = QTableWidgetItem()  # data
+        ctrl_grid.setItem(linha, col, item)
+        item.setText(n[1].strftime('%d-%m-%Y'))
+        
+        col += 1
+        col += 1
+        item = QTableWidgetItem()
+        ctrl_grid.setItem(linha, col, item)
+        item.setText(n[3])
+        linha += 1
+        
+        item = QTableWidgetItem()
+        item.setTextAlignment(Qt.AlignLeft | Qt.AlignTop)
+        ctrl_grid.setItem(linha, 2, item)
+        item.setText(n[2])
+        linha += 1
+    ctrl_grid.resizeColumnsToContents()
+    ctrl_grid.setColumnWidth(2, 420)
+    ctrl_grid.setColumnWidth(0, 70)
+    for n in range(0, ctrl_grid.rowCount()):
+        ctrl_grid.resizeRowToContents(n)
+
+
 if __name__ == '__main__':
     pass
 

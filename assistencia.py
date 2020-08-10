@@ -12,10 +12,11 @@ import smtpmail
 import asterisk_interface
 
 import data_sets
-import wizard_status as w_status
+import close_process as w_status
 import liblogos
 import ex_grid
 import qlib as qc
+import wizard_status
 
 
 class Assistencia(QDialog):
@@ -288,7 +289,7 @@ class Assistencia(QDialog):
         error = self.valida()
         if error == []:
             # 'grava'
-            form = w_status.WizardStatus()
+            form = wizard_status.WizardStatus()
             form.exec_()
             if form.toto == -1:
                 pass

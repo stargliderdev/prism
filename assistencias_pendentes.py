@@ -51,14 +51,17 @@ class PendingProcess(QDialog):
         self.close()
     
     def grid_click(self):
-        self.proc_montante = int(self.pendingGrid.item(self.pendingGrid.currentRow(), 0).text())
-        # carrega a assistencia a montante no dicionario e passa a utilizar esse dicionario
-        # pa.assistencia_montanteDic = data_sets.assistencia_to_dict(self.assistencia_anterior)
-        self.ret_dict.update(data_sets.assistencia_to_dict(self.proc_montante))
-        self.ret_dict['proc_montante'] = self.proc_montante
-        self.ret_dict['flag'] = 2 # de proc pendente
-        self.close()
-    
+        try:
+            self.proc_montante = int(self.pendingGrid.item(self.pendingGrid.currentRow(), 0).text())
+            """carrega a assistencia a montante no dicionario e passa a utilizar esse dicionario"""
+            self.ret_dict.update(data_sets.assistencia_to_dict(self.proc_montante))
+            self.ret_dict['proc_montante'] = self.proc_montante
+            self.ret_dict['flag'] = 2 # de proc pendente
+            self.close()
+        except AttributeError:
+            pass
+        
+        
     def make_grid(self):
         self.pendingGrid.setColumnCount(4)
         self.pendingGrid.setHorizontalHeaderLabels(['ID', 'Data', 'Avaria', 'Técnico'])
@@ -77,24 +80,31 @@ class PendingProcess(QDialog):
             col += 1
             item = QTableWidgetItem()  # data
             self.pendingGrid.setItem(self.linha, col, item)
-            item.setText(n[1].strftime('%d.%m.%Y'))
+            item.setText(n[1].strftime('%d-%m-%Y'))
             
             col += 1
-            item = QTableWidgetItem()
-            item.setTextAlignment(Qt.AlignLeft | Qt.AlignTop)
-            self.pendingGrid.setItem(self.linha, col, item)
-            item.setText(n[2])
+            # item = QTableWidgetItem()
+            # item.setTextAlignment(Qt.AlignLeft | Qt.AlignTop)
+            # self.pendingGrid.setItem(self.linha, col, item)
+            # item.setText(n[2])
             
             col += 1
             item = QTableWidgetItem()
             self.pendingGrid.setItem(self.linha, col, item)
             item.setText(n[3])
             self.linha += 1
+            
+            item = QTableWidgetItem()
+            item.setTextAlignment(Qt.AlignLeft | Qt.AlignTop)
+            self.pendingGrid.setItem(self.linha, 2, item)
+            item.setText(n[2])
+            self.linha +=1
         self.pendingGrid.resizeColumnsToContents()
         self.pendingGrid.setColumnWidth(2, 420)
         self.pendingGrid.setColumnWidth(0, 70)
         for n in range(0,self.pendingGrid.rowCount()):
-            self.pendingGrid.setRowHeight(n,90)
+            # self.pendingGrid.setRowHeight(n,90)
+            self.pendingGrid.resizeRowToContents(n)
     
    
 

@@ -57,7 +57,10 @@ def process_to_html(ass_dict):
     toto += '<b> Proprietário:</b>' + ass_dict['cl_nome'] + '<br>'
     toto += '<b>       N.I.F.:</b>' + ass_dict['cl_nif'] + '<br>'
     toto += '<b>       Morada:</b>' + ass_dict['cl_morada'] + '<br>'
-    toto += '<b>    Sede C.P.:</b>' + ass_dict['cl_cp'] + '<br>'
+    try:
+        toto += '<b>    Sede C.P.:</b>' + ass_dict['cl_cp'] + '<br>'
+    except TypeError:
+        toto += '<b>    Sede C.P.:</b>SEM CODIGO POSTAL<br>'
     if ass_dict['cl_cc'] > 0:
         toto += '<b>  C. Corrente: <font color="red" >' + '{0:.2f}'.format(ass_dict['cl_cc']) + '</b></font><br>'
     else:

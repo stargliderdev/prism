@@ -47,7 +47,7 @@ db_port = '5432'
 db_user = 'root'
 db_password = 'masterkey'
 DEVELOP = True
-VERSION = '2020.07.31'
+VERSION = '2020.08.04'
 version = 16
 if DEVELOP:
     db_host = '192.168.0.250'
@@ -94,3 +94,5 @@ proc_dict = {'proc_date': datetime.datetime.now(),
              'proc_type': '0000',
              'proc_user': ''}
 date_time_stack=''
+client_sort_dict = {0: 'cl_nome ', 1: 'cl_id', 2: 'cl_localidade', 3: 'cl_cc DESC'}
+proc_type = ['Todos']

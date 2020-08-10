@@ -67,6 +67,7 @@ class MainWindow(QMainWindow):
             data_sets.get_ds_areas()
             data_sets.get_canned_messages_sms()
             data_sets.get_motif_block()
+            data_sets.get_proc_types()
             
         else:
             QMessageBox.critical(None,"Erro", "Erro na ligação à Base de Dados")
@@ -95,12 +96,12 @@ class MainWindow(QMainWindow):
     def make_tab_process(self):
         self.tab1 = QWidget()
         mainTabLayout = QVBoxLayout(self.tab1)
-        self.tags_search = QLineEdit()
-        self.tags_search.setMinimumWidth(200)
-        self.tags_search.returnPressed.connect(self.tags_browser_click)
+        # self.tags_search = QLineEdit()
+        # self.tags_search.setMinimumWidth(200)
+        # self.tags_search.returnPressed.connect(self.tags_browser_click)
         
-        tags_brown = QToolButton()
-        tags_brown.setIcon(QIcon('.//img//tags.png'))
+        # tags_brown = QToolButton()
+        # tags_brown.setIcon(QIcon('.//img//tags.png'))
         search_btn = QToolButton()
         search_btn.setIcon(QIcon('.//img//refresh.png'))
         search_btn.setToolTip('Actualiza')
@@ -112,15 +113,18 @@ class MainWindow(QMainWindow):
         self.statusCBox.currentIndexChanged.connect(self.tags_search_click)
         areasProcTbt = QToolButton()
         areasProcTbt.clicked.connect(self.areas_proc_click)
+        self.procTypeCBox = QComboBox()
+        self.procTypeCBox.addItems(gl.proc_type)
         
-        mainTabLayout.addLayout(qc.addHLayout([self.tags_search, tags_brown, search_btn, self.endedChBox, 'Estado', self.statusCBox, 'Zona', areasProcTbt, True]))
+        mainTabLayout.addLayout(qc.addHLayout([ search_btn, self.endedChBox, 'Tipo', self.procTypeCBox, 'Zona', areasProcTbt, True]))
+        # mainTabLayout.addLayout(qc.addHLayout([self.tags_search, tags_brown, search_btn, self.endedChBox, 'Estado', self.statusCBox, 'Zona', areasProcTbt, True]))
         self.gridProcess = QTableWidget()
         self.gridProcess.setSelectionBehavior(QTableWidget.SelectRows)
         self.gridProcess.setSelectionMode(QTableWidget.SingleSelection)
         self.gridProcess.setEditTriggers(QTableWidget.NoEditTriggers)
         self.gridProcess.verticalHeader().setDefaultSectionSize(20)
         self.gridProcess.setAlternatingRowColors(True)
-        self.gridProcess.setStyleSheet("alternate-background-color: #ffffcc;")
+        self.gridProcess.setStyleSheet("alternate-background-color: #66ff33;")
         self.gridProcess.verticalHeader().setVisible(False)
         self.gridProcess.resizeColumnsToContents()
         self.gridProcess.itemDoubleClicked.connect(self.make_request_proc)
@@ -174,16 +178,15 @@ class MainWindow(QMainWindow):
     
     def process_grid_refresh(self, data_filter):
         if not data_filter:
-            sql = '''select proc_id,to_char(proc_date, 'DD.MM.YYYY'), un_name,proc_status, unidades.un_localidade, area_name, proc_unit_id
+            sql = '''select proc_id,to_char(proc_date, 'DD-MM-YYYY HH:MM'), un_name,proc_status, unidades.un_localidade, proc_type, proc_unit_id
              from unidades
              inner join assistencias on proc_unit_id = un_id
-             inner join areas on area_id = unidades.un_area
-                    where proc_pendente = True
+                 where proc_pendente = True
                     order by proc_id desc'''
         else:
             area = str(data_filter['areas_ids']).replace('[', '(')
             area = area.replace(']',')')
-            sql = '''select proc_id,to_char(proc_date, 'DD.MM.YYYY'), un_name,proc_status, unidades.un_localidade, area_name, proc_unit_id
+            sql = '''select proc_id,to_char(proc_date, 'DD-MM-YYYY HH:MM'), un_name,proc_status, unidades.un_localidade, proc_type, proc_unit_id
              from unidades
              inner join assistencias on proc_unit_id = un_id
              inner join areas on area_id = unidades.un_area
@@ -521,8 +524,8 @@ class MainWindow(QMainWindow):
     
     def units_search_text(self):
         search = '\'%%' + self.unitSearchEdt.text().lower() + '%%\''
-        sql = '''SELECT  un_id, un_name, unit_type.un_type_name,cl_nif
-            un_localidade, un_cp, area_name
+        sql = '''SELECT  un_id, un_name, unit_type.un_type_name,
+            un_localidade, un_cp, area_name,cl_nif
              FROM unidades,  unit_type, areas, clientes
              WHERE  un_type=unit_type.un_type_id
                 and un_area=area_id AND cl_id=un_cliente_id
@@ -682,7 +685,11 @@ class MainWindow(QMainWindow):
         search_customers = QToolButton()
         search_customers.setIcon(QIcon('.//img//all.png'))
         search_customers.clicked.connect(self.customer_refresh)
-        mainTabLayout.addLayout(qc.addHLayout(['Nome', self.cl_name, 'NIF', self.cl_nif, 'Activos', self.cl_active, search_customers, True]))
+        self.orderByCbox = QComboBox()
+        self.orderByCbox.addItems(['Nome','Numero','Localidade','C.C.'])
+        self.orderByCbox.currentIndexChanged.connect(self.customer_refresh)
+        
+        mainTabLayout.addLayout(qc.addHLayout(['Nome', self.cl_name, 'NIF', self.cl_nif, 'Activos', self.cl_active, search_customers, True,'Ordena', self.orderByCbox]))
         self.gridCustomers = QTableWidget()
         self.gridCustomers.setSelectionBehavior(QTableWidget.SelectRows)
         self.gridCustomers.setSelectionMode(QTableWidget.SingleSelection)
@@ -720,30 +727,30 @@ class MainWindow(QMainWindow):
         self.gridCustomers.setContextMenuPolicy(Qt.ActionsContextMenu)
     
     def customer_refresh(self):
-        sql = '''SELECT cl_id , cl_nome, cl_localidade, cl_nif, cl_cp, cl_cc
-                FROM clientes where cl_active = %s order by cl_nome'''
+        sql = '''SELECT cl_id , cl_nome, cl_localidade, cast(cl_nif as text), cl_cp, cl_cc
+                FROM clientes where cl_active = %s order by ''' + gl.client_sort_dict[self.orderByCbox.currentIndex()]
         hl = libpg.query_many(sql, (self.cl_active.isChecked(),))
-        ex_grid.grid_std(self.gridCustomers, data=hl, f_col=['i', 's', 's', 'i', 's', 'd2'])
+        ex_grid.grid_std(self.gridCustomers, data=hl, f_col=['i', 's', 's', 's', 's', 'd2'])
     
     def customer_name_change(self):
         tx = self.cl_name.text().lower()
         if len(tx) > 3:
             search = '\'%%' + tx + '%%\''
-            sql = '''SELECT cl_id , cl_nome, cl_localidade, cl_nif, cl_cc
+            sql = '''SELECT cl_id , cl_nome, cl_localidade, CAST (cl_nif as TEXT), cl_cc
                       FROM clientes where unaccent(LOWER(cl_nome)) LIKE ''' + search + ' and cl_active = ' + str(
                 self.cl_active.isChecked()) + ' order by cl_nome'
             bc = libpg.sql_query(sql)
-            ex_grid.grid_std(self.gridCustomers, data=bc, f_col=['i', 's', 's', 'i', 'd2'])
+            ex_grid.grid_std(self.gridCustomers, data=bc, f_col=['i', 's', 's', 's', 'd2'])
     
     def customer_nif_change(self):
         tx = self.cl_nif.text().lower()
         if len(tx) > 2:
             search = '\'%%' + tx + '%%\''
-            sql = '''SELECT cl_id , cl_nome, cl_localidade, cl_nif, cl_cc
+            sql = '''SELECT cl_id , cl_nome, cl_localidade, cast(cl_nif as TEXT), cl_cc
                       FROM clientes where cl_nif LIKE ''' + search + ' and cl_active = ' + str(
                 self.cl_active.isChecked()) + ' order by cl_nome'
             bc = libpg.sql_query(sql)
-            ex_grid.grid_std(self.gridCustomers, data=bc, f_col=['i', 's', 's', 'i', 'd2'])
+            ex_grid.grid_std(self.gridCustomers, data=bc, f_col=['i', 's', 's', 's', 'd2'])
     
     def customer_click(self):
         b = int(self.gridCustomers.item(self.gridCustomers.currentRow(), 0).text())

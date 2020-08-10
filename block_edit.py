@@ -51,6 +51,9 @@ class BlockSoftware(QDialog):
         self.daysToLock.currentIndexChanged.connect(self.days_change)
         self.daysToLock.setCurrentIndex(3)
         self.balanceEdt.setText('{0:.2f}'.format(gl.unit_dict['cl_cc']))
+        if gl.unit_dict['cl_cc'] == 0:
+            self.reasonCBox.setCurrentIndex(0)
+            self.daysToLock.setCurrentIndex(0)
         self.ddns = data_sets.get_one_setting(gl.unit_dict['un_id'], 13)[0]
         if self.ddns == '':
             self.remoteLockBtn.setEnabled(False)

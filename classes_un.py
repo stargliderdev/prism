@@ -443,16 +443,17 @@ class InputTwoString(QDialog):
     """a setting key pode ser o tipo de setting se for novo ou o us_id se for para editar"""
     def __init__(self, setting_key, title, form_string, data=None, parent=None):
         super(InputTwoString, self).__init__(parent)
+        self.resize(768, -1)
         form_string = form_string.split(';')
         self.setting_key = setting_key
         self.data = data
         self.setWindowTitle(title)
         masterLayout = QVBoxLayout(self)
         self.rprinter_cnt = QLineEdit()
-        masterLayout.addLayout(qc.addHLayout([form_string[0], self.rprinter_cnt, True], lw=180))
+        masterLayout.addLayout(qc.addHLayout([form_string[0], self.rprinter_cnt], lw=180))
         self.rPrinterEdt = QLineEdit()
         # self.rPrinterEdt.setMinimumWidth(200)
-        masterLayout.addLayout(qc.addHLayout([form_string[1], self.rPrinterEdt, True], lw=180))
+        masterLayout.addLayout(qc.addHLayout([form_string[1], self.rPrinterEdt], lw=180))
         okBtn = QPushButton('Valida')
         okBtn.clicked.connect(self.save_click)
         cancelBtn = QPushButton('Cancela')
