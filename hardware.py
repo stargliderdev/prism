@@ -23,6 +23,7 @@ class HardwareBrw(QDialog):
         mainTabLayout = QVBoxLayout(self)
         self.setWindowTitle('Equipamentos')
         self.settings = conf
+        self.ret = {}
         self.hw_status = QComboBox()
         self.hw_status.addItems(['Stock', 'Activo', 'Abatido','Emprestimo','Todos'])
         self.hw_status.setCurrentIndex(1)
@@ -159,11 +160,19 @@ class HardwareBrw(QDialog):
         ex_grid.grid_std(self.grid_hardware, data=bc, f_col=['i', 's','s', 's', 's', 's', 'i', 's'])
     
     def edit_hardware(self):
-        hw_id = self.grid_hardware.item(self.grid_hardware.currentRow(), 0).text().upper()
-        form = hardware_edit.HardwareEdit({'hw_id': hw_id})
-        form.exec_()
-        self.hw_status_change()
-    
+        if self.settings['edit_mode']:
+            """em modo edição """
+            hw_id = self.grid_hardware.item(self.grid_hardware.currentRow(), 0).text().upper()
+            form = hardware_edit.HardwareEdit({'hw_id': hw_id})
+            form.exec_()
+            self.hw_status_change()
+        else:
+            """ em modo browser devolve a marca o modelo e o numero de serie"""
+            self.ret = {'brand': self.grid_hardware.item(self.grid_hardware.currentRow(), 2).text().upper(),
+                        'model': self.grid_hardware.item(self.grid_hardware.currentRow(), 3).text().upper(),
+                        'serial_number': self.grid_hardware.item(self.grid_hardware.currentRow(), 4).text().upper()}
+            self.close()
+            
     def report_change(self):
         choice = self.hwReportCbx.currentIndex()
         self.hwReportCbx.setCurrentIndex(0)

@@ -18,7 +18,7 @@ class AddInfo(QDialog):
         self.resize(600, 400)
         self.setWindowTitle('Adiciona informação ao Pedido')
         self.ret = (False,)
-        self.ddns_text = data_dict['proc_report_internal']
+        self.ddns_text = data_dict['proc_action_report']
         self.client_name = QLineEdit()
         self.addInfoEdt = QPlainTextEdit()
         self.techCbx = QComboBox()
@@ -52,7 +52,7 @@ class AddInfo(QDialog):
     def close_click(self):
         self.ret = (True, {'proc_tecnico': self.techCbx.currentText(), 
                            'proc_quem': self.client_name.text(),
-                           'proc_report_internal': self.addInfoEdt.toPlainText() + '\n' + self.ddns_text,
+                           'proc_action_report': self.addInfoEdt.toPlainText() + '\n' + self.ddns_text,
                            'proc_duracao': str(self.proc_duracao.dateTime().toPyDateTime().hour) + ':' + str(self.proc_duracao.dateTime().toPyDateTime().minute)
                            })
         self.close()
@@ -60,7 +60,7 @@ class AddInfo(QDialog):
     def pending_click(self):
         self.ret = (True, {'proc_tecnico': self.techCbx.currentText(),
                            'proc_quem': self.client_name.text(),
-                           'proc_report_internal': self.addInfoEdt.toPlainText() + '\n' + self.ddns_text,
+                           'proc_action_report': self.addInfoEdt.toPlainText() + '\n' + self.ddns_text,
                            'proc_duracao': str(self.proc_duracao.dateTime().toPyDateTime().hour) + ':' + str(self.proc_duracao.dateTime().toPyDateTime().minute),
                            'proc_pendente': True,
                            'proc_status': 'Pendente de Intervenção'

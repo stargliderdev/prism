@@ -377,6 +377,13 @@ def get_proc_types():
         gl.proc_type.append(n[0])
 
 
+def get_proc_sources():
+    a = libpg.query_many('''SELECT source_name from proc_sources order by source_id''')
+    gl.proc_sources = []
+    for n in a:
+        gl.proc_sources.append(n[0])
+
+
 def get_unit_files_types():
     a = libpg.query_many('SELECT un_ftype_id, un_ftype_name from unit_files_types order by un_ftype_order')
     gl.un_ftypes = []
@@ -384,6 +391,7 @@ def get_unit_files_types():
     for n in a:
         gl.un_ftypes.append(n[1])
         gl.un_ftypes_dic[n[1].lower()] = n[0]
+
 
 def get_model_data(a):
     sql = ('select md_id,\n'

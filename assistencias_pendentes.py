@@ -69,6 +69,7 @@ class PendingProcess(QDialog):
     
     def update_grid(self, dataSet):
         self.pendingGrid.setRowCount(len(dataSet))
+        
         self.linha = 0
         for n in dataSet:
             col = 0

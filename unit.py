@@ -961,7 +961,7 @@ class UnitEdit(QDialog):
         QMessageBox.information(None, "Código de unidade", hl)
     
     def hardware_unit_process(self):
-        form = hardware.HardwareBrw({'unit_id': gl.unit_dict['un_id'], 'model_id': 0, 'un_name': gl.unit_dict['un_name']})
+        form = hardware.HardwareBrw({'unit_id': gl.unit_dict['un_id'], 'model_id': 0, 'un_name': gl.unit_dict['un_name'], 'edit_mode': True})
         form.exec_()
     
     def setBtnSizes(self, object, value=60):

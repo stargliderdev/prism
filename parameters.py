@@ -68,7 +68,7 @@ motif_block = []
 insoft_comercial_version = []
 proc_dict = {'proc_date': datetime.datetime.now(),
              'proc_reported': '',
-             'proc_report_internal': '',
+             'proc_action_report': '',
              'proc_serial_number': '',
              'proc_report_invoice': '',
              'proc_model': '',
@@ -96,3 +96,4 @@ proc_dict = {'proc_date': datetime.datetime.now(),
 date_time_stack=''
 client_sort_dict = {0: 'cl_nome ', 1: 'cl_id', 2: 'cl_localidade', 3: 'cl_cc DESC'}
 proc_type = ['Todos']
+proc_sources = []

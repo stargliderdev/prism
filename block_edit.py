@@ -74,7 +74,7 @@ class BlockSoftware(QDialog):
             self.calendar_QCalendarWidget.setSelectedDate(good_day)
     
     def make_block_request(self):
-        gl.proc_dict['proc_report_internal'] = '    Duração:' + self.daysToLock.currentText() + '\n' +\
+        gl.proc_dict['proc_action_report'] = '    Duração:' + self.daysToLock.currentText() + '\n' +\
                                                '   Bloqueia:' + self.calendar_QCalendarWidget.selectedDate().toPyDate().strftime('%d-%m-%Y') + '\n' +\
                                                'C.C. á data:' + '{0:.2f}'.format(gl.unit_dict['cl_cc']) + '\n' + \
                                                '     Motivo:' + self.reasonCBox.currentText() + '\n' + \

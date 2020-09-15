@@ -50,7 +50,7 @@ def assistencia_to_html(as_id):
         except TypeError:
             pass
     html += td_caixa + 'Problema:' + td_data + assistencia['proc_reported'] + td_end
-    html += td_caixa + 'Relatório:' + td_data + assistencia['proc_report_internal'].replace('\n', '<br>') + td_end
+    html += td_caixa + 'Relatório:' + td_data + assistencia['proc_action_report'].replace('\n', '<br>') + td_end
     
     html += td_caixa + 'Relatório p/ Fac.:\n' + td_data + assistencia['proc_relatorio_internal'].replace('\n', '<br>') + td_end
     html += td_caixa + 'Técnico:</h3>' + td_data + assistencia['proc_tecnico'] + td_end
@@ -731,7 +731,7 @@ def software_update_settings(unit_id):
 #     toto += div_title + ass_dict['proc_type'] + ' #' + str(ass_dict['proc_id']) + '/' + ass_dict['proc_date'].strftime("%d-%m-%Y %H:%M") + div_end  #' Assistencia Técnica<td> ' + div_end
 #     toto += td_caixa + 'Unidade:</td>' + td_data + ass_dict['proc_unit_name'] + td_end
 #     toto += td_caixa + 'Problema:' + td_data + ass_dict['proc_reported'] + td_end
-#     toto += td_caixa + 'Relatório:' + td_data_mono + ass_dict['proc_report_internal'].replace('\n', '<br>') + td_end
+#     toto += td_caixa + 'Relatório:' + td_data_mono + ass_dict['proc_action_report'].replace('\n', '<br>') + td_end
 #     toto += td_caixa + 'Meio:</h3>' + td_data + ass_dict['proc_meio'] + td_end
 #     if not ass_dict['proc_quem'] == '':
 #         toto += td_caixa + 'Contacto:</h3>' + td_data + ass_dict['proc_quem'] + ' ' + ass_dict['proc_contacto'] + td_end

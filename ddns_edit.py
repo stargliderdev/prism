@@ -119,7 +119,7 @@ class DdnsEdit(QDialog):
         form.exec_()
     
     def make_process_click(self):
-        gl.proc_dict.update({'proc_report_internal': self.ddns_error,
+        gl.proc_dict.update({'proc_action_report': self.ddns_error,
                   'proc_type': 'DDNS',
                   'proc_date': datetime.datetime.now(),
                   'proc_meio': 'Escritório',
@@ -146,7 +146,7 @@ class DdnsEdit(QDialog):
                 QMessageBox.critical(None, "Erro", "Não foi possivel criar um processo")
     
     def close_process_click(self):
-        gl.proc_dict.update({'proc_report_internal': self.ddns_error,
+        gl.proc_dict.update({'proc_action_report': self.ddns_error,
                              'proc_type': 'DDNS',
                              'proc_date': datetime.datetime.now(),
                              'proc_meio': 'Escritório',
@@ -165,7 +165,7 @@ class DdnsEdit(QDialog):
         form.exec_()
         if form.ret[0]:
             gl.proc_dict.update(form.ret[1])
-            # gl.proc_dict['proce_report_internal'] = gl.proc_dict['proc_reported'] + '\n' + gl.proc_dict['proc_report_internal']
+            # gl.proc_dict['proce_report_internal'] = gl.proc_dict['proc_reported'] + '\n' + gl.proc_dict['proc_action_report']
             process_id: int = process_save.save_process(gl.proc_dict)
             if process_id[0]:
                 smtpmail.send_process_mail(process_id[1])
