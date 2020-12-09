@@ -179,7 +179,10 @@ def send_process_mail(process_id):
     if process_dict['proc_pendente']:
         assunto = '❌ [' + process_dict['proc_type'] + '] ' + process_dict['proc_unit_name']
     else:
-        assunto = '✅ [' + process_dict['proc_type'] + '] ' + process_dict['proc_unit_name']
+        if process_dict['proc_type'] == 'INFO':
+            assunto = '🔔 [' + process_dict['proc_type'] + '] ' + process_dict['proc_unit_name']
+        else:
+            assunto = '✅ [' + process_dict['proc_type'] + '] ' + process_dict['proc_unit_name']
     """ envia internamente """
     if pa.DEVELOP:
         mailing_list = ['xeo@net.vodafone.pt']

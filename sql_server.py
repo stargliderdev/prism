@@ -385,7 +385,7 @@ def sales_update():
 
 
 sql_server_conn_str = ("Driver={SQL Server Native Client 11.0};"
-                       "Server=WIN_SERVER\PRIMAVERA;"
+                       "Server=WIN_SERVER\PRIMAVERAv10;"
                        "Database=PRIESPIRIDIAO;"
                        "uid=sa;pwd=1697fo")
 conn_string = 'host=192.168.0.98 dbname=prism user=root password=masterkey'

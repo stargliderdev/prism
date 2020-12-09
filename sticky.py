@@ -10,6 +10,7 @@ class StickyNote(QDialog):
         self.ret = False, ''
         super(StickyNote, self).__init__(parent)
         self.resize(600, 400)
+        self.setWindowTitle('Relatório interno/comentários')
         masterLayout = QVBoxLayout(self)
         buttonLayout = QHBoxLayout()
         self.stickyNoteTxt = QPlainTextEdit()
@@ -36,7 +37,7 @@ class StickyNote(QDialog):
 
 def main():
     app = QApplication(sys.argv)
-    form = StickyNote()
+    form = StickyNote('')
     form.show()
     app.exec_()
     print(form.ret)

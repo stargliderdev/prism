@@ -21,7 +21,7 @@ class HardwareStatus(QDialog):
         self.hwStatusGrid.verticalHeader().setDefaultSectionSize(20)
         self.hwStatusGrid.verticalHeader().setVisible(False)
         self.hwStatusGrid.itemDoubleClicked.connect(self.save_click)
-        ex_grid.make_grid(self.hwStatusGrid, ['Estado'], [(0, 160)])
+        ex_grid.make_grid(self.hwStatusGrid, ['Unidades'], [(0, 160)])
         self.hwStatusGrid.horizontalHeader().setVisible(False)
         cancelBtn = QPushButton('Cancela')
         cancelBtn.clicked.connect(self.cancel_btn_click)

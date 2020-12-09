@@ -57,7 +57,8 @@ class DdnsEdit(QDialog):
         smsClientBtn.clicked.connect(self.send_sms_client)
         
         masterLayout.addLayout(qc.addHLayout(
-            ['DDNS:', self.ddnsEdt, self.copyAddTbtn, 'Time out (s)', self.time_out, self.makeProcessBtn, self.closeProcessBtn]))
+            ['DDNS:', self.ddnsEdt, self.copyAddTbtn, 'Time out (s)', self.time_out, self.makeProcessBtn,
+             self.closeProcessBtn]))
         masterLayout.addLayout(qc.addHLayout(['Proprietário', self.ownerEdt, smsInternalBtn, smsClientBtn]))
         self.outputPlainText = QTextEdit()
         palette = QPalette()
@@ -103,7 +104,7 @@ class DdnsEdit(QDialog):
             '''select proc_id, proc_date, proc_reported, proc_quem, proc_tecnico from assistencias where proc_unit_id=%s and proc_type=%s and proc_pendente=True''',
             (gl.unit_dict['un_id'], 'DDNS'))
         gl.date_time_stack = datetime.datetime.now()
-
+    
     def copy_to_clipboard(self):
         self.clipboard.setText(self.ddnsEdt.text())
     
@@ -119,19 +120,17 @@ class DdnsEdit(QDialog):
         form.exec_()
     
     def make_process_click(self):
-        gl.proc_dict.update({'proc_action_report': self.ddns_error,
-                  'proc_type': 'DDNS',
-                  'proc_date': datetime.datetime.now(),
-                  'proc_meio': 'Escritório',
-                  'proc_reported': self.comm_status,
-                  'proc_status': 'Aguarda n/ Intervenção',
-                  'proc_montante': 0,
-                  'proc_jusante': -1,
-                  'proc_pendente': True,
-                  'proc_facturar': False,
-                  'proc_type': 'DDNS',
-                               })
-
+        gl.proc_dict.update({'proc_reported': self.ddns_error,
+                             'proc_type': 'DDNS',
+                             'proc_date': datetime.datetime.now(),
+                             'proc_meio': 'Escritório',
+                             'proc_status': 'Aguarda n/ Intervenção',
+                             'proc_montante': 0,
+                             'proc_jusante': -1,
+                             'proc_pendente': True,
+                             'proc_facturar': False,
+                             'proc_type': 'DDNS'})
+        
         form = add_info.AddInfo(gl.proc_dict)
         form.exec_()
         if form.ret[0]:
@@ -146,11 +145,10 @@ class DdnsEdit(QDialog):
                 QMessageBox.critical(None, "Erro", "Não foi possivel criar um processo")
     
     def close_process_click(self):
-        gl.proc_dict.update({'proc_action_report': self.ddns_error,
+        gl.proc_dict.update({'proc_reported': self.ddns_error,
                              'proc_type': 'DDNS',
                              'proc_date': datetime.datetime.now(),
                              'proc_meio': 'Escritório',
-                             'proc_reported': self.comm_status,
                              'proc_status': 'Resolvido',
                              'proc_montante': self.has_pend_p[0],
                              'proc_quem': self.has_pend_p[3],
@@ -192,19 +190,17 @@ class DdnsEdit(QDialog):
             self.makeProcessBtn.setEnabled(False)
             self.closeProcessBtn.setEnabled(True)
         if a[0]:
-            html = "{:>14}".format('DDNS:') + self.ddns + '\n'
+            html = 'DDNS:' + self.ddns + '\n'
             # html += '-' * 80 + '\n'
             html += self.info_restware_short()
-            html += '\n'
+            # html += '\n'
             html += self.info_psql()
             t1 = time.time()
-            html += '\n Respondeu em: ' + str((t1 - t0))[0:4] + ' segundos.'
+            html += 'Respondeu em: ' + str((t1 - t0))[0:4] + ' segundos.'
             self.ddns_error = html
             self.comm_status = 'Verificado e a funcionar'
         else:
             t1 = time.time()
-            # if self.has_pend_p is None:
-
             html = ''' <!DOCTYPE
                     html > < html
                     lang = "pt_pt"> <head> <meta
@@ -213,7 +209,7 @@ class DdnsEdit(QDialog):
                    + '''<strong> <br><font size="3" face="verdana" color="orange">''' + 'Não respondeu em : ' + str(
                 (t1 - t0))[0:4] + ''' segundos. </font></html > '''
             self.comm_status = 'Erro nas comunicações'
-            self.ddns_error = a[1]
+            self.ddns_error = a[1] + 'Não respondeu em : ' + str((t1 - t0))[0:4] + ''' segundos.'''
         self.outputPlainText.append(html)
     
     def save_click(self):
@@ -234,9 +230,9 @@ class DdnsEdit(QDialog):
         sql = '''SELECT saftname,dbversion, saftnif, validuntil,commercial_name, TO_CHAR(age(validuntil,'now'), 'DD ') || 'Dias'  FROM params;'''
         d = query_many(sql)[0]
         hl += "{:>14}".format('D. Social:') + d[0] + '\n'
-        hl += "{:>14}".format('D. Comercial:') + d[4] + '\n'
-        hl += "{:>14}".format('dbversion:') + d[1] + '\n'
-        hl += "{:>14}".format('NIF:') + d[2] + '\n'
+        # hl += "{:>14}".format('D. Comercial:') + d[4] + '\n'
+        # hl += "{:>14}".format('dbversion:') + d[1] + '\n'
+        # hl += "{:>14}".format('NIF:') + d[2] + '\n'
         if d[3].year == 2050:
             hl += "{:>14}".format('Validade:' + 'Desbloqueado') + '\n'
         else:
@@ -246,7 +242,7 @@ class DdnsEdit(QDialog):
     def info_psql(self):
         sql = 'SELECT version();'
         a = query_many(sql, (True,))
-        a = str(a[0]).replace('\'','')
+        a = str(a[0]).replace('\'', '')
         a = a.replace('(', '')
         a = a.split(',')
         tx = 'Server Version:' + str(a[0]) + ' ' + str(a[2]) + '\n'

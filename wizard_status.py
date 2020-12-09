@@ -5,16 +5,16 @@ from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout, QPushButton,QHBoxLayou
 import libpg
 
 
-class WizardStatus(QDialog):
+class SetPendingStatus(QDialog):
     def __init__(self, parent = None):
-        super(WizardStatus,  self).__init__(parent)
+        super(SetPendingStatus, self).__init__(parent)
         self.setWindowTitle('Estado do Pedido')
         self.toto = -1
 
         mainLayout = QVBoxLayout(self)
         mainLayout.addLayout(self.make_buttons(self.get_data()))
         # butoes
-        self.closeBtn = QPushButton('Fechar') 
+        self.closeBtn = QPushButton('Voltar')
         self.setSizes(self.closeBtn)
         self.closeBtn.clicked.connect(self.closeBtn_click)
         mainLayout.addWidget(self.closeBtn)
@@ -36,7 +36,7 @@ class WizardStatus(QDialog):
                 col_cnt +=1
             elif col_cnt == col_size :
                 colLayout.addWidget(btn)
-                totoLayout.addLayout(colLayout)               
+                totoLayout.addLayout(colLayout)
                 colLayout = QVBoxLayout()
                 col_cnt = 1
 
@@ -80,36 +80,36 @@ class WizardStatus(QDialog):
         object.setMaximumHeight(value)
         object.setMinimumHeight(value)
 
-    def addHDumLayout(self, listobj1):  
-        dumLayout = QHBoxLayout()
-        for n in listobj1:        
-            if (type(n)==str) or (type(n) == str):
-                dumLayout.addWidget(QLabel(n))
-            elif type(n) == bool:
-                dumLayout.addStretch()
-            else:
-                dumLayout.addWidget(n)
-        return dumLayout
-    def addVDumLayout(self, listobj1):  
-        dumLayout = QVBoxLayout()
-        for n in listobj1:        
-            if (type(n)==str) or (type(n) == str):
-                dumLayout.addWidget(QLabel(n))
-            elif type(n) == bool:
-                dumLayout.addStretch()
-            else:
-                dumLayout.addWidget(n)
-        return dumLayout
-
-    def parseField(self, field_name):
-        # v2
-        dum = self.item_data[field_name]
-        if type(dum) == int:
-            return str(dum)
-        elif dum == None:
-            return ''
-        else:
-            return dum
+    # def addHDumLayout(self, listobj1):
+    #     dumLayout = QHBoxLayout()
+    #     for n in listobj1:
+    #         if (type(n)==str) or (type(n) == str):
+    #             dumLayout.addWidget(QLabel(n))
+    #         elif type(n) == bool:
+    #             dumLayout.addStretch()
+    #         else:
+    #             dumLayout.addWidget(n)
+    #     return dumLayout
+    # def addVDumLayout(self, listobj1):
+    #     dumLayout = QVBoxLayout()
+    #     for n in listobj1:
+    #         if (type(n)==str) or (type(n) == str):
+    #             dumLayout.addWidget(QLabel(n))
+    #         elif type(n) == bool:
+    #             dumLayout.addStretch()
+    #         else:
+    #             dumLayout.addWidget(n)
+    #     return dumLayout
+    #
+    # def parseField(self, field_name):
+    #     # v2
+    #     dum = self.item_data[field_name]
+    #     if type(dum) == int:
+    #         return str(dum)
+    #     elif dum == None:
+    #         return ''
+    #     else:
+    #         return dum
 
 if __name__ == '__main__':
     pass

@@ -10,13 +10,13 @@ import sys
 import psycopg2
 
 import area_filter
+import asterisk_interface
 import date_input
 import html_maker
 import label_process
 import parameters as gl
 import report_lib
 import report_tool
-import reports_interfaces
 import software
 import unit
 import data_sets
@@ -28,7 +28,6 @@ import qlib as qc
 import stdio
 import ex_grid
 import client_edit
-import tags_input
 import liblogos
 import report_display
 import classes_un
@@ -37,6 +36,7 @@ import models
 import login
 import hardware
 import unit_transfer
+from unit_chosse import UnitChoseDialog
 
 
 class MainWindow(QMainWindow):
@@ -111,9 +111,10 @@ class MainWindow(QMainWindow):
         areasProcTbt.clicked.connect(self.areas_proc_click)
         self.procTypeCBox = QComboBox()
         self.procTypeCBox.addItems(gl.proc_type)
+        self.procTypeCBox.currentIndexChanged.connect(self.proc_type_change)
+        
         
         mainTabLayout.addLayout(qc.addHLayout([ search_btn, self.endedChBox, 'Tipo', self.procTypeCBox, 'Zona', areasProcTbt, True]))
-        # mainTabLayout.addLayout(qc.addHLayout([self.tags_search, tags_brown, search_btn, self.endedChBox, 'Estado', self.statusCBox, 'Zona', areasProcTbt, True]))
         self.gridProcess = QTableWidget()
         self.gridProcess.setSelectionBehavior(QTableWidget.SelectRows)
         self.gridProcess.setSelectionMode(QTableWidget.SingleSelection)
@@ -123,20 +124,15 @@ class MainWindow(QMainWindow):
         self.gridProcess.setStyleSheet("alternate-background-color: #e6faff;")
         self.gridProcess.verticalHeader().setVisible(False)
         self.gridProcess.resizeColumnsToContents()
-        self.gridProcess.itemDoubleClicked.connect(self.make_request_proc)
+        self.gridProcess.itemDoubleClicked.connect(self.make_proc_from_proc)
         mainTabLayout.addWidget(self.gridProcess)
         ex_grid.grid_process_make_grid(self.gridProcess)
-        # ex_grid.make_grid(self.gridProcess, headers=['ID', 'Data', 'Unidade', 'Estado', 'Localidade','Zona', 'un_is'], col_width=[(0, 64), (1, 127), (2, 377), (3, 278), (4, 184), (5, 184), (6, 0)])
         mainTabLayout.addWidget(self.gridProcess)
         # sub menus
         view_proc = QAction("Ver Processo", self)
         view_proc.setIcon(QIcon('.//img//mk_request.png'))
         view_proc.triggered.connect(self.view_proc_click)
         self.gridProcess.addAction(view_proc)
-        add_to_proc = QAction("Actualiza Processo", self)
-        add_to_proc.setIcon(QIcon('.//img//mk_request.png'))
-        add_to_proc.triggered.connect(self.view_proc_click)
-        self.gridProcess.addAction(add_to_proc)
         showUnitAct = QAction("Ver Unidade", self)
         showUnitAct.setIcon(QIcon('.//img//mk_request.png'))
         showUnitAct.triggered.connect(self.show_unit_from_process)
@@ -175,23 +171,29 @@ class MainWindow(QMainWindow):
     
     def process_grid_refresh(self, data_filter):
         if not data_filter:
-            sql = '''select proc_id,to_char(proc_date, 'DD-MM-YYYY HH:MM'), un_name,proc_status, unidades.un_localidade, proc_type, proc_unit_id, proc_nivel, proc_reported
+            if self.procTypeCBox.currentIndex() > 0:
+                data_filter = ' and proc_type= \'''' + self.procTypeCBox.currentText() + '\''''
+            else:
+                data_filter = ''
+            sql = '''select proc_type_key || '-' || proc_id,to_char(proc_date, 'DD-MM-YYYY HH:MM'), un_name,proc_status, unidades.un_localidade, proc_type, proc_unit_id, proc_nivel, proc_reported
              from unidades
              inner join assistencias on proc_unit_id = un_id
-                 where proc_pendente = True
-                    order by proc_id desc'''
+             inner join proc_types on proc_type_key=proc_type
+                 where proc_pendente = %s ''' + data_filter + ''' order by proc_id desc'''
+            hl = libpg.query_many(sql,(not(self.endedChBox.isChecked()),))
+
         else:
             area = str(data_filter['areas_ids']).replace('[', '(')
             area = area.replace(']',')')
-            sql = '''select proc_id,to_char(proc_date, 'DD-MM-YYYY HH:MM'), un_name,proc_status, unidades.un_localidade, proc_type, proc_unit_id, proc_nivel, proc_reported
+            sql = '''select proc_type_key || '-' || proc_id,to_char(proc_date, 'DD-MM-YYYY HH:MM'), un_name,proc_status, unidades.un_localidade, proc_type, proc_unit_id, proc_nivel, proc_reported
              from unidades
              inner join assistencias on proc_unit_id = un_id
              inner join areas on area_id = unidades.un_area
-                    where proc_pendente = True and proc_area in ''' + area + ''' and
+             inner join proc_types on proc_type_key=proc_type
+                    where proc_pendente = %s and proc_area in ''' + area + ''' and
              un_activa = true
              order by area_name, proc_id desc'''
-        hl = libpg.query_many(sql)
-        # ex_grid.grid_std(self.gridProcess, data=hl, f_col=['i', 's', 's', 's', 's', 's','i'])
+            hl = libpg.query_many(sql,(not(self.endedChBox.isChecked()),))
         ex_grid.process_update_grid(self.gridProcess,hl)
         
     def areas_proc_click(self):
@@ -201,12 +203,7 @@ class MainWindow(QMainWindow):
         if form.ret['responce']:
             self.process_grid_refresh(data_filter=form.ret)
 
-    def view_proc_click(self):
-        proc_id = int(self.gridProcess.item(self.gridProcess.currentRow(), 0).text())
-        proc_dict = data_sets.process_to_dict(proc_id)
-        proc_html = html_maker.process_to_html(proc_dict)
-        form = report_display.DisplayReport(proc_html)
-        form.exec_()
+
     
     def show_unit_from_process(self):
         unit_id = int(self.gridProcess.item(self.gridProcess.currentRow(), 6).text())
@@ -214,45 +211,75 @@ class MainWindow(QMainWindow):
         form.exec_()
         
     def hardware_unit_process(self):
-        b = int(self.gridProcess.item(self.gridProcess.currentRow(), 6).text())
-        un_name = self.gridProcess.item(self.gridProcess.currentRow(), 1).text()
-        form = hardware.HardwareBrw({'unit_id': b, 'model_id': 0, 'un_name': un_name, 'edit_mode': True})
-        form.exec_()
+        try:
+            unit_id = int(self.gridProcess.item(self.gridProcess.currentRow(), 6).text())
+            un_name = self.gridProcess.item(self.gridProcess.currentRow(), 1).text()
+            form = hardware.HardwareBrw({'unit_id': unit_id, 'model_id': 0, 'un_name': un_name, 'edit_mode': True})
+            form.exec_()
+        except AttributeError:
+            pass
+        
     
     def make_process_label(self):
-        proc_id = int(self.gridProcess.item(self.gridProcess.currentRow(), 0).text())
-        # proc_dict = data_sets.process_to_dict(proc_id)
-        form = label_process.ProcessLabel(proc_id)
-        form.exec_()
+        try:
+            dum = self.gridProcess.item(self.gridProcess.currentRow(), 0).text().split('-')
+            proc_id = int(dum[1])
+            form = label_process.ProcessLabel(proc_id)
+            form.exec_()
+        except (ValueError, IndexError):
+            pass
         
-    def make_request_proc(self):
+    def make_proc_from_unit(self):
         try:
             unit_id = int(self.gridProcess.item(self.gridProcess.currentRow(), 0).text())
             self.make_process(unit_id)
         except (AttributeError, ValueError):
             pass
+
+    def view_proc_click(self):
+        try:
+            dum = self.gridProcess.item(self.gridProcess.currentRow(), 0).text().split('-')
+            proc_id = int(dum[1])
+        except (IndexError, ValueError):
+             dum = self.gridProcess.item(self.gridProcess.currentRow()-1, 0).text().split('-')
+             proc_id = int(dum[1])
+        proc_dict = data_sets.process_to_dict(proc_id)
+        proc_html = html_maker.process_to_html(proc_dict)
+        form = report_display.DisplayReport(proc_html)
+        form.exec_()
+
+
+    def make_proc_from_proc(self):
+        """chamada do processo e é este processo que vamos continuar """
+        try:
+            dum = self.gridProcess.item(self.gridProcess.currentRow(), 0).text().split('-')
+            process = int(dum[1])
+        except (AttributeError, ValueError, IndexError):
+            dum = self.gridProcess.item(self.gridProcess.currentRow()-1, 0).text().split('-')
+            process = int(dum[1])
+        pending_proc = data_sets.assistencia_to_dict(process)
+        unit_id = pending_proc['proc_unit_id']
+        if pending_proc['proc_pendente']:
+            pass
+        else:
+            pending_proc = {}
+        pending_proc['proc_montante'] = process
+        form = ass.Assistencia(pending_proc, unit_id)
+        form.exec_()
+        gl.asterisk_stack_call = {}
+    
+    
+    
+    def proc_type_change(self):
+        self.process_grid_refresh(None)
         
     def make_process(self, unit_id):
         """ chamado da unidade """
-        # gl.ass_facturado = 0
-        # gl.ass_facturar = True
-        # gl.ass_relatorio_factura = ''
-        # gl.ass_relatorio_interno = ''
-        # gl.error_list = []
-        # gl.gasta_ticket = True
-        # gl.software_version = ''
-        # gl.ass_status_txt = ''
-        # gl.ass_falha = -1
-        # gl.ass_marca_modelo = ''
-        # gl.ass_ns = ''
-        # gl.status_id = -1
-        # gl.ass_meio = -1
-        # gl.taberna_update = ()
-        # gl.un_log = ''
-        
+            
         # consulta assistencias pendentes
         as_montante = 0
-        sql = '''SELECT proc_id,proc_date,proc_reported, proc_tecnico, proc_action_report from assistencias
+        sql = '''SELECT proc_type_key || '-' || proc_id,proc_date,proc_reported, proc_tecnico, proc_action_report from assistencias
+        inner join proc_types on proc_type_key=proc_type
                   WHERE proc_unit_id =%s AND proc_pendente=%s order by proc_date desc'''
         data = (unit_id, True)
         pendentes = libpg.query_many(sql, data)
@@ -270,13 +297,10 @@ class MainWindow(QMainWindow):
                 form = ass.Assistencia(pending.ret_dict, unit_id)
                 form.exec_()
         else:  # not pending
-            print('nova sem pendentes')
             form = ass.Assistencia({}, unit_id)
             form.exec_()
-    
-    def resume_process(self, process_id):
-        """chamada do processo e é este processo que vamos continuar """
-    
+        gl.asterisk_stack_call = {}
+
     
     def make_tab_units(self):
         gl.current_unit = 0
@@ -303,6 +327,10 @@ class MainWindow(QMainWindow):
         areasFilterTbt.setToolTip('Filtra por Zonas')
         areasFilterTbt.setIcon(QIcon('.//img/areas.png'))
         areasFilterTbt.clicked.connect(self.areas_filter_click)
+        asteriskLogBtn = QToolButton()
+        asteriskLogBtn.setToolTip('Relatório do Asterisk')
+        asteriskLogBtn.setIcon(QIcon('.//img//asterisk.png'))
+        asteriskLogBtn.clicked.connect(self.asterisk_loc_click)
 
         self.hamburguer = QLabel()
         pixmap = QPixmap('.//img//hamburger.png')
@@ -350,14 +378,14 @@ class MainWindow(QMainWindow):
         self.reportsGroupCmb.currentIndexChanged.connect(self.report_groups_change)
         
         self.reportsGroupCmb.addItems(['','Software','Call Center','Licenças','Equipamentos'])
-        mTabLay.addLayout(qc.addHLayout(['Relatórios',self.reportsGroupCmb,areasFilterTbt, True]))
+        mTabLay.addLayout(qc.addHLayout(['Relatórios',self.reportsGroupCmb,areasFilterTbt, asteriskLogBtn, True]))
         self.grid_units = QTableWidget()
         self.grid_units.setSelectionBehavior(QTableWidget.SelectRows)
         self.grid_units.setSelectionMode(QTableWidget.SingleSelection)
         self.grid_units.setEditTriggers(QTableWidget.NoEditTriggers)
         self.grid_units.verticalHeader().setDefaultSectionSize(20)
         self.grid_units.setAlternatingRowColors(True)
-        self.grid_units.setStyleSheet("alternate-background-color: #e6ffcc;")
+        self.grid_units.setStyleSheet("alternate-background-color: #a0d7f5;")
         self.grid_units.verticalHeader().setVisible(False)
         self.grid_units.resizeColumnsToContents()
         ex_grid.make_grid(self.grid_units, headers=['ID', 'Unidade', 'Tipo', 'Localidade', 'C.P.', 'Zona','NIF'],
@@ -465,9 +493,6 @@ class MainWindow(QMainWindow):
             form = report_tool.ReportTool(repor_dict[rpt_index])
             form.exec_()
             self.reportsGroupCmb.setCurrentIndex(0)
-            # if form.ret['status']:
-            #     form = unit.UnitEdit(form.ret['unit_id'])
-            #     form.exec_()
         
     def areas_filter_click(self):
         form = area_filter.AreaFilter()
@@ -492,6 +517,31 @@ class MainWindow(QMainWindow):
             bc = libpg.query_many(sql, (True,))
             ex_grid.grid_std(self.grid_units, data=bc, f_col=['i', 's', 's', 's', 's','s'])
             self.grid_units.setHorizontalHeaderLabels(['ID', 'Unidade', 'Tipo', 'Localidade', 'C.P.','Zona'])
+    
+    
+    def asterisk_loc_click(self):
+        form = asterisk_interface.AsteriskInterface()
+        form.exec_()
+        gl.asterisk_stack_call = form.toto
+        # gl.asterisk_stack_call['call_number'] == '':
+        if gl.asterisk_stack_call == {}:
+            pass
+        else:
+            sql = '''select un_id, un_name
+                    from contacts
+                    inner join unidades on un_id=contacts.ct_unit
+                    where un_activa=True and  ct_value2 = %s order by un_name'''
+            units_in_contact = libpg.query_many(sql, (gl.asterisk_stack_call['call_number'],))
+            if len(units_in_contact) == 0:
+                pass
+            elif len(units_in_contact) == 1:
+                self.make_process(units_in_contact[0][0])
+            else:
+                form = UnitChoseDialog(units_in_contact)
+                form.exec_()
+                if form.ret[0]:
+                    self.make_process(form.ret[1])
+    
     
     def print_grid_click(self):
         data_set = []
@@ -817,26 +867,30 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(None,"Asneira","Esta unidade ainda não foi instalada :-)")
     
     def scall_open_click(self):
-        # stat = ''' and as_status like  \'''' + unicode(self.status.currentText()) + '\''
         unit_id = int(self.grid_units.item(self.grid_units.currentRow(), 0).text())
-        sql = '''SELECT proc_id, to_char(proc_date, 'DD.MM.YYYY') , unidades.un_name, proc_status,
-            to_char(EXTRACT(DAY FROM now()-(proc_date)), '9999') AS delay, unidades.un_localidade, proc_unit_id
-            from assistencias,unidades
-            where proc_pendente = True and proc_unit_id =%s and unidades.un_id= assistencias.proc_unit_id
+        sql = '''select proc_type_key || '-' || proc_id, to_char(proc_date,
+                'DD-MM-YYYY HH:MM'), un_name, proc_status, unidades.un_localidade, proc_type, proc_unit_id, proc_nivel, proc_reported
+        from unidades
+        inner join assistencias on proc_unit_id = un_id
+        inner join proc_types on proc_type_key=proc_type
+        where
+        proc_pendente = True and proc_unit_id =%s and unidades.un_id= assistencias.proc_unit_id
             order by proc_date desc'''
         hl = libpg.query_many(sql, (unit_id,))
-        ex_grid.grid_std(self.gridProcess, data=hl, f_col=['i', 's', 's', 's', 's', 's', 'i'])
+        ex_grid.process_update_grid(self.gridProcess,hl)
         self.tabuladorTabWidget.setCurrentIndex(1)
     
     def scall_closed_click(self):
         unit_id = int(self.grid_units.item(self.grid_units.currentRow(), 0).text())
-        sql = '''SELECT proc_id, to_char(proc_date, 'DD.MM.YYYY') , unidades.un_name, proc_status,
-            to_char(EXTRACT(DAY FROM now()-(proc_date)), '9999') AS delay, unidades.un_localidade, proc_unit_id
-            from assistencias,unidades
-            where proc_pendente = False and proc_unit_id =%s and unidades.un_id= assistencias.proc_unit_id
+        sql = '''select proc_id, to_char(proc_date,
+                'DD-MM-YYYY HH:MM'), un_name, proc_status, unidades.un_localidade, proc_type, proc_unit_id, proc_nivel, proc_reported
+        from unidades
+        inner join assistencias on proc_unit_id = un_id
+        where
+        proc_pendente = False and proc_unit_id =%s and unidades.un_id= assistencias.proc_unit_id
             order by proc_date desc'''
         hl = libpg.query_many(sql, (unit_id,))
-        ex_grid.grid_std(self.gridProcess, data=hl, f_col=['i', 's', 's', 's', 's', 's', 'i'])
+        ex_grid.process_update_grid(self.gridProcess,hl)
         self.tabuladorTabWidget.setCurrentIndex(1)
     
     def center(self):
@@ -852,9 +906,6 @@ class MainWindow(QMainWindow):
 
 
 def check_alive():
-    # print('check alive ')
-    # print('            ', gl.db_host)
-    # print('            ', gl.db_user)
     gl.conn_string = "host=" + gl.db_host + " dbname=" + gl.db_database + " port=" + gl.db_port + " user=" + gl.db_user + " password=" + gl.db_password
 
     try:

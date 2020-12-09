@@ -30,8 +30,13 @@ class Login(QDialog):
         masterLayout.addLayout(qc.addHLayout([okBtn, cancelBtn]))
         infoLabel = QLabel()
         infoLabel.setStyleSheet("color: #00a0ff;")
-        infoLabel.setText(gl.db_database.lower() + '@' + gl.db_host + ' ' + gl.VERSION)
+        infoLabel.setText(gl.db_database.lower() + '@' + gl.db_host)
+        infoLabel1 = QLabel()
+        infoLabel1.setStyleSheet("color: #00a0ff;")
+        infoLabel1.setText(gl.VERSION)
+        
         masterLayout.addWidget(infoLabel)
+        masterLayout.addWidget(infoLabel1)
         
     def cancel_btn_click(self):
         sys.exit(1)

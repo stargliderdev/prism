@@ -25,7 +25,7 @@ class ProcessLabel(QDialog):
         self.dateProcCkb = QCheckBox('Data')
         self.dateProcCkb.setChecked(True)
         self.dateProcCkb.stateChanged.connect(self.update_label)
-        self.procCkb = QCheckBox('Prcesso')
+        self.procCkb = QCheckBox('Processo')
         self.procCkb.setChecked(True)
         self.procCkb.stateChanged.connect(self.update_label)
         masterLayout.addLayout(qc.addHLayout([self.dateProcCkb, self.procCkb]))

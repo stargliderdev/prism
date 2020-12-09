@@ -89,7 +89,10 @@ class BlockSoftware(QDialog):
                              'proc_jusante': 0,
                              'proc_pendente': False,
                              'proc_facturar': False,
-                             'proc_tecnico': gl.user_dict['user_name']
+                             'proc_tecnico': gl.user_dict['user_name'],
+                             'proc_source': 'Escritório',
+                             'proc_cause_report': 'Bloqueado',
+                             'proc_action_report': 'Desbloqueado'
                              })
         process_id: int = process_save.save_process(gl.proc_dict)
         
@@ -171,11 +174,4 @@ def main():
     app.exec_()
     
 if __name__ == '__main__':
-    """DELETE"""
-    gl.conn_string = 'host=192.168.0.250 dbname=prism user=root password=masterkey'
-    data_sets.get_ds_tecnicos()
-    gl.unit_dict = data_sets.unit_to_dic(225)
-    gl.user_dict = data_sets.get_user_data('jorge', '1697')
-    data_sets.get_motif_block()
-    
-    main()
+    pass

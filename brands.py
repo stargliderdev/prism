@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLineEdit, QTableWidget, QPush
 from PyQt5.QtCore import Qt
 import sys
 
-from qtconsole.qt import QtCore
+# from qtconsole.qt import QtCore
 
 import ex_grid
 import libpg

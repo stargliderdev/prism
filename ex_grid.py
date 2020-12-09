@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from PyQt5.Qt import Qt
-from PyQt5.QtGui import QColor, QBrush
+from PyQt5.QtGui import QColor, QBrush, QFont
 from PyQt5.QtWidgets import QHBoxLayout, QCheckBox, QWidget, QComboBox, QTableWidgetItem
 
 import qlib
@@ -417,57 +417,77 @@ def grid_std(grid_ctrl, **kwargs):
                     lin += 1
             
             else:
-                return (False, 'no f_col')
+                return False, 'no f_col'
         else:
-            return (False, 'no data')
+            return False, 'no data'
     
     return (True,)
 
 
 def grid_process_make_grid(ctrl_grid):
-    ctrl_grid.setColumnCount(4)
-    ctrl_grid.setHorizontalHeaderLabels(['ID', 'Data', 'Unidade', 'Estado', 'Localidade', 'Zona', 'un_is'])
+    ctrl_grid.setColumnCount(7)
+    ctrl_grid.setHorizontalHeaderLabels(['ID', 'Unidade/Avaria', 'Data/Nivel', 'Estado', 'Localidade', 'Zona', 'un_id'])
     ctrl_grid.setRowCount(0)
 
 
 def process_update_grid(ctrl_grid, data_set):
-    ctrl_grid.setRowCount(len(data_set))
+    if len(data_set) > 0: # tem de ter mais de zero linhas
+        ctrl_grid.setRowCount(len(data_set)+1)
+    else:
+        ctrl_grid.setRowCount(0)
     linha = 0
-    print(data_set[0])
+    font = QFont()
+    font.setBold(True)
+    font.setWeight(75)
     for n in data_set:
         item = QTableWidgetItem()
-        ctrl_grid.setItem(linha, 0, item)
         item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        item.setBackground(QBrush(QColor(0, 240, 0)))
+        item.setFont(font)
         item.setText(str(n[0]))
+        ctrl_grid.setItem(linha, 0, item)
         
         item = QTableWidgetItem()  # data
-        ctrl_grid.setItem(linha, 1, item)
-        item.setText(n[1])
-        item = QTableWidgetItem()
-        item.setTextAlignment(Qt.AlignLeft | Qt.AlignTop)
         ctrl_grid.setItem(linha, 2, item)
+        item.setText(n[1])
+        
+        item = QTableWidgetItem() # estado
+        item.setTextAlignment(Qt.AlignLeft | Qt.AlignTop)
+        ctrl_grid.setItem(linha, 1, item)
         item.setText(n[2])
 
         item = QTableWidgetItem()
         ctrl_grid.setItem(linha, 3, item)
         item.setText(n[3])
+        item = QTableWidgetItem()
+        ctrl_grid.setItem(linha, 4, item)
+        item.setText(n[4])
+        item = QTableWidgetItem()
+        ctrl_grid.setItem(linha, 6, item)
+        item.setText(str(n[6]))
+
         linha += 1  # new line
-        item = QTableWidgetItem()
-        item.setTextAlignment(Qt.AlignLeft | Qt.AlignTop)
-        ctrl_grid.setItem(linha, 0, item)
-        item.setText(n[5])
-        item = QTableWidgetItem()
+        
+        item = QTableWidgetItem() # avaria
         item.setTextAlignment(Qt.AlignLeft | Qt.AlignTop)
         ctrl_grid.setItem(linha, 1, item)
-        item.setText(n[7])
+        item.setText(n[8])
+        
+        item = QTableWidgetItem()
+        item.setTextAlignment(Qt.AlignRight | Qt.AlignTop)
+        ctrl_grid.setItem(linha, 0, item)
+        item.setText('└ ')
         item = QTableWidgetItem()
         item.setTextAlignment(Qt.AlignLeft | Qt.AlignTop)
         ctrl_grid.setItem(linha, 2, item)
-        item.setText(n[8])
+        item.setText(n[7])
+
         linha += 1
     ctrl_grid.resizeColumnsToContents()
-    ctrl_grid.setColumnWidth(2, 420)
-    ctrl_grid.setColumnWidth(0, 70)
+    ctrl_grid.setColumnWidth(0, 100)
+    ctrl_grid.setColumnWidth(1, 420)
+    ctrl_grid.setColumnWidth(5, 0)
+    ctrl_grid.setColumnWidth(6, 0)
     for n in range(0, ctrl_grid.rowCount()):
         ctrl_grid.resizeRowToContents(n)
 

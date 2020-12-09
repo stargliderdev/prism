@@ -14,7 +14,6 @@ import msg_sender
 import parameters as gl
 import qlib as qc
 import smtpmail
-from msg_sender import send_sms
 
 
 class MsgSendSMS(QDialog):

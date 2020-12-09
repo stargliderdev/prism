@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from PyQt5.QtWidgets import QDialog,  QCheckBox, QVBoxLayout, QLineEdit, QComboBox,QPushButton, QMessageBox, QToolButton, QTextEdit
 from PyQt5.QtGui import QIcon
-from qtconsole.qt import QtCore
+# from qtconsole.qt import QtCore
 
 import libpg
 import model_tags

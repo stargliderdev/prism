@@ -9,14 +9,11 @@ def save_process(data_dict):
     flag = True
     if not data_dict['proc_tecnico'] in data_dict:
         flag = False
-        # data_dict['proc_quem'] = gl.unit_dict['user_name']
     data_dict['proc_unit_name'] = gl.unit_dict['un_name']
     data_dict['proc_unit_id'] = gl.unit_dict['un_id']
     data_dict['proc_updated'] = datetime.datetime.now()
-    # data_dict['proc_data_fim'] = datetime.datetime.now() + datetime.timedelta(minutes=4)
     data_dict['proc_area'] = gl.unit_dict['un_area']
     data_dict['proc_user'] = gl.user_dict['user_name']
-    
     if flag:
         return False, -1
     else:
@@ -48,8 +45,10 @@ def save_process(data_dict):
            proc_relatorio_cliente,
            proc_area,
            proc_type,
-           proc_user)
-           values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
+           proc_user,
+           proc_source,
+           proc_cause_report)
+           values(%s,%s, %s,%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
         data = (
             data_dict['proc_date'],
             data_dict['proc_unit_id'],
@@ -78,7 +77,9 @@ def save_process(data_dict):
             data_dict['proc_relatorio_cliente'],
             data_dict['proc_area'],
             data_dict['proc_type'],
-            data_dict['proc_user'])
+            data_dict['proc_user'],
+            data_dict['proc_source'],
+            data_dict['proc_cause_report'])
     
         libpg.execute_query(sql, data)
         process_number = libpg.query_one('select max(proc_id) as max_id from assistencias', (True,))[0]
@@ -117,8 +118,8 @@ def ticket(data_dict):
     sql = '''INSERT into assistencias (proc_date,proc_updated,proc_unit_id,proc_tecnico,proc_action_report,
                   proc_serial_number,proc_report_invoice,proc_quem,proc_model,proc_contacto, proc_meio,proc_duracao,proc_unit_name,
                   proc_reported, proc_montante, proc_jusante,proc_asterisk, proc_status, proc_nivel,proc_facturar,proc_pendente,proc_facturado, proc_data_fim,
-                  proc_user, proc_cause_report,proc_internal_report)
-                values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, %s,%s,%s,%s,%s,%s)'''
+                  proc_user, proc_cause_report,proc_internal_report,proc_type,proc_source)
+                values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, %s,%s,%s,%s,%s,%s,%s)'''
     data = (data_dict['proc_date'],
             data_dict['proc_updated'],
             data_dict['proc_unit_id'],
@@ -144,12 +145,14 @@ def ticket(data_dict):
             data_dict['proc_data_fim'],
             gl.user_dict['user_name'],
             data_dict['proc_cause_report'],
-            data_dict['proc_internal_report'])
+            data_dict['proc_internal_report'],
+            data_dict['proc_type'],
+            data_dict['proc_source'])
     libpg.execute_query(sql, data)
     
     num_pedido = libpg.query_one('select max(proc_id) as max_id from assistencias', (True,))[0]
-    # fecha o proc a montante se houver
-    if data_dict['proc_montante'] > 0:
+    """ fecha o proc a montante se houver i não for INFO"""
+    if data_dict['proc_montante'] > 0 and data_dict['proc_type'] != 'INFO':
         libpg.execute_query('''UPDATE assistencias set proc_pendente = False, proc_jusante = %s
                      where proc_id = %s''', (num_pedido,data_dict['proc_montante']))
 

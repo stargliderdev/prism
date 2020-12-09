@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from PyQt5.QtGui import QColor, QBrush, QFont
 from PyQt5.QtWidgets import QDialog, QLabel, QPushButton, \
     QTableWidgetItem, QVBoxLayout, QTableWidget
 from PyQt5.Qt import Qt
@@ -29,10 +30,10 @@ class PendingProcess(QDialog):
         self.pendingGrid.verticalHeader().setDefaultSectionSize(20)
         self.pendingGrid.setAlternatingRowColors(True)
         self.pendingGrid.setStyleSheet("alternate-background-color: #e6ffee;")
-        # self.pendingGrid.verticalHeader().setVisible(False)
+        self.pendingGrid.verticalHeader().setVisible(False)
         self.pendingGrid.resizeRowToContents(1)
         # self.pendingGrid.resiz()
-        self.pendingGrid.itemDoubleClicked.connect(self.grid_click)
+        self.pendingGrid.doubleClicked.connect(self.grid_click)
         
         mainLayout.addWidget(self.pendingGrid)
         self.make_grid()
@@ -51,16 +52,18 @@ class PendingProcess(QDialog):
         self.close()
     
     def grid_click(self):
+        """carrega a assistencia a montante no dicionario e passa a utilizar esse dicionario"""
         try:
-            self.proc_montante = int(self.pendingGrid.item(self.pendingGrid.currentRow(), 0).text())
-            """carrega a assistencia a montante no dicionario e passa a utilizar esse dicionario"""
-            self.ret_dict.update(data_sets.assistencia_to_dict(self.proc_montante))
-            self.ret_dict['proc_montante'] = self.proc_montante
-            self.ret_dict['flag'] = 2 # de proc pendente
-            self.close()
+            dum = self.pendingGrid.item(self.pendingGrid.currentRow(), 0).text().split('-')
+            self.proc_montante = int(dum[1])
         except AttributeError:
-            pass
-        
+            dum = self.pendingGrid.item(self.pendingGrid.currentRow()-1, 0).text().split('-')
+            self.proc_montante = int(dum[1])
+    
+        self.ret_dict.update(data_sets.assistencia_to_dict(self.proc_montante))
+        self.ret_dict['proc_montante'] = self.proc_montante
+        self.ret_dict['flag'] = 2  # de proc pendente
+        self.close()
         
     def make_grid(self):
         self.pendingGrid.setColumnCount(4)
@@ -71,12 +74,17 @@ class PendingProcess(QDialog):
         self.pendingGrid.setRowCount(len(dataSet))
         
         self.linha = 0
+        font = QFont()
+        font.setBold(True)
+        font.setWeight(75)
         for n in dataSet:
             col = 0
             item = QTableWidgetItem()
-            self.pendingGrid.setItem(self.linha, col, item)
             item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
             item.setText(str(n[0]))
+            item.setBackground(QBrush(QColor(0, 255, 0)))
+            item.setFont(font)
+            self.pendingGrid.setItem(self.linha, col, item)
             
             col += 1
             item = QTableWidgetItem()  # data
@@ -84,11 +92,6 @@ class PendingProcess(QDialog):
             item.setText(n[1].strftime('%d-%m-%Y'))
             
             col += 1
-            # item = QTableWidgetItem()
-            # item.setTextAlignment(Qt.AlignLeft | Qt.AlignTop)
-            # self.pendingGrid.setItem(self.linha, col, item)
-            # item.setText(n[2])
-            
             col += 1
             item = QTableWidgetItem()
             self.pendingGrid.setItem(self.linha, col, item)
@@ -102,12 +105,11 @@ class PendingProcess(QDialog):
             self.linha +=1
         self.pendingGrid.resizeColumnsToContents()
         self.pendingGrid.setColumnWidth(2, 420)
-        self.pendingGrid.setColumnWidth(0, 70)
+        self.pendingGrid.setColumnWidth(0, 100)
         for n in range(0,self.pendingGrid.rowCount()):
             # self.pendingGrid.setRowHeight(n,90)
             self.pendingGrid.resizeRowToContents(n)
     
-   
 
 if __name__ == '__main__':
     pass

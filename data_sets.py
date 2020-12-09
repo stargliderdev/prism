@@ -183,6 +183,7 @@ def get_canned_messages_mail():
     for n in a:
         gl.canned_msg_mail.append(n[1])
 
+
 def get_ds_software_type():
     a = libpg.query_many('select sft_id, sft_software from software_type where sft_active= %s order by sft_sort',
                          (True,))
@@ -253,7 +254,6 @@ def get_ds_falhas():
 
 def get_ds_meios():
     gl.dsMeios = []
-    # gl.dsMeiosDic = {}
     for n in libpg.query_many('select me_id, me_nome, me_action from meios order by me_id'):
         gl.dsMeios.append(n[1])
 
@@ -261,7 +261,6 @@ def get_ds_meios():
 def get_ds_status():
     # case status
     gl.ca_status = ['Todos']
-    # gl.ca_statusDic = {}
     for n in libpg.query_many('select st_id, st_descricao, st_action from status order by st_sort,st_descricao'):
         gl.ca_status.append(n[1].strip())
 
@@ -371,14 +370,16 @@ def get_proc_close_action():
         gl.proc_action.append(n[1])
         
 def get_proc_types():
-    a = libpg.query_many('''SELECT proc_type_key from proc_types order by proc_type_key''')
+    a = libpg.query_many('''SELECT proc_type_key, proc_type_show from proc_types order by proc_type_order''')
     gl.proc_type = ['Todos']
     for n in a:
         gl.proc_type.append(n[0])
+        if n[1]:
+            gl.proc_type_show.append(n[0])
 
 
 def get_proc_sources():
-    a = libpg.query_many('''SELECT source_name from proc_sources order by source_id''')
+    a = libpg.query_many('''SELECT source_name from proc_sources order by source_order''')
     gl.proc_sources = []
     for n in a:
         gl.proc_sources.append(n[0])

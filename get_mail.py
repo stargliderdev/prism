@@ -54,6 +54,7 @@ def readMail():
             pass
         else:
             xl[n[0]] = n[1]
-    import stdio
-    stdio.debug_dict(xl)
+    # import stdio
+    # stdio.debug_dict(xl)
+
 readMail()

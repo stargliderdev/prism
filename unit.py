@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QDialog, QLabel, QCheckBox, QVBoxLayout, QLineEdit, 
     QWidget, \
     QToolButton, QTabWidget, QTextEdit, QMessageBox, QFileDialog, QErrorMessage, QHBoxLayout, QInputDialog, QComboBox
 
+import assistencia
 import block_edit
 import client_edit
 import hardware
@@ -42,6 +43,7 @@ import classes_un
 import cp
 import uuid
 import ftp_lic
+import assistencias_pendentes
 
 
 class UnitEdit(QDialog):
@@ -53,10 +55,13 @@ class UnitEdit(QDialog):
         gl.unit_dict = data_sets.unit_to_dic(unit_id)
         
         mainLayout = QVBoxLayout(self)
-        self.unlockLicBtn = QPushButton('Desbloqueiar')
-        self.unlockLicBtn.clicked.connect(self.unlock_licence)
         self.saveBtn = QPushButton('Grava')
         self.saveBtn.clicked.connect(self.save_click)
+        self.unlockLicBtn = QPushButton('Desbloquear')
+        self.unlockLicBtn.clicked.connect(self.unlock_licence)
+        makeProcBtn = QPushButton('Pedido')
+        makeProcBtn.clicked.connect(self.make_process_click)
+        
         self.cancelBtn = QPushButton('Sair')
         self.cancelBtn.clicked.connect(self.exit_click)
         
@@ -94,7 +99,7 @@ class UnitEdit(QDialog):
         self.hamburguerMenuLabel.addAction(deactivate)
         
         self.hamburguerMenuLabel.setContextMenuPolicy(Qt.ActionsContextMenu)
-        mainLayout.addLayout(qc.addHLayout([self.hamburguerMenuLabel,self.saveBtn, self.unlockLicBtn, True, self.cancelBtn]))
+        mainLayout.addLayout(qc.addHLayout([self.hamburguerMenuLabel,self.saveBtn,makeProcBtn, True,self.unlockLicBtn,True, self.cancelBtn]))
         self.un_id = QLineEdit()
         self.un_id.setFocusPolicy(Qt.NoFocus)
         self.un_id.setAlignment(Qt.AlignRight)
@@ -255,7 +260,29 @@ class UnitEdit(QDialog):
         form.exec_()
         self.refresh_comitments()
         
-        
+    def make_process_click(self):
+        """ chamado da unidade """
+        # consulta assistencias pendentes
+        as_montante = 0
+        gl.asterisk_stack_call = {}
+        sql = '''SELECT proc_type_key || '-' || proc_id,proc_date,proc_reported, proc_tecnico, proc_action_report from assistencias
+        inner join proc_types on proc_type_key=proc_type
+                  WHERE proc_unit_id =%s AND proc_pendente=%s order by proc_date desc'''
+        data = (gl.unit_dict['un_id'], True)
+        pendentes = libpg.query_many(sql, data)
+    
+        if len(pendentes) > 0:
+            pending = assistencias_pendentes.PendingProcess(pendentes)
+            pending.exec_()
+            if pending.ret_dict['flag'] == 2:  # de outro processo
+                form = assistencia.Assistencia(pending.ret_dict, gl.unit_dict['un_id'])
+                form.exec_()
+            elif pending.ret_dict['flag'] == 1:  # nova
+                form = assistencia.Assistencia(pending.ret_dict, gl.unit_dict['un_id'])
+                form.exec_()
+        else:  # not pending
+            form = assistencia.Assistencia({}, gl.unit_dict['un_id'])
+            form.exec_()
         
     def check_mandatory(self):
         toto = True
