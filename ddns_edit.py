@@ -239,7 +239,7 @@ class DdnsEdit(QDialog):
             else:
                 hl += "{:>14}".format('Validade:') + d[3].strftime("%Y-%m-%d") + ' [' + d[5] + ']' + '\n'
         except AttributeError:
-            hl += ' muito antigo'
+            hl += ' VERSÂO SEM VALIDADE\n'
         return hl
     
     def info_psql(self):

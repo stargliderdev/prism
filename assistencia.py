@@ -435,9 +435,13 @@ class Assistencia(QDialog):
             self.as_data.setDateTime(form.toto['call_date'])
             self.as_data_fim.setDateTime(form.toto['call_date'])
             self.as_contacto.setText(form.toto['call_number'])
-            self.as_quem.setText(form.toto['call_who'])
-            self.as_duracao.setDateTime(form.toto['call_time'])
-            self.as_asterisk.setPlainText(form.toto['call_cdr'])
+            try:
+                self.as_quem.setText(form.toto['call_who'])
+            except KeyError:
+                self.as_quem.setText('')
+    
+        self.as_duracao.setDateTime(form.toto['call_time'])
+        self.as_asterisk.setPlainText(form.toto['call_cdr'])
     
     def last_proc_show_click(self):
         proc_dict = data_sets.process_to_dict(self.last_proc_dict['proc_id'])
