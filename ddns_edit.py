@@ -233,10 +233,13 @@ class DdnsEdit(QDialog):
         # hl += "{:>14}".format('D. Comercial:') + d[4] + '\n'
         # hl += "{:>14}".format('dbversion:') + d[1] + '\n'
         # hl += "{:>14}".format('NIF:') + d[2] + '\n'
-        if d[3].year == 2050:
-            hl += "{:>14}".format('Validade:' + 'Desbloqueado') + '\n'
-        else:
-            hl += "{:>14}".format('Validade:') + d[3].strftime("%Y-%m-%d") + ' [' + d[5] + ']' + '\n'
+        try:
+            if d[3].year == 2050:
+                hl += "{:>14}".format('Validade:' + 'Desbloqueado') + '\n'
+            else:
+                hl += "{:>14}".format('Validade:') + d[3].strftime("%Y-%m-%d") + ' [' + d[5] + ']' + '\n'
+        except AttributeError:
+            hl += ' muito antigo'
         return hl
     
     def info_psql(self):
