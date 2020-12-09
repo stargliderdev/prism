@@ -12,6 +12,7 @@ import psycopg2
 import area_filter
 import asterisk_interface
 import date_input
+import ddns_edit
 import html_maker
 import label_process
 import parameters as gl
@@ -252,11 +253,11 @@ class MainWindow(QMainWindow):
     def make_proc_from_proc(self):
         """chamada do processo e é este processo que vamos continuar """
         try:
-            dum = self.gridProcess.item(self.gridProcess.currentRow(), 0).text().split('-')
-            process = int(dum[1])
+            process_ids = self.gridProcess.item(self.gridProcess.currentRow(), 0).text().split('-')
+            process = int(process_ids[1])
         except (AttributeError, ValueError, IndexError):
-            dum = self.gridProcess.item(self.gridProcess.currentRow()-1, 0).text().split('-')
-            process = int(dum[1])
+            process_ids = self.gridProcess.item(self.gridProcess.currentRow()-1, 0).text().split('-')
+            process = int(process_ids[1])
         pending_proc = data_sets.assistencia_to_dict(process)
         unit_id = pending_proc['proc_unit_id']
         if pending_proc['proc_pendente']:
@@ -264,8 +265,20 @@ class MainWindow(QMainWindow):
         else:
             pending_proc = {}
         pending_proc['proc_montante'] = process
-        form = ass.Assistencia(pending_proc, unit_id)
-        form.exec_()
+        if process_ids[0] == 'DDNS':
+            """só para ddns para isso vai buscar o setting da unidade."""
+            sql = 'select *  from unit_settings where us_unit_id = %s and us_act_id =13'
+            dds_setting_data = libpg.query_one(sql, (unit_id,))
+            print('--------Debug---------')
+            print('make_proc_from_proc')
+            print(dds_setting_data)
+            print('------end debug-------')
+            gl.unit_dict['un_id'] = unit_id
+            form = ddns_edit.DdnsEdit(dds_setting_data, (dds_setting_data[3], dds_setting_data[4]))
+            form.exec_()
+        else:
+            form = ass.Assistencia(pending_proc, unit_id)
+            form.exec_()
         gl.asterisk_stack_call = {}
     
     

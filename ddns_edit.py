@@ -26,10 +26,8 @@ class DdnsEdit(QDialog):
         self.resize(768, 600)
         self.center()
         self.unit_setting_id = unit_setting
+       
         self.comm_status: str = ''
-        # if not data is None:
-        #     self.ddns: str = data[0]
-        #     self.owner: str = data[1]
         self.ddns_error: str
         self.data = data
         self.clipboard = QApplication.clipboard()
