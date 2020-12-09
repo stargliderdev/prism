@@ -527,10 +527,10 @@ class MainWindow(QMainWindow):
         if gl.asterisk_stack_call == {}:
             pass
         else:
-            sql = '''select un_id, un_name
+            sql = '''select distinct un_id, un_name
                     from contacts
                     inner join unidades on un_id=contacts.ct_unit
-                    where un_activa=True and  ct_value2 = %s order by un_name'''
+                    where un_activa=True and  ct_value2 = %s GROUP BY un_id, un_name order by un_name'''
             units_in_contact = libpg.query_many(sql, (gl.asterisk_stack_call['call_number'],))
             if len(units_in_contact) == 0:
                 pass

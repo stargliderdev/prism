@@ -46,7 +46,7 @@ db_host = '192.168.0.98'
 db_port = '5432'
 db_user = 'root'
 db_password = 'masterkey'
-DEVELOP = False
+DEVELOP = True
 VERSION = '2020.12.09'
 version = 18
 if DEVELOP:
