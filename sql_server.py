@@ -358,8 +358,6 @@ def sales_update():
     missing_unit = 0
     for row in cursor:
         serial_in_db = query_one('select hw_id, hw_unit_id from hardware where upper(hw_sn)=%s', (row[1],))
-        # print('----------ROW',row)
-        # print('Serial in bd', serial_in_db)
         if serial_in_db is None:
             pass
         else:
