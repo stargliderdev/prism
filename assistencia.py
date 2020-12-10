@@ -429,20 +429,23 @@ class Assistencia(QDialog):
     def get_asterisk_data_click(self):
         form = asterisk_interface.AsteriskInterface()
         form.exec_()
-        if form.toto['call_number'] == '':
+        try:
+            if form.toto['call_number'] == '':
+                pass
+            else:
+                self.as_data.setDateTime(form.toto['call_date'])
+                self.as_data_fim.setDateTime(form.toto['call_date'])
+                self.as_contacto.setText(form.toto['call_number'])
+                try:
+                    self.as_quem.setText(form.toto['call_who'])
+                except KeyError:
+                    self.as_quem.setText('')
+        
+            self.as_duracao.setDateTime(form.toto['call_time'])
+            self.as_asterisk.setPlainText(form.toto['call_cdr'])
+        except KeyError:
             pass
-        else:
-            self.as_data.setDateTime(form.toto['call_date'])
-            self.as_data_fim.setDateTime(form.toto['call_date'])
-            self.as_contacto.setText(form.toto['call_number'])
-            try:
-                self.as_quem.setText(form.toto['call_who'])
-            except KeyError:
-                self.as_quem.setText('')
-    
-        self.as_duracao.setDateTime(form.toto['call_time'])
-        self.as_asterisk.setPlainText(form.toto['call_cdr'])
-    
+        
     def last_proc_show_click(self):
         proc_dict = data_sets.process_to_dict(self.last_proc_dict['proc_id'])
         proc_html = html_maker.process_to_html(proc_dict)

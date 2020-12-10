@@ -114,15 +114,17 @@ class AddInfo(QDialog):
         form = asterisk_interface.AsteriskInterface()
         form.exec_()
         gl.asterisk_stack_call = form.toto
-        if gl.asterisk_stack_call['call_number'] == '':
+        try:
+            if gl.asterisk_stack_call['call_number'] == '':
+                pass
+            else:
+                self.proc_whoEdt.setText(
+                    gl.asterisk_stack_call['call_who'])  # + ' ' + gl.asterisk_stack_call['call_number'])
+                self.process_dict['proc_quem'] = gl.asterisk_stack_call['call_who']
+                self.process_dict['proc_asterisk'] = gl.asterisk_stack_call['call_cdr']
+                self.process_dict['proc_contacto'] = gl.asterisk_stack_call['call_number']
+        except KeyError:
             pass
-        else:
-            self.proc_whoEdt.setText(
-                gl.asterisk_stack_call['call_who'])  # + ' ' + gl.asterisk_stack_call['call_number'])
-            self.process_dict['proc_quem'] = gl.asterisk_stack_call['call_who']
-            self.process_dict['proc_asterisk'] = gl.asterisk_stack_call['call_cdr']
-            self.process_dict['proc_contacto'] = gl.asterisk_stack_call['call_number']
-
 
 def main():
     app = QApplication(sys.argv)

@@ -269,11 +269,7 @@ class MainWindow(QMainWindow):
             """só para ddns para isso vai buscar o setting da unidade."""
             sql = 'select *  from unit_settings where us_unit_id = %s and us_act_id =13'
             dds_setting_data = libpg.query_one(sql, (unit_id,))
-            print('--------Debug---------')
-            print('make_proc_from_proc')
-            print(dds_setting_data)
-            print('------end debug-------')
-            gl.unit_dict['un_id'] = unit_id
+            gl.unit_dict = data_sets.unit_to_dic(unit_id)
             form = ddns_edit.DdnsEdit(dds_setting_data, (dds_setting_data[3], dds_setting_data[4]))
             form.exec_()
         else:
@@ -288,7 +284,6 @@ class MainWindow(QMainWindow):
         
     def make_process(self, unit_id):
         """ chamado da unidade """
-            
         # consulta assistencias pendentes
         as_montante = 0
         sql = '''SELECT proc_type_key || '-' || proc_id,proc_date,proc_reported, proc_tecnico, proc_action_report from assistencias
