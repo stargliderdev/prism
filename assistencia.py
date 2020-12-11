@@ -343,33 +343,35 @@ class Assistencia(QDialog):
     
     def valida_campos(self, close_proc=True):
         error_list = []
-        if not self.check_obj(self.as_quem):
-            error_list.append('Falta responsavel!')
-        if self.proc_origemBox.currentIndex() == 0:
-            error_list.append('Falta a origem')
-        if close_proc and self.proc_type != 'INFO':
+
+        if close_proc and self.proc_type in 'ASS':
             if self.proc_reported.toPlainText() == '':
                 error_list.append('Falta Problema/Sintoma!')
             if self.proc_action_report.toPlainText() == '':
                 error_list.append('Falta a Acção!')
-        elif not close_proc and self.proc_type != 'INFO':
+        elif not close_proc and self.proc_type in 'ASS':
             if self.proc_reported.toPlainText() == '':
                 error_list.append('Falta o Problema reportado!')
         if self.proc_type == 'INFO':
             if self.proc_internal_report == '':
-                error_list.append('Como é uma INFORmação\n só pode comentário interno.')
-        
+                error_list.append('Como é uma INFORmação\n tem de ter comentário interno.')
+        if self.proc_type == 'INT':
+            if self.proc_action_report.toPlainText() == '':
+                error_list.append('A Falta a Acção!')
+    
+        """ mandatórios """
+        if not self.check_obj(self.as_quem):
+            error_list.append('Falta responsavel!')
+        if self.proc_origemBox.currentIndex() == 0:
+            error_list.append('Falta a origem')
         if self.as_tecnico.currentIndex() == 0:
             error_list.append('Falta o Técnico')
-        # if self.as_status.text() == 'n/d':
-        #     gl.error_list.append('Falta o estado da assistencia')
-        
         if self.as_duracao.time().minute() < 1 and self.as_duracao.time().hour() == 0:
             error_list.append('Ninguem faz nada em menos de um minuto')
-        
+    
         if self.as_meio.currentIndex() == -1:
             error_list.append('Falta o meio de actuação.')
-        
+    
         return error_list
     
     def duration_change(self, ti):
