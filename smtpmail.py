@@ -181,6 +181,8 @@ def send_process_mail(process_id):
     else:
         if process_dict['proc_type'] == 'INFO':
             assunto = '🔔 [' + process_dict['proc_type'] + '] ' + process_dict['proc_unit_name']
+        elif process_dict['proc_type'] == 'INT':
+            assunto = '🚧 [' + process_dict['proc_type'] + '] ' + process_dict['proc_unit_name']
         else:
             assunto = '✅ [' + process_dict['proc_type'] + '] ' + process_dict['proc_unit_name']
     """ envia internamente """

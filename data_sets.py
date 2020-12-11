@@ -253,9 +253,9 @@ def get_ds_falhas():
 
 
 def get_ds_meios():
-    gl.dsMeios = []
+    gl.ds_proc_meios = []
     for n in libpg.query_many('select me_id, me_nome, me_action from meios order by me_id'):
-        gl.dsMeios.append(n[1])
+        gl.ds_proc_meios.append(n[1])
 
 
 def get_ds_status():

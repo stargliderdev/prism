@@ -152,7 +152,7 @@ class Assistencia(QDialog):
         self.as_tecnico = QComboBox()
         self.as_tecnico.addItems(gl.ds_tecnicos)
         self.as_meio = QComboBox()
-        self.as_meio.addItems(gl.dsMeios)
+        self.as_meio.addItems(gl.ds_proc_meios)
         self.as_meio.setCurrentIndex(-1)
         self.as_meio.currentIndexChanged.connect(self.as_meio_change)
         
@@ -463,6 +463,13 @@ class Assistencia(QDialog):
             self.hardwareBtn.setEnabled(False)
             self.lastProcBtn.setEnabled(False)
             self.add_sticky_note()
+        elif t == 'INT':
+            self.proc_type = 'INT'
+            self.proc_origemBox.setCurrentText('Interna')
+            self.as_quem.setText(gl.user_dict['user_name'])
+            self.as_contacto.setText('pessoal')
+            self.as_meio.setCurrentText('Telemanutenção')
+            self.as_tecnico.setCurrentText(gl.user_dict['user_name'].title())
         else:
             self.proc_type = 'ASS'
             self.as_nivel.setEnabled(True)

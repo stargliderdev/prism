@@ -6,7 +6,7 @@ import os
 WAN = False
 dsPendentes = ''
 ds_tecnicos = []
-dsMeios = []
+ds_proc_meios = []
 dsMeiosDic = {}
 dsClasses = []
 dsClassesDic = {}
@@ -47,7 +47,7 @@ db_port = '5432'
 db_user = 'root'
 db_password = 'masterkey'
 DEVELOP = True
-VERSION = '2020.12.10'
+VERSION = '2020.12.11'
 version = 18
 if DEVELOP:
     db_host = '192.168.0.250'
