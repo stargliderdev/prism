@@ -75,7 +75,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(None,"Erro", "Erro na ligação à Base de Dados")
             sys.exit()
         if int(gl.ds_params['version']) != gl.version:
-            QMessageBox.critical(None, "Versão Desactualizada", "Versão da aplicação desactualizada\naperta com o Jorge! ")
+            QMessageBox.critical(None, "Versão Desactualizada", "Versão da aplicação desactualizada\n actualiza! ")
             sys.exit()
         if gl.DEVELOP:
             gl.user_dict = data_sets.get_user_data('jorge', '1697')

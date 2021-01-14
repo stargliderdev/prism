@@ -46,9 +46,9 @@ db_host = '192.168.0.98'
 db_port = '5432'
 db_user = 'root'
 db_password = 'masterkey'
-DEVELOP = False
-VERSION = '2020.12.11'
-version = 19
+DEVELOP =True
+VERSION = '2021.01.12'
+version = 20
 if DEVELOP:
     db_host = '192.168.0.250'
 db_database = 'prism'
@@ -100,3 +100,4 @@ proc_type_show = []
 proc_sources = []
 asterisk_stack_call = {}
 canned_msg_mail = []
+current_proc_data = []

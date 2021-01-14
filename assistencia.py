@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from PyQt5.QtWidgets import QDialog, QLabel, QHBoxLayout, QVBoxLayout, QLineEdit, QTabWidget, QPushButton, \
-    QPlainTextEdit, \
-    QWidget, QToolButton, QDateTimeEdit, QMessageBox, QTextEdit, QDesktopWidget, QTableWidget, QComboBox, QApplication
+    QPlainTextEdit, QWidget, QToolButton, QDateTimeEdit, QMessageBox, QTextEdit, QDesktopWidget, QTableWidget, \
+    QComboBox, QApplication
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QFont
 import datetime
@@ -18,7 +18,6 @@ import asterisk_interface
 import data_sets
 import liblogos
 import qlib as qc
-import stdio
 import sticky
 import wizard_status
 
@@ -26,18 +25,17 @@ import wizard_status
 class Assistencia(QDialog):
     def __init__(self, last_proc_dict, unit_id, parent=None):
         super(Assistencia, self).__init__(parent)
-        # self.resize(1024, 768)
         self.setWindowTitle('Assistencia')
         
         masterLayout = QHBoxLayout(self)
         self.mainLayout = QVBoxLayout()
-        # buttonsLayout = QVBoxLayout()
         self.last_proc_dict = last_proc_dict
         self.clipboard = QApplication.clipboard()
         self.proc_internal_report = ''
         self.proc_type = 'ASS'
         self.facturar = False
         self.process_id = 0
+        self.current_proc_data = []
         try:
             self.as_anterior = last_proc_dict['proc_montante']
         except KeyError:
@@ -61,14 +59,6 @@ class Assistencia(QDialog):
         self.make_tab_end()
         self.tabuladorTabWidget.addTab(self.tab2, 'Termina')
         
-        # self.make_hardware()
-        # self.tabuladorTabWidget.addTab(self.tab4, 'Hardware')
-        
-        # há anteriro?
-        # if self.as_anterior > 0:
-        #     self.make_tab_ass_anterior()
-        #     self.tabuladorTabWidget.addTab(self.tab3, 'Anterior')
-        
         self.closeBtn = QPushButton('Sair')
         self.closeBtn.setMaximumWidth(50)
         self.closeBtn.clicked.connect(self.close_click)
@@ -83,10 +73,6 @@ class Assistencia(QDialog):
         
         self.mainLayout.addLayout(
             qc.addHLayout([self.assistencia_resolvidaBtn, self.assistencia_pendenteBtn, self.closeBtn]))
-        # self.status_label = QLabel()
-        # self.status_label.setText('A Lançar Assistencia')
-        
-        # self.mainLayout.addWidget(self.status_label)
         if gl.asterisk_stack_call == {}:
             pass
         else:
@@ -130,7 +116,8 @@ class Assistencia(QDialog):
         self.as_nivel = QComboBox()
         self.as_nivel.addItems(['Normal', 'Urgente'])
         mainTabLayout.addLayout(qc.addHLayout(
-            ['Nivel', self.as_nivel, 'Origem:', self.proc_origemBox, True, self.lastProcBtn, 'Tipo', self.procTypeCombo]))
+            ['Nivel', self.as_nivel, 'Origem:', self.proc_origemBox, True, self.lastProcBtn, 'Tipo',
+             self.procTypeCombo]))
         mainTabLayout.addLayout(
             qc.addHLayout(['Quem:', self.as_quem, 'Contacto:', self.as_contacto, asterisk_log_btn, True]))
         self.as_data = QDateTimeEdit()
@@ -184,7 +171,7 @@ class Assistencia(QDialog):
         paste_last_issue.clicked.connect(self.last_issue_paste)
         mainTabLayout.addLayout(qc.addHLayout([labelIssue, True, paste_last_issue]))
         mainTabLayout.addWidget(self.proc_reported)
-        self.proc_cause_report = QPlainTextEdit()
+        self.proc_cause_report = QTextEdit()
         self.proc_cause_report.setFont(font)
         self.proc_cause_report.setMinimumHeight(100)
         self.proc_cause_report.setMaximumHeight(100)
@@ -335,15 +322,25 @@ class Assistencia(QDialog):
                      'proc_pendente': self.pendente,
                      'proc_facturado': False,
                      'proc_data_fim': self.as_data_fim.dateTime().toPyDateTime(),
-                     'proc_duracao': str(self.as_duracao.dateTime().toPyDateTime().hour) + ':' + str(self.as_duracao.dateTime().toPyDateTime().minute),
+                     'proc_duracao': str(self.as_duracao.dateTime().toPyDateTime().hour) + ':' + str(
+                         self.as_duracao.dateTime().toPyDateTime().minute),
                      'proc_type': self.proc_type,
                      'proc_source': self.proc_origemBox.currentText()
                      }
-        self.process_id = process_save.ticket(data_dict)
+        process_save.ticket(data_dict)
+        self.process_id = gl.current_proc_data[0]
     
     def valida_campos(self, close_proc=True):
         error_list = []
-
+        
+        """ limpa as linhas vazias"""
+        self.proc_reported.setText(
+            "\n".join([ll.rstrip() for ll in self.proc_reported.toPlainText().splitlines() if ll.strip()]))
+        self.proc_cause_report.setText(
+            "\n".join([ll.rstrip() for ll in self.proc_cause_report.toPlainText().splitlines() if ll.strip()]))
+        self.proc_action_report.setText(
+            "\n".join([ll.rstrip() for ll in self.proc_action_report.toPlainText().splitlines() if ll.strip()]))
+        
         if close_proc and self.proc_type in 'ASS':
             if self.proc_reported.toPlainText() == '':
                 error_list.append('Falta Problema/Sintoma!')
@@ -358,7 +355,7 @@ class Assistencia(QDialog):
         if self.proc_type == 'INT':
             if self.proc_action_report.toPlainText() == '':
                 error_list.append('A Falta a Acção!')
-    
+        
         """ mandatórios """
         if not self.check_obj(self.as_quem):
             error_list.append('Falta responsavel!')
@@ -368,10 +365,10 @@ class Assistencia(QDialog):
             error_list.append('Falta o Técnico')
         if self.as_duracao.time().minute() < 1 and self.as_duracao.time().hour() == 0:
             error_list.append('Ninguem faz nada em menos de um minuto')
-    
+        
         if self.as_meio.currentIndex() == -1:
             error_list.append('Falta o meio de actuação.')
-    
+        
         return error_list
     
     def duration_change(self, ti):
@@ -412,14 +409,12 @@ class Assistencia(QDialog):
         except KeyError:
             pass
     
-    
     def last_cause_paste(self):
         try:
             if self.last_proc_dict['proc_cause_report'] != '':
                 self.proc_cause_report.setPlainText(comment_string(self.last_proc_dict['proc_cause_report']))
         except KeyError:
             pass
-
     
     def last_action_paste(self):
         try:
@@ -442,12 +437,12 @@ class Assistencia(QDialog):
                     self.as_quem.setText(form.toto['call_who'])
                 except KeyError:
                     self.as_quem.setText('')
-        
+            
             self.as_duracao.setDateTime(form.toto['call_time'])
             self.as_asterisk.setPlainText(form.toto['call_cdr'])
         except KeyError:
             pass
-        
+    
     def last_proc_show_click(self):
         proc_dict = data_sets.process_to_dict(self.last_proc_dict['proc_id'])
         proc_html = html_maker.process_to_html(proc_dict)

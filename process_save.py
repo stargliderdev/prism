@@ -82,11 +82,13 @@ def save_process(data_dict):
             data_dict['proc_cause_report'])
     
         libpg.execute_query(sql, data)
-        process_number = libpg.query_one('select max(proc_id) as max_id from assistencias', (True,))[0]
+        # process_number = libpg.query_one('select max(proc_id) as max_id from assistencias', (True,))[0]
+        # last_proc_id = current_proc_data[0]
+        get_last_open_process(data_dict['proc_unit_id'], data_dict['proc_date'])
         if data_dict['proc_montante'] > 0:
             libpg.execute_query('''UPDATE assistencias set proc_pendente = False, proc_jusante = %s
-                         where proc_id = %s''', (process_number, data_dict['proc_montante']))
-        return True,process_number
+                         where proc_id = %s''', (gl.current_proc_data[0], data_dict['proc_montante']))
+        return True,gl.current_proc_data[0]
     
 
 def intervention(data_dict):
@@ -150,13 +152,21 @@ def ticket(data_dict):
             data_dict['proc_source'])
     libpg.execute_query(sql, data)
     
-    num_pedido = libpg.query_one('select max(proc_id) as max_id from assistencias', (True,))[0]
+    # num_pedido = libpg.query_one('select max(proc_id) as max_id from assistencias', (True,))[0]
+    get_last_open_process(data_dict['proc_unit_id'], data_dict['proc_date'])
+    
     """ fecha o proc a montante se houver i não for INFO"""
     if data_dict['proc_montante'] > 0 and data_dict['proc_type'] != 'INFO':
         libpg.execute_query('''UPDATE assistencias set proc_pendente = False, proc_jusante = %s
-                     where proc_id = %s''', (num_pedido,data_dict['proc_montante']))
+                     where proc_id = %s''', (gl.current_proc_data[0],data_dict['proc_montante']))
 
-    return num_pedido
+
+def get_last_open_process(unit_id, data):
+    data = data.strftime("%Y-%m-%d")
+    a = libpg.query_one('''SELECT (select max(proc_id) from assistencias) as max_id,
+         (SELECT LPAD(count(proc_id)::text,2,'0') FROM assistencias WHERE proc_unit_id = %s and proc_date::date = %s::date)  || '-' ||
+         (SELECT LPAD(count(proc_id)::text,3,'0') FROM assistencias WHERE proc_date::date = %s ::date) ''', (unit_id,data, data))
+    gl.current_proc_data['proc_id': a[0], 'proc_in_unit':a[1], 'proc_in_day': a[2]]
 
 
 if __name__ == '__main__':

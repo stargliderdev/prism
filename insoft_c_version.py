@@ -30,7 +30,7 @@ class ChangeComercialVersion(QDialog):
         cancelBtn.clicked.connect(self.cancel_btn_click)
         masterLayout.addLayout(qc.addHLayout([self.dbms_grd]))
         masterLayout.addLayout(qc.addHLayout([cancelBtn]))
-        hl = libpg.sql_query('''select insoft_opt_code, insoft_opt_name from insoft_opt where insoft_opt_level=1 order by insoft_opt_order''')
+        hl = libpg.sql_query('''select insoft_opt_code, insoft_opt_name from insoft_opt where insoft_opt_level=1 and insoft_opt_active=True order by insoft_opt_order''')
         ex_grid.grid_std(self.dbms_grd, data=hl, f_col=['s','s'])
 
     def cancel_btn_click(self):
@@ -52,5 +52,4 @@ def main():
     print(form.ret)
 
 if __name__ == '__main__':
-    gl.conn_string = 'host=192.168.0.250 dbname=prism user=root password=masterkey'
-    main()
+    pass

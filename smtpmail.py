@@ -176,15 +176,16 @@ def upload_lic_mail(order_num, unid_dict):
 def send_process_mail(process_id):   
     process_dict = data_sets.process_to_dict(process_id)
     msg_body = html_maker.process_to_html(process_dict)
+    """constroi o assunto do mail"""
     if process_dict['proc_pendente']:
-        assunto = '❌ [' + process_dict['proc_type'] + '] ' + process_dict['proc_unit_name']
+        assunto = '❌ [' + process_dict['proc_type'] + '] ' + process_dict['proc_unit_name'] + ' ' + pa.current_proc_data[1]
     else:
         if process_dict['proc_type'] == 'INFO':
             assunto = '🔔 [' + process_dict['proc_type'] + '] ' + process_dict['proc_unit_name']
         elif process_dict['proc_type'] == 'INT':
-            assunto = '🚧 [' + process_dict['proc_type'] + '] ' + process_dict['proc_unit_name']
+            assunto = '🚧 [' + process_dict['proc_type'] + '] ' + process_dict['proc_unit_name'] + ' ' + pa.current_proc_data[1]
         else:
-            assunto = '✅ [' + process_dict['proc_type'] + '] ' + process_dict['proc_unit_name']
+            assunto = '✅ [' + process_dict['proc_type'] + '] ' + process_dict['proc_unit_name'] + ' ' + pa.current_proc_data[1]
     """ envia internamente """
     if pa.DEVELOP:
         mailing_list = ['xeo@net.vodafone.pt']

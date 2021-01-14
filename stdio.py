@@ -60,12 +60,6 @@ def read_field(obj, field, dic):
         obj.setDate(toto)
 
 
-# except Exception,e:
-#
-#     print 'erro em def read_field()'
-#     print str(e)
-#     print 'in field:', field
-#     print 'in dic:',dic
 
 def date_process(data, on_null='Vitalicio'):
     if data == None:

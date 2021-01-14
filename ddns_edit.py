@@ -133,10 +133,9 @@ class DdnsEdit(QDialog):
         form.exec_()
         if form.ret[0]:
             gl.proc_dict.update(form.ret[1])
-            
-            process_id: int = process_save.save_process(gl.proc_dict)
-            if process_id[0]:
-                smtpmail.send_process_mail(process_id[1])
+            process_save.save_process(gl.proc_dict)
+            if gl.current_proc_data[0]:
+                smtpmail.send_process_mail(gl.current_proc_data[0])
                 # QMessageBox.information(None, "Info", "Processo criado " + str(process_id[1]))
                 self.close()
             else:
@@ -161,11 +160,9 @@ class DdnsEdit(QDialog):
         form.exec_()
         if form.ret[0]:
             gl.proc_dict.update(form.ret[1])
-            # gl.proc_dict['proce_report_internal'] = gl.proc_dict['proc_reported'] + '\n' + gl.proc_dict['proc_action_report']
-            process_id: int = process_save.save_process(gl.proc_dict)
-            if process_id[0]:
-                smtpmail.send_process_mail(process_id[1])
-                # QMessageBox.information(None, "Info", "Processo criado " + str(process_id[1]))
+            process_save.save_process(gl.proc_dict)
+            if gl.current_proc_data[0]:
+                smtpmail.send_process_mail(gl.current_proc_data[0])
                 self.close()
             else:
                 QMessageBox.critical(None, "Erro", "Não foi possivel criar um processo")
